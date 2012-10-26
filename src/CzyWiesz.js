@@ -1,84 +1,140 @@
-// ==UserScript==
 // @name		test na wiki czywiesz propozycje
-// @version		0.6.3
+// @version		0.7.0
 // @description	zgłaszanie czywiesza
-// @include		http://pl.wikipedia.org/wiki/Wikiprojekt:Czy_wiesz/propozycj*
+// @include		http[s]?://pl.wikipedia.org/wiki/Wikiprojekt:Czy_wiesz/propozycje
 // @autor		Kaligula
-// ==/UserScript==
-
-//póki co (po załdowaniu strony) przy kliknięciu na tytuł strony wyświetla komunikat z linkiem (gdy dzisiejsza sekscja istnieje) lub dzisiejszą datą (gdzy nie ma dzisiejszej sekcji) i przechodzi do edycji najnowszej sekcji starając się ją najpierw wypełnić
+ 
+//póki co po wpisaniu w konsoli "test()" aktulane info pokażą si​ę w console.log
 //TO DO: dorobić okienko, w które user wpisze dane do wypełnienia przez skrypt
 //TO DO: skrypt ma powiadamiać inne projekty i autora artykułu
-
-var testscript = function test() {
+//TO DO: link w menu lewym Wikipedii, dodaje w pole tytułu domyślnie tytuł aktualnie oglądanego artykułu, można tam wpisać jednak inny
+//TO DO: encodeURIComponent odpowiednie komponenty zanim wsadzimy do linku!
+//TO DO: na końcu spr wszystkie „TODO” i „TO DO” i „console.*”
+ 
+function test() {
 	//dane do testowania skryptu (podawane potem przez uzytkownika)
-	var TYTUL = 'testtitle';
 	var GRAFIKA = '$grafika';
 	var PYTANIE = 'pytanie?';
 	var OBRAZKI = '0';
 	var AUTOR = 'Autor';
-	var WSTAWIAJACY = 'Wstawiajacy';
-	var NR = '0'; //jedyna nie podawana przez użytkownika, tu trzeba sprawdzić ile podsekcji już jest; ostatecznie może być do uzupełnienia przez użytkownika
-
+	var PODPIS = 'Wstawiajacy';
+ 	
 	//skrypt właściwy
+	var TYTUL = wgTitle;
+	var NR = 0;
+
 	var miesiacArr = ['stycznia', 'lutego', 'marca', 'kwietnia', 'maja', 'czerwca', 'lipca', 'sierpnia', 'września', 'października', 'listopada', 'grudnia'];
 	var miesiac = miesiacArr[new Date().getMonth()]
 	var dzien = new Date().getDate();
+	console.log('dzisiaj: ' + dzien + ' ' + miesiac);
+	
 	var h2Arr = $('h2.modifiedSectionTitle > .mw-headline');
 	var h2Title = '';
 	var h2Nr = '';
 	var uptodate = false;
-
+	
+	var input;
+	var summary;
+	
+	var a,b;
+ 
 	// szuka pierwszego nagłówka w formacie 'dd mmmm', bo mogą być jakieś typu 'Białowieski megaczywiesz na koniec sierpnia (ew. pocz. września)'
 	for (i=0;i<h2Arr.length;i++) {
 		h2Nr = i;
 		h2Title = h2Arr[i].innerText;
 		(mw.user.options.values.numberheadings == 1) && (h2Title = h2Title.replace(/^\d+ /,'')); // jeśli włączone jest automatyczne numerowanie nagłówków to usuwa numer
-		if ((h2Title.split(' ')[0].match(/\d+/)) && (miesiacArr.indexOf(h2Title.split(' ')[1]))) { break; }
-	}
-	//sprawdza czy pierwszy napotkany (najnowszy) nagłówek jest z dzisiejszego dnia
-	(( h2Title.split(' ')[0].match(/\d+/) == dzien ) && ( miesiacArr.indexOf(h2Title.split(' ')[1]) > -1 )) ? (uptodate = true) : (uptodate = false);
+		if ((a = h2Title.match(/^\d+/)) && ($.inArray(h2Title.split(' ')[1],miesiacArr))) {
+			( a[0] == dzien ) ? (uptodate = true) : (uptodate = false); //sprawdza czy pierwszy napotkany (najnowszy) nagłówek jest z dzisiejszego dnia
+			console.log('uptodate:'+uptodate);
+			break;
+		}
+	}	
+	// mamy pierwszy interesujący nagłówek (h2Arr[h2Nr]), wiemy też czy jest z dzisiaj (uptodate:boolean)
+	// sprawdzamy wszystkie parametry formularza
 	
-	console.log('uptodate:'+uptodate);
-
-	if (GRAFIKA != '') {GRAFIKA = '[[Plik:'+GRAFIKA+'|100px|right]]\\n'} //TODO: spr czy nie trzeba obciąć "Plik:"/"File:"
-	if (AUTOR != '') {AUTOR = '[[Wikipedysta|'+AUTOR+'|'+AUTOR+']]'} //TODO: spr czy podano AUTOR
-	if (WSTAWIAJACY != '') {WSTAWIAJACY = '[[Wikipedysta:'+WSTAWIAJACY+'|'+WSTAWIAJACY+']]'} //TODO: a co kiedy IP?
+	if (TYTUL) {console.error('podaj AUTORA')}
+	if (GRAFIKA != '') {GRAFIKA = '[[Plik:' + (GRAFIKA.match(/^(Plik:|File:)/i) ? GRAFIKA.replace(/^(Plik:|File:)/i,'') : {}) + '|100px|right]]\n'}
+	if (PYTANIE != '') {(PYTANIE.length > 10) ? (PYTANIE = '…' + (PYTANIE.match(/\?[\s]*$/) ? {} : (PYTANIE += '?')) + '\n') : {console.error('zadaj poprawne PYTANIE')}} else {console.error('podaj PYTANIE')}
+	if (!OBRAZKI) {console.error('podaj OBRAZKI')}
+	if (!AUTOR) {console.error('podaj AUTORA')}
+	if ( !mw.user.anonymous() ) { PODPIS = wgUserName } else { PODPIS += ' ~~' + '~~' } //TODO: a co kiedy IP?
 	
-	var editlinkPart1 = 'http://pl.wikipedia.org/w/index.php?title=Wikiprojekt:Czy_wiesz/propozycje&action=edit&section=1'
-		+'&autoedit=s'
-		+'~$'
-		+'~\\n\\n'
-	var editlinkPart2 = '=== ' + NR + ' (' + TYTUL + ') ===\\n'
+	// parametry sprawdzone
+	// więc tworzymy tekst do wstawienia
+	// najpierw, jeśli mamy dostawić podsekcję do istniejące sekcji to trzeba wiedzieć jaki numer porządkowy (NR) ma mieć
+	
+	uptodate ? (
+		a = h2Arr[h2Nr].parentNode;
+		while (a.nextSibling && a.nextSibling.nodeName.toLowerCase() != 'h2') {
+			(a.nextSibling.nodeName.toLowerCase() == 'h3') ? (NR++) : {};
+			a = a.nextSibling;
+		}
+	) : (NR++);
+	
+	// NR mamy
+	// teraz sama zawartość
+	
+	input = '=== ' + NR + ' (' + TYTUL + ') ===\n'
 		+ GRAFIKA
-		+'…' + PYTANIE + '\\n'
-		+'\\n'
-		+'{{Wikiprojekt:Czy wiesz/weryfikacja|' + TYTUL + '|+|' + OBRAZKI + '|?|' + AUTOR + '|' + WSTAWIAJACY + '|?|?|?}}'
-		+'~g'
-		+'&autoclick=wpDiff'
-		+'&autosummary=/* ' + NR + ' (' + TYTUL + ') */ nowa propozycja: ' + TYTUL;
+		+ PYTANIE
+		+ '{{Wikiprojekt:Czy wiesz/weryfikacja|' + TYTUL + '|+|' + OBRAZKI + '|?|' + AUTOR + '|' + PODPIS + '|?|?|?}}';
 
-	//TODO: encodeURIComponent odpowiednie komponenty zanim wsadzimy do linku!
+	// tekst gotowy
+	// określamy czy dodajemy nową sekcję czy nie
 
-	if (uptodate) {
-		var editlink = editlinkPart1 + editlinkPart2;
-		var msg = editlink; //jak nagłówek jest dzisiejszy to mi wyskoczy alert z tym linkiem		 
+	if (uptodate) { // jeśli jest aktualny to dodajemy na końcu jego sekcji nową podsekcję
+		input = '\n\n' + input
+	} else { // jesli nie  aktualny to dodajemy na początku przed jego sekcją nową sekcję z podsekcją
+		input = '== ' + dzien + ' ' + miesiac +' ==\n' + input + '\n\n';
 	}
-	else {
-		//tutaj link będzie podobny tylko na począktu trzeba dopisać nagłówek '== dzien miesiac ==\n'
-		var editlink = editlinkPart1
-			+'== '+dzien+' '+miesiac+' ==\\n'
-			+ editlinkPart2;
-		var msg = dzien + ' ' + miesiac; //jak nagłówek nie jest dzisiejszy to mi wyskoczy alert z dzisiejszą datą
+ 
+	// i tutaj dochodzi do rzeczywistej edycji
+
+	if (b) {
+	/* get raw section code */
+	$.ajax({
+		url: '/w/index.php?action=raw&title=' + mw.util.wikiUrlencode(wgPageName) + '&section=' + section,
+		cache: false
+		}).done(function(rawsection){
+ 
+		/* get edittoken */
+		$.ajax('/w/api.php?action=query&prop=info&format=json&intoken=edit&indexpageids=&titles=' + encodeURI(wgPageName)).done(function(token_data){
+			var edittoken = token_data.query.pages[token_data.query.pageids[0]].edittoken;
+ 
+			/* edit section – mark it as done with {{załatwione}} */
+			$.ajax({
+				url: '/w/api.php?action=edit&format=json&title=' + encodeURI(wgPageName + '&section=' + section + '&text=' + (uptodate ? (rawsection + input) : (input + rawsection)) + '&summary=' + summary + '&token=') + mw.util.rawurlencode(edittoken),
+				type: 'POST'
+			}).done(function(data){
+			var newrevid = data.edit.newrevid;
+ 
+				/* reload section – get changed section raw code 
+				$.ajax({
+					url: '/w/index.php?action=raw&title=' + mw.util.wikiUrlencode(wgPageName) + '&section=' + section + '&oldid=' + newrevid,
+					cache: false
+					}).done(function(text_after){
+ 
+					/* reload section – parse code to html 
+					$.ajax('/w/api.php?action=parse&format=json&title=' + encodeURI(wgPageName + '&text=' + text_after) + '&prop=text').done(function(html_after){
+ 
+						/* reload section – update html of the section
+						var j = $('.editsection')[section].parentNode;
+						while ((j.nextElementSibling) && (j.nextElementSibling.tagName.charAt(0).toLowerCase() != 'h')) {$(j.nextElementSibling).remove()}
+						j.outerHTML = html_after.parse.text['*'];
+					});
+				});*/
+			});
+		});
+	});
 	}
-	console.log(msg);
-	//location.href=editlink;
-}
+	
+	// powiadamianie autora artykułu
+	// …
+	// powiadamianie wikiprojektu
+	// …
 
-if ((document.location.href.indexOf('://pl.wikipedia.org/wiki/Wikiprojekt:Czy_wiesz/propozycje')) > -1) { //http i https
-	var scr = document.createElement('script');
-	scr.appendChild(document.createTextNode(testscript));
-	document.body.appendChild(scr);
-
-	document.getElementById('firstHeading').firstChild.setAttribute('onclick','test()')
 }
+ 
+//if ((document.location.pathname == '/wiki/Wikiprojekt:Czy_wiesz/propozycje' ) || (wgNamespaceNumber == 0)){ //http i https
+//	document.getElementById('firstHeading').firstChild.setAttribute('onclick','test()')
+//}
