@@ -1,5 +1,5 @@
 // @name		test na wiki czywiesz propozycje
-// @version		0.7.5
+// @version		0.7.6
 // @description	zgłaszanie czywiesza
 // @include		http[s]?://pl.wikipedia.org/wiki/Wikiprojekt:Czy_wiesz/propozycje
 // @autor		Kaligula
@@ -14,7 +14,7 @@
 function test() {
 	//dane do testowania skryptu (podawane potem przez uzytkownika)
 	var GRAFIKA = '$grafika';
-	var PYTANIE = 'pytanie?';
+	var PYTANIE = 'moje pytanie?';
 	var OBRAZKI = 0;
 	var AUTOR = 'Autor';
 	var PODPIS = 'Wstawiajacy';
