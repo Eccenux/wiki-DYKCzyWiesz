@@ -55,9 +55,9 @@ function test() {
 	if (typeof TYTUL == "undefined") {console.error('podaj TYTUŁ')}
 	if (typeof GRAFIKA == "undefined") {GRAFIKA = '[[Plik:' + (GRAFIKA.match(/^(Plik:|File:)/i) ? GRAFIKA.replace(/^(Plik:|File:)/i,'') : {}) + '|100px|right]]\n'}
 	if (typeof PYTANIE == "undefined") {
-		(PYTANIE.length > 10) ? (PYTANIE = '…' + (PYTANIE.match(/\?[\s]*$/) ? {} : (PYTANIE += '?')) + '\n') : (console.error('zadaj poprawne PYTANIE'))
-	} else {
 		console.error('podaj PYTANIE')
+	} else {
+		(PYTANIE.length > 10) ? (PYTANIE = '…' + (PYTANIE.match(/\?[\s]*$/) ? {} : (PYTANIE += '?')) + '\n') : (console.error('zadaj poprawne PYTANIE'))
 	}
 	if (typeof OBRAZKI == "undefined") {console.error('podaj OBRAZKI')}
 	if (typeof AUTOR == "undefined") {console.error('podaj AUTORA')}
