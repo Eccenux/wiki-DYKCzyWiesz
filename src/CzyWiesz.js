@@ -44,13 +44,15 @@ function test() {
 		console.log(data);
 		sections = data.mobileview.sections;
 		for (var i=0; i<sections.length; i++){
-			var a = sections[i].line.match(/^\d+/);
-			var b = sections[i].line.split(' ');
-			if ((sections[i].level == 2) && (a) && ($.inArray(b[1],miesiacArr))) {
-				( (a[0] == dzien) && (b[1] == miesiac) ) ? (uptodate = true) : (uptodate = false); //sprawdza czy pierwszy napotkany (najnowszy) datowany nagłówek jest z dzisiejszego dnia
-				h2Nr = i;
-				console.log(h2Nr + ' (uptodate: ' + uptodate + ')');
-				break;
+			if (sections[i].line) {
+				var a = sections[i].line.match(/^\d+/);
+				var b = sections[i].line.split(' ');
+				if ((sections[i].level == 2) && (a) && ($.inArray(b[1],miesiacArr))) {
+					( (a[0] == dzien) && (b[1] == miesiac) ) ? (uptodate = true) : (uptodate = false); //sprawdza czy pierwszy napotkany (najnowszy) datowany nagłówek jest z dzisiejszego dnia
+					h2Nr = i;
+					console.log(h2Nr + ' (uptodate: ' + uptodate + ')');
+					break;
+				}
 			}
 		}	
 	}) // zwraca sections i h2Nr
