@@ -1,5 +1,5 @@
 // @name		test na wiki czywiesz propozycje
-// @version		0.7.3
+// @version		0.7.5
 // @description	zgłaszanie czywiesza
 // @include		http[s]?://pl.wikipedia.org/wiki/Wikiprojekt:Czy_wiesz/propozycje
 // @autor		Kaligula
@@ -52,15 +52,15 @@ function test() {
 	// mamy pierwszy interesujący nagłówek (h2Arr[h2Nr]), wiemy też czy jest z dzisiaj (uptodate:boolean)
 	// sprawdzamy wszystkie parametry formularza
 	
-	if (TYTUL) {console.error('podaj TYTUŁ')}
-	if (GRAFIKA != '') {GRAFIKA = '[[Plik:' + (GRAFIKA.match(/^(Plik:|File:)/i) ? GRAFIKA.replace(/^(Plik:|File:)/i,'') : {}) + '|100px|right]]\n'}
-	if (PYTANIE != '') {
+	if (typeof TYTUL == "undefined") {console.error('podaj TYTUŁ')}
+	if (typeof GRAFIKA == "undefined") {GRAFIKA = '[[Plik:' + (GRAFIKA.match(/^(Plik:|File:)/i) ? GRAFIKA.replace(/^(Plik:|File:)/i,'') : {}) + '|100px|right]]\n'}
+	if (typeof PYTANIE == "undefined") {
 		(PYTANIE.length > 10) ? (PYTANIE = '…' + (PYTANIE.match(/\?[\s]*$/) ? {} : (PYTANIE += '?')) + '\n') : (console.error('zadaj poprawne PYTANIE'))
 	} else {
 		console.error('podaj PYTANIE')
 	}
-	if (!OBRAZKI) {console.error('podaj OBRAZKI')}
-	if (!AUTOR) {console.error('podaj AUTORA')}
+	if (typeof OBRAZKI == "undefined") {console.error('podaj OBRAZKI')}
+	if (typeof AUTOR == "undefined") {console.error('podaj AUTORA')}
 	if ( !mw.user.anonymous() ) { PODPIS = wgUserName } else { PODPIS += ' ~~' + '~~' } //TODO: a co kiedy IP?
 	
 	// parametry sprawdzone
