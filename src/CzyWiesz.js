@@ -1,5 +1,5 @@
 // @name		test na wiki czywiesz propozycje
-// @version		0.7.6
+// @version		0.8.0
 // @description	zgłaszanie czywiesza
 // @include		http[s]?://pl.wikipedia.org/wiki/Wikiprojekt:Czy_wiesz/propozycje
 // @autor		Kaligula
@@ -21,35 +21,39 @@ function test() {
  	
 	//skrypt właściwy
 	var TYTUL = wgTitle;
-	var NR = 0;
+	var NR = 1;
 
 	var miesiacArr = ['stycznia', 'lutego', 'marca', 'kwietnia', 'maja', 'czerwca', 'lipca', 'sierpnia', 'września', 'października', 'listopada', 'grudnia'];
 	var miesiac = miesiacArr[new Date().getMonth()]
 	var dzien = new Date().getDate();
 	console.log('dzisiaj: ' + dzien + ' ' + miesiac);
 	
-	var h2Arr = $('h2.modifiedSectionTitle > .mw-headline');
-	var h2Title = '';
+//	var h2Arr = $('h2.modifiedSectionTitle > .mw-headline');
 	var h2Nr = '';
 	var uptodate = false;
 	
 	var input;
-	var summary;
+	var summary = '/* ' + TYTUL + ': */ nowa sekcja';
 	
 	var a,b;
  
 	// szuka pierwszego nagłówka w formacie 'dd mmmm', bo mogą być jakieś typu 'Białowieski megaczywiesz na koniec sierpnia (ew. pocz. września)'
-	for (i=0;i<h2Arr.length;i++) {
-		h2Nr = i;
-		h2Title = h2Arr[i].innerText;
-		(mw.user.options.values.numberheadings == 1) && (h2Title = h2Title.replace(/^\d+ /,'')); // jeśli włączone jest automatyczne numerowanie nagłówków to usuwa numer
-		if ((a = h2Title.match(/^\d+/)) && ($.inArray(h2Title.split(' ')[1],miesiacArr))) {
-			( a[0] == dzien ) ? (uptodate = true) : (uptodate = false); //sprawdza czy pierwszy napotkany (najnowszy) nagłówek jest z dzisiejszego dnia
-			console.log('uptodate:'+uptodate);
-			break;
-		}
-	}	
-	// mamy pierwszy interesujący nagłówek (h2Arr[h2Nr]), wiemy też czy jest z dzisiaj (uptodate:boolean)
+	$.ajax({url: '/w/api.php?action=mobileview&format=json&page=Wikiprojekt%3ACzy%20wiesz%2Fpropozycje&prop=sections&sectionprop=level%7Cline%7Cnumber%7Canchor&noimages=',
+			async: false})
+	.done(function(data){
+		sections = data.mobileview.sections;
+		for (var i=0; i<sections.length; i++){
+			var a = sections[i].line.match(/^\d+/);
+			var b = sections[i].line.split(' ');
+			if ((sections[i].level == 2) && (a) && ($.inArray(b[1],miesiacArr))) {
+				( (a[0] == dzien) && (b[1] == miesiac) ) ? (uptodate = true) : (uptodate = false); //sprawdza czy pierwszy napotkany (najnowszy) datowany nagłówek jest z dzisiejszego dnia
+				h2Nr = i;
+				console.log(h2Nr + ' (uptodate: ' + uptodate + ')');
+				break;
+			}
+		}	
+	}) // zwraca sections i h2Nr
+	// mamy pierwszy interesujący nagłówek (h2Nr), wiemy też czy jest z dzisiaj (uptodate:boolean)
 	// sprawdzamy wszystkie parametry formularza
 	
 	if (typeof TYTUL == "undefined") {console.error('podaj TYTUŁ')}
@@ -65,16 +69,14 @@ function test() {
 	
 	// parametry sprawdzone
 	// więc tworzymy tekst do wstawienia
+
 	// najpierw, jeśli mamy dostawić podsekcję do istniejące sekcji to trzeba wiedzieć jaki numer porządkowy (NR) ma mieć
-	
 	if (uptodate) {
-		a = h2Arr[h2Nr].parentNode;
-		while (a.nextSibling && a.nextSibling.nodeName.toLowerCase() != 'h2') {
-			(a.nextSibling.nodeName.toLowerCase() == 'h3') ? (NR++) : {};
-			a = a.nextSibling;
+		_h2Nr = h2Nr+1;
+		while (sections[_h2Nr] && sections[_h2Nr].level != 2) {
+			(sections[_h2Nr].level == 3) ? (NR++) : {};
+			_h2Nr++;
 		}
-	} else {
-		NR++;
 	}
 	
 	// NR mamy
@@ -107,7 +109,7 @@ function test() {
 		$.ajax('/w/api.php?action=query&prop=info&format=json&intoken=edit&indexpageids=&titles=' + encodeURI(wgPageName)).done(function(token_data){
 			var edittoken = token_data.query.pages[token_data.query.pageids[0]].edittoken;
  
-			/* edit section – mark it as done with {{załatwione}} */
+			/* edit and save section */
 			$.ajax({
 				url: '/w/api.php?action=edit&format=json&title=' + encodeURI(wgPageName + '&section=' + section + '&text=' + (uptodate ? (rawsection + input) : (input + rawsection)) + '&summary=' + summary + '&token=') + mw.util.rawurlencode(edittoken),
 				type: 'POST'
@@ -139,6 +141,8 @@ function test() {
 	
 	// powiadamianie wikiprojektu
 	// …
+
+	return input;
 
 }
  
