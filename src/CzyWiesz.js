@@ -1,5 +1,5 @@
 // @name		test na wiki czywiesz propozycje
-// @version		0.7.1
+// @version		0.7.2
 // @description	zgłaszanie czywiesza
 // @include		http[s]?://pl.wikipedia.org/wiki/Wikiprojekt:Czy_wiesz/propozycje
 // @autor		Kaligula
@@ -63,13 +63,15 @@ function test() {
 	// więc tworzymy tekst do wstawienia
 	// najpierw, jeśli mamy dostawić podsekcję do istniejące sekcji to trzeba wiedzieć jaki numer porządkowy (NR) ma mieć
 	
-	uptodate ? (
+	if (uptodate) {
 		a = h2Arr[h2Nr].parentNode;
 		while (a.nextSibling && a.nextSibling.nodeName.toLowerCase() != 'h2') {
 			(a.nextSibling.nodeName.toLowerCase() == 'h3') ? (NR++) : {};
 			a = a.nextSibling;
 		}
-	) : (NR++);
+	} else {
+		NR++
+	}
 	
 	// NR mamy
 	// teraz sama zawartość
