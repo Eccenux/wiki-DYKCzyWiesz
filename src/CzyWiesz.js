@@ -1,5 +1,5 @@
 // @name		test na wiki czywiesz propozycje
-// @version		0.7.2
+// @version		0.7.3
 // @description	zgłaszanie czywiesza
 // @include		http[s]?://pl.wikipedia.org/wiki/Wikiprojekt:Czy_wiesz/propozycje
 // @autor		Kaligula
@@ -15,7 +15,7 @@ function test() {
 	//dane do testowania skryptu (podawane potem przez uzytkownika)
 	var GRAFIKA = '$grafika';
 	var PYTANIE = 'pytanie?';
-	var OBRAZKI = '0';
+	var OBRAZKI = 0;
 	var AUTOR = 'Autor';
 	var PODPIS = 'Wstawiajacy';
  	
@@ -52,9 +52,13 @@ function test() {
 	// mamy pierwszy interesujący nagłówek (h2Arr[h2Nr]), wiemy też czy jest z dzisiaj (uptodate:boolean)
 	// sprawdzamy wszystkie parametry formularza
 	
-	if (TYTUL) {console.error('podaj AUTORA')}
+	if (TYTUL) {console.error('podaj TYTUŁ')}
 	if (GRAFIKA != '') {GRAFIKA = '[[Plik:' + (GRAFIKA.match(/^(Plik:|File:)/i) ? GRAFIKA.replace(/^(Plik:|File:)/i,'') : {}) + '|100px|right]]\n'}
-	if (PYTANIE != '') {(PYTANIE.length > 10) ? (PYTANIE = '…' + (PYTANIE.match(/\?[\s]*$/) ? {} : (PYTANIE += '?')) + '\n') : (console.error('zadaj poprawne PYTANIE'))} else {console.error('podaj PYTANIE')}
+	if (PYTANIE != '') {
+		(PYTANIE.length > 10) ? (PYTANIE = '…' + (PYTANIE.match(/\?[\s]*$/) ? {} : (PYTANIE += '?')) + '\n') : (console.error('zadaj poprawne PYTANIE'))
+	} else {
+		console.error('podaj PYTANIE')
+	}
 	if (!OBRAZKI) {console.error('podaj OBRAZKI')}
 	if (!AUTOR) {console.error('podaj AUTORA')}
 	if ( !mw.user.anonymous() ) { PODPIS = wgUserName } else { PODPIS += ' ~~' + '~~' } //TODO: a co kiedy IP?
@@ -70,7 +74,7 @@ function test() {
 			a = a.nextSibling;
 		}
 	} else {
-		NR++
+		NR++;
 	}
 	
 	// NR mamy
