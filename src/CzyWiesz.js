@@ -33,7 +33,7 @@ function test() {
 	var uptodate = false;
 	
 	var input;
-	var summary = '/* ' + TYTUL + ': */ nowa sekcja';
+	var summary = '/* ' + TYTUL + ' */ nowa sekcja';
 	
 	var a,b;
  
@@ -41,6 +41,7 @@ function test() {
 	$.ajax({url: '/w/api.php?action=mobileview&format=json&page=Wikiprojekt%3ACzy%20wiesz%2Fpropozycje&prop=sections&sectionprop=level%7Cline%7Cnumber%7Canchor&noimages=',
 			async: false})
 	.done(function(data){
+		console.log(data);
 		sections = data.mobileview.sections;
 		for (var i=0; i<sections.length; i++){
 			var a = sections[i].line.match(/^\d+/);
