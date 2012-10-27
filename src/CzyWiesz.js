@@ -1,5 +1,5 @@
 // @name		test na wiki czywiesz propozycje
-// @version		0.7.0
+// @version		0.7.1
 // @description	zgłaszanie czywiesza
 // @include		http[s]?://pl.wikipedia.org/wiki/Wikiprojekt:Czy_wiesz/propozycje
 // @autor		Kaligula
@@ -54,7 +54,7 @@ function test() {
 	
 	if (TYTUL) {console.error('podaj AUTORA')}
 	if (GRAFIKA != '') {GRAFIKA = '[[Plik:' + (GRAFIKA.match(/^(Plik:|File:)/i) ? GRAFIKA.replace(/^(Plik:|File:)/i,'') : {}) + '|100px|right]]\n'}
-	if (PYTANIE != '') {(PYTANIE.length > 10) ? (PYTANIE = '…' + (PYTANIE.match(/\?[\s]*$/) ? {} : (PYTANIE += '?')) + '\n') : {console.error('zadaj poprawne PYTANIE')}} else {console.error('podaj PYTANIE')}
+	if (PYTANIE != '') {(PYTANIE.length > 10) ? (PYTANIE = '…' + (PYTANIE.match(/\?[\s]*$/) ? {} : (PYTANIE += '?')) + '\n') : (console.error('zadaj poprawne PYTANIE'))} else {console.error('podaj PYTANIE')}
 	if (!OBRAZKI) {console.error('podaj OBRAZKI')}
 	if (!AUTOR) {console.error('podaj AUTORA')}
 	if ( !mw.user.anonymous() ) { PODPIS = wgUserName } else { PODPIS += ' ~~' + '~~' } //TODO: a co kiedy IP?
@@ -130,6 +130,7 @@ function test() {
 	
 	// powiadamianie autora artykułu
 	// …
+	
 	// powiadamianie wikiprojektu
 	// …
 
