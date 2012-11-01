@@ -1,11 +1,24 @@
+/*
+
+    INSTALACJA:
+    do swojego commons.js wkleić obie poniższe linijki
+
+// testowanie skryptu zgłaszania czywiesza [[Wikipedysta:Kaligula/js/CzyWiesz.js]]
+importScript('Wikipedysta:Kaligula/js/CzyWiesz.js');
+
+    !! linijka górna pozwoli skontaktować się z użytkownikami skryptu
+       w przypadku niektórych zmian w kodzie !!
+
+*/
 // @name		test na wiki czywiesz propozycje
 // @version		0.9.0 beta
 // @description	zgłaszanie czywiesza
 // @include		http[s]?://pl.wikipedia.org/wiki/Wikiprojekt:Czy_wiesz/propozycje
 // @autor		Kaligula
  
-//póki co po wpisaniu w konsoli "test()" aktulane info pokażą si​ę w console.log
-//dorobić wybór obrazków z artykułu przy zgłaszaniu grafiki [?]
+//póki co po wpisaniu w konsoli "DYKnomination()" aktulane info pokażą si​ę w console.log
+//TO DO: pozamieniać taby na spacje, żeby się db wyświetlało na wiki
+//TO DO: dorobić wybór obrazków z artykułu przy zgłaszaniu grafiki [?]
 //TO DO: encodeURIComponent odpowiednie komponenty zanim wsadzimy do linku!
 //TO DO: jeśli skrypt będzie już przetestowany to usunąć wszystkie 'debug' [?]
 //TO DO: na końcu spr wszystkie „TODO” i „TO DO” i „console.*”
