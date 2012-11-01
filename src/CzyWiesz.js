@@ -1,154 +1,553 @@
 // @name		test na wiki czywiesz propozycje
-// @version		0.8.0
+// @version		0.9.0 beta
 // @description	zgłaszanie czywiesza
 // @include		http[s]?://pl.wikipedia.org/wiki/Wikiprojekt:Czy_wiesz/propozycje
 // @autor		Kaligula
  
 //póki co po wpisaniu w konsoli "test()" aktulane info pokażą si​ę w console.log
-//TO DO: dorobić okienko, w które user wpisze dane do wypełnienia przez skrypt
-//TO DO: skrypt ma powiadamiać inne projekty i autora artykułu
-//TO DO: link w menu lewym Wikipedii, dodaje w pole tytułu domyślnie tytuł aktualnie oglądanego artykułu, można tam wpisać jednak inny
+//dorobić wybór obrazków z artykułu przy zgłaszaniu grafiki [?]
 //TO DO: encodeURIComponent odpowiednie komponenty zanim wsadzimy do linku!
+//TO DO: jeśli skrypt będzie już przetestowany to usunąć wszystkie 'debug' [?]
 //TO DO: na końcu spr wszystkie „TODO” i „TO DO” i „console.*”
  
-function test() {
-	//dane do testowania skryptu (podawane potem przez uzytkownika)
-	var GRAFIKA = '$grafika';
-	var PYTANIE = 'moje pytanie?';
-	var OBRAZKI = 0;
-	var AUTOR = 'Autor';
-	var PODPIS = 'Wstawiajacy';
- 	
-	//skrypt właściwy
-	var TYTUL = wgTitle;
-	var NR = 1;
+function DYKnomination(mode,params,debug) {
 
-	var miesiacArr = ['stycznia', 'lutego', 'marca', 'kwietnia', 'maja', 'czerwca', 'lipca', 'sierpnia', 'września', 'października', 'listopada', 'grudnia'];
-	var miesiac = miesiacArr[new Date().getMonth()]
-	var dzien = new Date().getDate();
-	console.log('dzisiaj: ' + dzien + ' ' + miesiac);
-	
-//	var h2Arr = $('h2.modifiedSectionTitle > .mw-headline');
-	var h2Nr = '';
-	var uptodate = false;
-	
-	var input;
-	var summary = '/* ' + TYTUL + ' */ nowa sekcja';
-	
-	var a,b;
+	var wikiprojects = ['Albumy muzyczne',
+						'Anarchizm',
+						'Antropologia',
+						'Architektura',
+						'Astronautyka',
+						'Astronomia',
+						'Białystok',
+						'Biathlon',
+						'Biblia',
+						'Bieżące wydarzenia',
+						'Biografie',
+						'Biologia',
+						'Bitwy',
+						'Botanika',
+						'Bydgoszcz',
+						'Chemia',
+						'Chiny',
+						'Chrześcijaństwo',
+						'Cmentarze żydowskie w Polsce',
+						'Częstochowa',
+						'Czechy',
+						'Dinozaury',
+						'Dolny Śląsk',
+						'Drogi i autostrady',
+						'Dyskografie',
+						'Dzielnice Krakowa',
+						'Ekonomia',
+						'Elektronika',
+						'Entomologia',
+						'Euro 2012',
+						'Eurowizja',
+						'Fantastyka',
+						'Filmy',
+						'Filozofia',
+						'Fizyka',
+						'Formuła 1',
+						'Francja',
+						'Futbol amerykański',
+						'Górny Śląsk',
+						'Góry Polski',
+						'Gdańsk',
+						'Gender Studies',
+						'Genetyka i biologia molekularna',
+						'Geografia',
+						'Gry komputerowe',
+						'Gwiezdne wrota',
+						'Harcerstwo',
+						'Harry Potter',
+						'Herby',
+						'Hinduizm',
+						'Hip-Hop',
+						'Historia',
+						'Igrzyska olimpijskie',
+						'Imiona',
+						'Informatyka',
+						'Irlandia',
+						'Islam',
+						'Izrael',
+						'Japonia',
+						'Kluby sportowe',
+						'Kolarstwo',
+						'Kolej',
+						'Kompozytorzy',
+						'Komputerowe gry fabularne',
+						'Komunikacja miejska',
+						'Konflikty współczesne',
+						'Korea',
+						'Koszykówka',
+						'Kraków',
+						'Kynologia',
+						'Lekkoatletyka',
+						'LGBT',
+						'Linie lotnicze',
+						'Linux',
+						'Literatura',
+						'Literaturoznawstwo',
+						'Lotnictwo',
+						'Łódź',
+						'Malarstwo',
+						'Matematyka',
+						'Meblarstwo',
+						'Metro',
+						'Mikrobiologia',
+						'Militaria',
+						'Minerały',
+						'Mistrzostwa Świata w Piłce Nożnej 2014',
+						'Mitologia grecka',
+						'Mitologia rzymska',
+						'Mitologia słowiańska',
+						'Motoryzacja',
+						'Muzyka i muzykologia',
+						'Muzyka poważna',
+						'National Basketball Association',
+						'Nauki medyczne',
+						'Nauru',
+						'Nazwiska',
+						'Niemcy',
+						'Nowy Sącz',
+						'Olsztyn',
+						'Opis polskich wsi i gmin',
+						'Państwa świata',
+						'Paleontologia',
+						'Pallotyni',
+						'Parki narodowe, krajobrazowe i rezerwaty przyrody',
+						'Petanque',
+						'Piłka nożna',
+						'Piłka siatkowa',
+						'Piastowie',
+						'Podlaskie',
+						'Pokémon',
+						'Polityka',
+						'Powiat radomski',
+						'Powiat szydłowiecki',
+						'Powiat wrzesiński',
+						'Poznań',
+						'Prawo',
+						'Programy telewizyjne',
+						'Psychologia',
+						'Racibórz',
+						'Radio',
+						'Radio',
+						'Religioznawstwo',
+						'Rock progresywny',
+						'Rosja',
+						'Słowacja',
+						'Seksuologia',
+						'Seriale telewizyjne',
+						'Skoki narciarskie',
+						'Snooker',
+						'Socjologia',
+						'Spółdzielczość',
+						'Sport',
+						'Sporty motorowe',
+						'Sporty zimowe',
+						'Stany Zjednoczone',
+						'Starożytność',
+						'Stosunki polsko-ukraińskie',
+						'Synagogi w Polsce',
+						'Szkoła austriacka (ekonomia)',
+						'Sztuka współczesna',
+						'Śródziemie',
+						'Średniowiecze',
+						'Technika',
+						'Telefony komórkowe',
+						'Tenis ziemny',
+						'Transport',
+						'Turystyka',
+						'Tybet',
+						'U-Boot',
+						'Ukraina',
+						'Unia Europejska',
+						'Warhammer',
+						'Warszawa',
+						'Wawel',
+						'Wielka Brytania',
+						'Województwo świętokrzyskie',
+						'Województwo warmińsko-mazurskie',
+						'Wrestling',
+						'Wspinaczka',
+						'XML',
+						'Zoologia',
+						'Żegluga',
+						'Żużel',
+						'Życie codzienne'];
+
+	if ( (typeof mode != 'string') || (mode != 'do') ){
+
+		var TYTUL = wgPageName.replace('_',' ');
+		var PODPIS = (wgUserName ? {name: wgUserName,disabled: ' disabled'} : {name: '',disabled: ''} ); //TODO: a co kiedy IP?
+		//var PODPIS = (wgUserName ? [wgUserName,' disabled'] : ['~' + '~' + '~',''] );
+		var WIKIPROJEKT=[];
+		var PYTANIE, GRAFIKA, OBRAZKI, AUTOR;
+
+		//workaround for Opera - the textarea must be inserted to a visible element
+
+		var $title_paragraph = $('<p></p>')
+			.html('Tytuł artykułu: <input type="text" id="CzyWieszTitle" name="CzyWieszTitle" value="' + TYTUL + '" style="width: 484px;">');
+
+		var $question_paragraph = $('<p><strong>Zaproponuj pytanie:</strong></p>');
+
+		var $question_textarea_paragraph = $('<p></p>')
+			.html('<textarea id="CzyWieszQuestion" style="width: 570px;" rows="2" value="" autofocus></textarea>');
+
+		var $file_row = $('<tr></tr>')
+			.html('<td style="width: 36%;"><input type="checkbox" id="CzyWieszFile1" name="CzyWieszFile1"> Zaproponuj zdjęcie/grafikę: </td>' // style="width: 36%;
+				+ '<td><tt>[[Plik:</tt><input type="text" id="CzyWieszFile2" name="CzyWieszFile2" style="width: 52%;" disabled><tt>|100px|right]]</tt></td>');
+
+		var $images_row = $('<tr></tr>')
+			.html('<td>Liczba grafik w artykule: </td>'
+				+ '<td><input type="text" id="CzyWieszImages" name="CzyWieszImages" value="' + $('#mw-content-text .thumb').length + '"' 
+				+ 'style="width: 8%;text-align: right;margin-left: 2px;" disabled></td>');
+
+		var $author_row = $('<tr></tr>')
+			.html('<td>Główny autor artykułu: </td>'
+				+ '<td><input type="text" id="CzyWieszAuthor" name="CzyWieszAuthor" style="width: 50%;margin-left: 2px;"></td>');
+
+		var $signature_row = $('<tr></tr>')
+			.html('<td>Twój podpis: </td>'
+				+ '<td><input type="text" id="CzyWieszSignature" name="CzyWieszSignature" value="' 
+				+ PODPIS.name + '" style="width: 50%;margin-left: 2px;"' + PODPIS.disabled + '></td>');
+
+		var $loading_bar = $('<div id="DYK-loader-bar"></div>')
+			.css({width: '100%', backgroundColor: 'rgb(220, 220, 220)', border: '1px solid rgb(187, 187, 187)', borderRadius: '3px', display: 'none'})
+			.html('<div id="DYK-loader-bar-inner" style="width: 0; background-color: #ABEC46; border: none; border-radius: 3px;">'
+				+ '<p id="DYK-loader-bar-paragraph" style="margin: 1px 0 1px 7px;">Ładowanie…</p>'
+				+ '</div>');
+
+		//wikiproject row
+		$wikiproject_select = $('<select class="czywiesz-wikiproject"></select>').css('vertical-align', 'middle'); // !!!zmienna globalna $wikiproject_select
+		$wikiproject_select.append('<option value="none">żaden</option>');
+		for (i=0;i<wikiprojects.length;i++)
+		{
+			if (typeof(wikiprojects[i]) == 'function') continue; //on IE wikibits adds indexOf method for arrays. skip it.
+			$('<option value="' + i + '">' + wikiprojects[i] + '</option>').appendTo($wikiproject_select);
+		}
+		var $wikiproject_row = $('<span id="czywiesz-wikiproject-container"></span>').append($wikiproject_select.clone());
+ 		$wikiproject_row = $('<td></td>').append($wikiproject_row)
+			.append('<a href="javascript:$(\'#czywiesz-wikiproject-container\').append($wikiproject_select.clone())">(+)</a>');
+		$wikiproject_row = $('<tr></tr>').append('<td>Powiadom wikiprojekt(y): </td>').append($wikiproject_row);
  
-	// szuka pierwszego nagłówka w formacie 'dd mmmm', bo mogą być jakieś typu 'Białowieski megaczywiesz na koniec sierpnia (ew. pocz. września)'
-	$.ajax({url: '/w/api.php?action=mobileview&format=json&page=Wikiprojekt%3ACzy%20wiesz%2Fpropozycje&prop=sections&sectionprop=level%7Cline%7Cnumber%7Canchor&noimages=',
-			async: false})
-	.done(function(data){
-		console.log(data);
-		sections = data.mobileview.sections;
-		for (var i=0; i<sections.length; i++){
-			if (sections[i].line) {
-				var a = sections[i].line.match(/^\d+/);
-				var b = sections[i].line.split(' ');
-				if ((sections[i].level == 2) && (a) && ($.inArray(b[1],miesiacArr))) {
-					( (a[0] == dzien) && (b[1] == miesiac) ) ? (uptodate = true) : (uptodate = false); //sprawdza czy pierwszy napotkany (najnowszy) datowany nagłówek jest z dzisiejszego dnia
-					h2Nr = i;
-					console.log(h2Nr + ' (uptodate: ' + uptodate + ')');
-					break;
-				}
-			}
-		}	
-	}) // zwraca sections i h2Nr
-	// mamy pierwszy interesujący nagłówek (h2Nr), wiemy też czy jest z dzisiaj (uptodate:boolean)
-	// sprawdzamy wszystkie parametry formularza
-	
-	if (typeof TYTUL == "undefined") {console.error('podaj TYTUŁ')}
-	if (typeof GRAFIKA == "undefined") {GRAFIKA = '[[Plik:' + (GRAFIKA.match(/^(Plik:|File:)/i) ? GRAFIKA.replace(/^(Plik:|File:)/i,'') : {}) + '|100px|right]]\n'}
-	if (typeof PYTANIE == "undefined") {
-		console.error('podaj PYTANIE')
-	} else {
-		(PYTANIE.length > 10) ? (PYTANIE = '…' + (PYTANIE.match(/\?[\s]*$/) ? {} : (PYTANIE += '?')) + '\n') : (console.error('zadaj poprawne PYTANIE'))
-	}
-	if (typeof OBRAZKI == "undefined") {console.error('podaj OBRAZKI')}
-	if (typeof AUTOR == "undefined") {console.error('podaj AUTORA')}
-	if ( !mw.user.anonymous() ) { PODPIS = wgUserName } else { PODPIS += ' ~~' + '~~' } //TODO: a co kiedy IP?
-	
-	// parametry sprawdzone
-	// więc tworzymy tekst do wstawienia
+		//rules paragraph
+		var $rules_paragraph = $('<p></p>')
+			.html('<small>Zgłaszaj hasła nie później niż 10 dni od powstania lub rozbudowania hasła, posiadające źródła najlepiej w formie przypisów i zawierające co najmniej 2kb samej treści.</small>');
+ 
+		//build the dialog
+		var $dialog = $('<table></table>').css('width','100%').append($file_row).append($images_row).append($author_row)
+			.append($signature_row).append($wikiproject_row);
+		var $dialog = $('<div></div>').append($title_paragraph).append($question_paragraph).append($question_textarea_paragraph)
+			.append($dialog).append($rules_paragraph).append($loading_bar);
+ 
+		//main buttons
+		var buttons = {
+			"Zgłoś": function() {
 
-	// najpierw, jeśli mamy dostawić podsekcję do istniejące sekcji to trzeba wiedzieć jaki numer porządkowy (NR) ma mieć
-	if (uptodate) {
-		_h2Nr = h2Nr+1;
-		while (sections[_h2Nr] && sections[_h2Nr].level != 2) {
-			(sections[_h2Nr].level == 3) ? (NR++) : {};
-			_h2Nr++;
+				//validate form
+				if (typeof TYTUL == "undefined") {console.error('podaj TYTUŁ')}
+				if (typeof GRAFIKA != "undefined") {
+					GRAFIKA = '[[Plik:' + (GRAFIKA.match(/^(Plik:|File:)/i) ? GRAFIKA.replace(/^(Plik:|File:)/i,'') : (GRAFIKA)) + '|100px|right]]\n'
+				}
+				if (typeof PYTANIE == "undefined") {
+					console.error('podaj PYTANIE')
+				}
+				else {
+					(PYTANIE.length > 10) ? (PYTANIE = '…' + (PYTANIE.match(/\?[\s]*$/) ? (PYTANIE) : (PYTANIE += '?')) + '\n') : (console.error('zadaj poprawne PYTANIE'))
+				}
+				if (typeof OBRAZKI == "undefined") {console.error('podaj OBRAZKI')}
+				if (typeof AUTOR == "undefined") {console.error('podaj AUTORA')}
+
+
+				//get the question
+				TYTUL = $('#CzyWieszTitle').val().replace(/^\s*(.*?)\s*$/,'$1'); //usuwa zbędne spacje na początku i końcu
+				PYTANIE = $('#CzyWieszQuestion').val().replace(/(.*?)(--)?~{3,5}\s*$/,'$1').replace(/^\s*(.*?)\s*$/,'$1'); //usuwa zbędne spacje na początku i końcu oraz podpis
+				GRAFIKA = ( $('#CzyWieszFile1').attr('checked') ? $('#CzyWieszFile2').val().replace(/^\s*(.*?)\s*$/,'$1') : '' ); //usuwa zbędne spacje na początku i końcu
+				OBRAZKI = $('#CzyWieszImages').val().replace(/^\s*(.*?)\s*$/,'$1'); //usuwa zbędne spacje na początku i końcu
+				AUTOR = $('#CzyWieszAuthor').val().replace(/^\s*(.*?)\s*$/,'$1'); //usuwa zbędne spacje na początku i końcu
+				PODPIS = $('#CzyWieszSignature').val().replace(/^\s*(.*?)\s*$/,'$1'); //usuwa zbędne spacje na początku i końcu
+
+				//get the wikiprojects
+				var $projsel = $('.czywiesz-wikiproject');
+				$projsel.each( function(index) {
+					var val = $(this).val();
+					if (val != 'none') {
+						WIKIPROJEKT.push(wikiprojects[val]);
+					}
+				});
+				
+				var $params = [TYTUL, PYTANIE, GRAFIKA, OBRAZKI, AUTOR, PODPIS, WIKIPROJEKT];
+				DYKnomination('do',$params);
+
+				$('#CzyWieszQuestion').remove();
+				$(this).dialog("destroy");
+				$(this).remove();
+			},
+			"Anuluj" : function() {
+				$(this).dialog("close");
+			}
+		};
+ 
+		$dialog.dialog({
+		  width: 600,
+		  modal: true,
+		  title: 'Zgłaszanie artykułu do rubryki „Czy wiesz…”',
+		  draggable: true,
+		  dialogClass: "wikiEditor-toolbar-dialog",
+		  close: function() { $(this).dialog("destroy"); $(this).remove();},
+		  buttons: buttons
+		});
+ 
+		//insert the main textarea
+		//$('#title-textarea-paragraph').html('<textarea id="CzyWieszTitle" style="width: 98%;" rows="1" value="">' + TYTUL + '</textarea>');
+		//$('#czywiesz-textarea-paragraph').html('<textarea id="CzyWieszQuestion" style="width: 570px;" rows="2" value="" autofocus></textarea>');
+		//$('#author-textarea-paragraph').html('<textarea id="CzyWieszAuthor" style="width: 98%;" rows="1" value=""></textarea>');
+		//$('#images-textarea-paragraph').html('<textarea id="CzyWieszImages" style="width: 98%;" rows="1" value="" disabled>' + $('#mw-content-text .thumb').length + '</textarea>'); //automatyczne zliczanie obrazków tylko jeśli wgPageName jest niezmieniane p/usera!
+		//$('#file-textarea-paragraph').html('<textarea id="CzyWieszFile" style="width: 98%;" rows="1" value=""></textarea>');
+		//$('#signature-textarea-paragraph').html('<textarea id="CzyWieszSignature" style="width: 98%;" rows="1" value=""' + PODPIS[1] + '>' + PODPIS[0] + '</textarea>');
+ 
+		/*var submitButton = $('.ui-dialog-buttonpane button:first');
+		$('#AjaxQuestion').keyup(function(event) {
+		  if ($(this).val().length < 4 && noEmpty) {
+			  submitButton.addClass('ui-state-disabled');
+		  }
+		  else {
+			  submitButton.removeClass('ui-state-disabled');
+		  }
+		  if (event.keyCode == '13') submitButton.click();
+		});*/
+		$('#CzyWieszTitle').change(function(){
+			$('#CzyWieszImages').removeAttr('disabled');
+			$('#CzyWieszImages').val('');
+		});
+		$('#CzyWieszFile1').change(function(){
+			var a=$('#CzyWieszFile2');
+			(a.attr('disabled') ? a.removeAttr('disabled') : a.attr('disabled','true'))
+		})
+		$('#CzyWieszQuestion').keyup();
+		$('#CzyWieszQuestion').focus();
+
+	}
+	else if (mode == 'do'){
+
+		$('#DYK-loader-bar').css({display: 'block'});
+		$('#DYK-loader-bar-paragraph').text('Pobieram dane z formularza…');
+
+		if (debug) {
+			//dane do debugowania skryptu
+			var TYTUL       = 'Wikipedysta:Kaligula/js/CzyWiesz.js/Wikiprojekt:Czy wiesz/propozycje';
+			var PYTANIE     = 'czy skrypt dobrze działa';
+			var GRAFIKA     = 'Face-monkey.svg';
+			var OBRAZKI     =  0;
+			var AUTOR       = 'Kaligula';
+			var PODPIS      = 'Wstawiajacy';
+			var WIKIPROJEKT =  [];
+		}
+		else {
+			var TYTUL       = params[0];
+			var PYTANIE     = params[1];
+			var GRAFIKA     = params[2];
+			var OBRAZKI     = params[3];
+			var AUTOR       = params[4];
+			var PODPIS      = params[5];
+			var WIKIPROJEKT = params[6];
+		}
+		
+		//skrypt właściwy
+		var NR = 1;
+
+		var miesiacArr = ['stycznia', 'lutego', 'marca', 'kwietnia', 'maja', 'czerwca', 'lipca', 'sierpnia', 'września', 'października', 'listopada', 'grudnia'];
+		var data = new Date();
+		var dzien = data.getDate();
+		var miesiac = miesiacArr[data.getMonth()];
+		var rok = data.getYear()+1900;
+		(debug ? console.log('dzisiaj: ' + dzien + ' ' + miesiac) : {});
+		
+		var tasks = 6 + WIKIPROJEKT.length;
+
+		var uptodate = false;
+		
+		var edittoken;
+		var input;
+		var summary = '/* ' + TYTUL + ' */ nowa sekcja';
+		var sectiontitle_author = 'Czy wiesz – zgłoszenie';
+		var sectiontitle_wikiproject = 'Czy wiesz – zgłoszenie';
+		
+		var a,b,i;
+
+		/* przygotowujemy miejsce edycji */
+		$('#DYK-loader-bar-inner').css({width: 1*(100/tasks) + '%'});
+		$('#DYK-loader-bar-paragraph').text('Sprawdzam stronę zgłoszeń…');
+
+		// szuka pierwszego nagłówka w formacie 'dd mmmm', bo mogą być jakieś typu 'Białowieski megaczywiesz na koniec sierpnia (ew. pocz. września)'
+		// $.ajax({url: '/w/api.php?action=mobileview&format=json&page=Wikiprojekt%3ACzy%20wiesz%2Fpropozycje&prop=sections&sectionprop=level%7Cline%7Cnumber%7Canchor&noimages=',
+		$.ajax({url: '/w/api.php?action=mobileview&format=json&page=' + (debug ? 'Wikipedysta%3AKaligula%2Fjs%2FCzyWiesz.js%2F' : '') + 'Wikiprojekt%3ACzy%20wiesz%2Fpropozycje&prop=sections&sectionprop=level%7Cline%7Cnumber%7Canchor&noimages=',
+				async: false})
+		.done(function(data){
+			sections = data.mobileview.sections;
+			for (i=0; i<sections.length; i++){
+				if (sections[i].line) {
+					var a = sections[i].line.match(/^\d+/);
+					var b = sections[i].line.split(' ');
+					if ((sections[i].level == 2) && (a) && ($.inArray(b[1],miesiacArr))) {
+						( (a[0] == dzien) && (b[1] == miesiac) ) ? (uptodate = true) : (uptodate = false); //sprawdza czy pierwszy napotkany (najnowszy) datowany nagłówek jest z dzisiejszego dnia
+						section = i;
+						(debug ? console.log('Najbardziej aktualna sekcja:' + section + '. (uptodate: ' + uptodate + ')') : {});
+						break;
+					}
+				}
+			}	
+		}) // zwraca sections i section
+		// mamy pierwszy interesujący nagłówek (section), wiemy też czy jest z dzisiaj (uptodate:boolean)
+		// więc tworzymy tekst do wstawienia
+
+		// najpierw, jeśli mamy dostawić podsekcję do istniejące sekcji to trzeba wiedzieć jaki numer porządkowy (NR) ma mieć
+		if (uptodate) {
+			i = section+1;
+			while (sections[i] && sections[i].level != 2) {
+				(sections[i].level == 3) ? (NR++) : {};
+				i++;
+			}
+		}
+		
+		// NR mamy
+
+		/* przygotowujemy dane do edycji */
+		$('#DYK-loader-bar-inner').css({width: 2*(100/tasks) + '%'});
+		$('#DYK-loader-bar-paragraph').text('Przygotowuję dane do wysłania​…');
+
+		// teraz sama zawartość
+		
+		input = '=== ' + NR + ' (' + TYTUL + ') ===\n'
+			+ GRAFIKA
+			+ PYTANIE
+			+ '{{Wikiprojekt:Czy wiesz/weryfikacja|' + TYTUL + '|+|' + OBRAZKI + '|?|' + AUTOR + '|' + PODPIS + '|?|?|?}}';
+
+		// tekst gotowy
+		// określamy czy dodajemy nową sekcję czy nie
+
+		if (uptodate) { // jeśli jest aktualny to dodajemy na końcu jego sekcji nową podsekcję
+			input = '\n\n' + input;
+		}
+		else { // jesli nie  aktualny to dodajemy na początku przed jego sekcją nową sekcję z podsekcją
+			input = '== ' + dzien + ' ' + miesiac +' ==\n' + input + '\n\n';
+		}
+		
+		(debug ? console.log(input) : {});
+	 
+		/* edytujemy */
+
+		// i tutaj dochodzi do rzeczywistej edycji
+
+		/* get edittoken */
+		if (typeof mw.user.tokens.values.editToken == "string") {
+			edittoken = mw.user.tokens.values.editToken
+		}
+		else {
+			$.ajax({url:'/w/api.php?action=query&prop=info&format=json&intoken=edit&indexpageids=&titles=' + encodeURI(TYTUL),
+				async: false
+			}).done(function(data){
+				edittoken = data.query.pages[data.query.pageids[0]].edittoken;
+				(debug ? console.log('article: POST done') : {});
+			}).error(function(){
+				console.error('edittoken: POST error');
+			});
+		}
+		(debug ? console.log(edittoken) : {});
+
+		/* edit and save section */
+
+		// zgłaszanie do CzyWiesza
+		$('#DYK-loader-bar-inner').css({width: 3*(100/tasks) + '%'});
+		$('#DYK-loader-bar-paragraph').text('Zgłaszam propozycję…');
+		$.ajax({
+			url: '/w/api.php?action=edit&format=json&title=' + encodeURI(TYTUL + '&section=' + section + (uptodate ? '&appendtext=' : '&prependtext=') + input + '&summary=' + summary + '&token=') + mw.util.rawurlencode(edittoken),
+			type: 'POST',
+			async: false
+		}).done(function(data){ //spr czy nie ma erroru
+			(debug ? console.log('article: POST done') : {});
+			// …
+			
+		}).error(function(){
+			console.error('article: POST error');
+		});
+		
+		// powiadamianie autora artykułu
+		$('#DYK-loader-bar-inner').css({width: 4*(100/tasks) + '%'});
+		$('#DYK-loader-bar-paragraph').text('Zgłaszam autorowi…');
+		$.ajax({
+			url:'/w/api.php?action=edit&format=json&title=' + encodeURI('Dyskusja wikipedysty:' + AUTOR) + '&section=new' 
+				+ '&sectiontitle=' + encodeURI(sectiontitle_author) 
+				+ '&text=' + encodeURI('{{tmbox
+| typ     = wiadomość
+| grafika = {{ikona|cw|35}}
+| tekst   = {{#ifeq:|tak|Strony''' [[' + TYTUL + ']]''' zostały wstawione|Strona''' [[' + TYTUL + ']]''' została wstawiona}} do rubryki '''„[[:Szablon:Czy wiesz|Czy wiesz]]”''' eksponowanej na [[Strona główna|stronie głównej]] ' + dzien + ' ' + miesiac + ' ' + rok + '. Treść rubryki z tego dnia możesz ponownie obejrzeć przeszukując [[Wikiprojekt:Czy wiesz/archiwum|archiwum]]. Dziękujemy i prosimy o więcej haseł.
+| grafika prawo = {{ikona|wikipedia|35}}
+}}
+W imieniu zespołu wikipedystów opiekujących się rubryką, 
+[[Wikipedysta:Kaligula|Kaligula]] ([[Dyskusja wikipedysty:Kaligula|dyskusja]]) 20:25, 1 lis 2012 (CET)') 
+				+ '&token=' + mw.util.rawurlencode(edittoken),
+			type:'POST',
+			async: false
+		}).done(function(){ //spr czy nie ma erroru
+			(debug ? console.log('author: POST done') : {});
+			// …
+			
+		}).error(function(){
+			console.error('author: POST error');
+		});
+		
+		// wstawianie do dyskusji hasła
+		$('#DYK-loader-bar-inner').css({width: 5*(100/tasks) + '%'});
+		$('#DYK-loader-bar-paragraph').text('Wklejam do dyskusji artykułu…');
+		$.ajax({
+			url:'/w/api.php?action=edit&format=json&title=' + encodeURI('Dyskusja:' + TYTUL) + '&section=new' 
+			+ '&sectiontitle=' + encodeURI(sectiontitle_discussion) 
+			+ '&text=' + encodeURI('{{Czy wiesz - artykuł|data=[[' + dzien + ' ' + miesiac + ']] [[' + rok + ']]}}[[Wikipedysta:Kaligula|Kaligula]] ([[Dyskusja wikipedysty:Kaligula|dyskusja]]) 20:25, 1 lis 2012 (CET)') 
+			+ '&token=' + mw.util.rawurlencode(edittoken),
+			type:'POST',
+			async: false
+		}).done(function(){ //spr czy nie ma erroru
+			(debug ? console.log('discussion: POST done') : {});
+			// …
+			
+		}).error(function(){
+			console.error('discussion: POST error');
+		});
+
+		// powiadamianie wikiprojektu
+		$('#DYK-loader-bar-paragraph').text('Zgłaszam do wikiprojektu/ów…');
+		for (i=0;i<WIKIPROJEKT.length;i++) {
+			$('#DYK-loader-bar-inner').css({width: (6+i)*(100/tasks) + '%'});
+			$.ajax({
+				url:'/w/api.php?action=edit&format=json&title=' + encodeURI('Dyskusja wikiprojektu:' + WIKIPROJEKT[i]) + '&section=new' 
+				+ '&sectiontitle=' + encodeURI(sectiontitle_wikiproject) 
+				+ '&text=' + encodeURI('{{tmbox
+ |typ     = styl
+ |grafika = {{ikona|cw|35}}
+ |tekst   = Artykuł '''[[' + TYTUL + ']]''' został zgłoszony do umieszczenia na [[Strona główna|stronie głównej]] w rubryce '''„[[Szablon:Czy wiesz|Czy wiesz]]”'''.</br>'''[[Wikiprojekt:Czy wiesz/propozycje#{{anchorencode:' + TYTUL + '}}|Pomóż]]''' nam go sprawdzić.
+}}[[Wikipedysta:Kaligula|Kaligula]] ([[Dyskusja wikipedysty:Kaligula|dyskusja]]) 20:25, 1 lis 2012 (CET)') 
+				+ '&token=' + mw.util.rawurlencode(edittoken),
+				type:'POST',
+				async: false
+			}).done(function(){ //spr czy nie ma erroru
+				(debug ? console.log('wikiproject: POST done') : {});
+				// …
+				
+				
+			}).error(function(){
+				console.error('wikiproject: POST error');
+			});
 		}
 	}
-	
-	// NR mamy
-	// teraz sama zawartość
-	
-	input = '=== ' + NR + ' (' + TYTUL + ') ===\n'
-		+ GRAFIKA
-		+ PYTANIE
-		+ '{{Wikiprojekt:Czy wiesz/weryfikacja|' + TYTUL + '|+|' + OBRAZKI + '|?|' + AUTOR + '|' + PODPIS + '|?|?|?}}';
-
-	// tekst gotowy
-	// określamy czy dodajemy nową sekcję czy nie
-
-	if (uptodate) { // jeśli jest aktualny to dodajemy na końcu jego sekcji nową podsekcję
-		input = '\n\n' + input
-	} else { // jesli nie  aktualny to dodajemy na początku przed jego sekcją nową sekcję z podsekcją
-		input = '== ' + dzien + ' ' + miesiac +' ==\n' + input + '\n\n';
-	}
- 
-	// i tutaj dochodzi do rzeczywistej edycji
-
-	if (b) {
-	/* get raw section code */
-	$.ajax({
-		url: '/w/index.php?action=raw&title=' + mw.util.wikiUrlencode(wgPageName) + '&section=' + section,
-		cache: false
-		}).done(function(rawsection){
- 
-		/* get edittoken */
-		$.ajax('/w/api.php?action=query&prop=info&format=json&intoken=edit&indexpageids=&titles=' + encodeURI(wgPageName)).done(function(token_data){
-			var edittoken = token_data.query.pages[token_data.query.pageids[0]].edittoken;
- 
-			/* edit and save section */
-			$.ajax({
-				url: '/w/api.php?action=edit&format=json&title=' + encodeURI(wgPageName + '&section=' + section + '&text=' + (uptodate ? (rawsection + input) : (input + rawsection)) + '&summary=' + summary + '&token=') + mw.util.rawurlencode(edittoken),
-				type: 'POST'
-			}).done(function(data){
-			var newrevid = data.edit.newrevid;
- 
-				/* reload section – get changed section raw code 
-				$.ajax({
-					url: '/w/index.php?action=raw&title=' + mw.util.wikiUrlencode(wgPageName) + '&section=' + section + '&oldid=' + newrevid,
-					cache: false
-					}).done(function(text_after){
- 
-					/* reload section – parse code to html 
-					$.ajax('/w/api.php?action=parse&format=json&title=' + encodeURI(wgPageName + '&text=' + text_after) + '&prop=text').done(function(html_after){
- 
-						/* reload section – update html of the section
-						var j = $('.editsection')[section].parentNode;
-						while ((j.nextElementSibling) && (j.nextElementSibling.tagName.charAt(0).toLowerCase() != 'h')) {$(j.nextElementSibling).remove()}
-						j.outerHTML = html_after.parse.text['*'];
-					});
-				});*/
-			});
-		});
-	});
-	}
-	
-	// powiadamianie autora artykułu
-	// …
-	
-	// powiadamianie wikiprojektu
-	// …
-
-	return input;
-
 }
  
 //if ((document.location.pathname == '/wiki/Wikiprojekt:Czy_wiesz/propozycje' ) || (wgNamespaceNumber == 0)){ //http i https
 //	document.getElementById('firstHeading').firstChild.setAttribute('onclick','test()')
 //}
+
+$(document).ready(function() {
+	$('#t-ajaxquickdelete').after('<li id="t-DYKnomination"><a href="javascript:DYKnomination();">Zgłoś do „Czy Wiesz…”</a></li>');
+});
