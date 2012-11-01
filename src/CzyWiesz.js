@@ -423,7 +423,7 @@ function DYKnomination(mode,params,debug) {
 		input = '=== ' + NR + ' (' + TYTUL + ') ===\n'
 			+ GRAFIKA
 			+ PYTANIE
-			+ '{{Wikiprojekt:Czy wiesz/weryfikacja|' + TYTUL + '|+|' + OBRAZKI + '|?|' + AUTOR + '|' + PODPIS + '|?|?|?}}';
+			+ '{' + '{Wikiprojekt:Czy wiesz/weryfikacja|' + TYTUL + '|+|' + OBRAZKI + '|?|' + AUTOR + '|' + PODPIS + '|?|?|?}}';
 
 		// tekst gotowy
 		// określamy czy dodajemy nową sekcję czy nie
@@ -480,14 +480,7 @@ function DYKnomination(mode,params,debug) {
 		$.ajax({
 			url:'/w/api.php?action=edit&format=json&title=' + encodeURI('Dyskusja wikipedysty:' + AUTOR) + '&section=new' 
 				+ '&sectiontitle=' + encodeURI(sectiontitle_author) 
-				+ '&text=' + encodeURI('{{tmbox
-| typ     = wiadomość
-| grafika = {{ikona|cw|35}}
-| tekst   = {{#ifeq:|tak|Strony''' [[' + TYTUL + ']]''' zostały wstawione|Strona''' [[' + TYTUL + ']]''' została wstawiona}} do rubryki '''„[[:Szablon:Czy wiesz|Czy wiesz]]”''' eksponowanej na [[Strona główna|stronie głównej]] ' + dzien + ' ' + miesiac + ' ' + rok + '. Treść rubryki z tego dnia możesz ponownie obejrzeć przeszukując [[Wikiprojekt:Czy wiesz/archiwum|archiwum]]. Dziękujemy i prosimy o więcej haseł.
-| grafika prawo = {{ikona|wikipedia|35}}
-}}
-W imieniu zespołu wikipedystów opiekujących się rubryką, 
-[[Wikipedysta:Kaligula|Kaligula]] ([[Dyskusja wikipedysty:Kaligula|dyskusja]]) 20:25, 1 lis 2012 (CET)') 
+				+ '&text=' + encodeURI('{' + '{subst:Czy wiesz - autor|tytuł strony=[[' + TYTUL + ']]|dzień=' + dzien + '|miesiąc=' + miesiac + '|rok=' + rok + '|więcej stron=}}~' + '~' + '~' + '~') 
 				+ '&token=' + mw.util.rawurlencode(edittoken),
 			type:'POST',
 			async: false
@@ -505,7 +498,7 @@ W imieniu zespołu wikipedystów opiekujących się rubryką,
 		$.ajax({
 			url:'/w/api.php?action=edit&format=json&title=' + encodeURI('Dyskusja:' + TYTUL) + '&section=new' 
 			+ '&sectiontitle=' + encodeURI(sectiontitle_discussion) 
-			+ '&text=' + encodeURI('{{Czy wiesz - artykuł|data=[[' + dzien + ' ' + miesiac + ']] [[' + rok + ']]}}[[Wikipedysta:Kaligula|Kaligula]] ([[Dyskusja wikipedysty:Kaligula|dyskusja]]) 20:25, 1 lis 2012 (CET)') 
+			+ '&text=' + encodeURI('{' + '{Czy wiesz - artykuł|data=[[' + dzien + ' ' + miesiac + ']] [[' + rok + ']]}}~' + '~' + '~' + '~') 
 			+ '&token=' + mw.util.rawurlencode(edittoken),
 			type:'POST',
 			async: false
@@ -524,11 +517,7 @@ W imieniu zespołu wikipedystów opiekujących się rubryką,
 			$.ajax({
 				url:'/w/api.php?action=edit&format=json&title=' + encodeURI('Dyskusja wikiprojektu:' + WIKIPROJEKT[i]) + '&section=new' 
 				+ '&sectiontitle=' + encodeURI(sectiontitle_wikiproject) 
-				+ '&text=' + encodeURI('{{tmbox
- |typ     = styl
- |grafika = {{ikona|cw|35}}
- |tekst   = Artykuł '''[[' + TYTUL + ']]''' został zgłoszony do umieszczenia na [[Strona główna|stronie głównej]] w rubryce '''„[[Szablon:Czy wiesz|Czy wiesz]]”'''.</br>'''[[Wikiprojekt:Czy wiesz/propozycje#{{anchorencode:' + TYTUL + '}}|Pomóż]]''' nam go sprawdzić.
-}}[[Wikipedysta:Kaligula|Kaligula]] ([[Dyskusja wikipedysty:Kaligula|dyskusja]]) 20:25, 1 lis 2012 (CET)') 
+				+ '&text=' + encodeURI('{' + '{subst:Czy wiesz - wikiprojekt|' + TYTUL + '}}~' + '~' + '~' + '~') 
 				+ '&token=' + mw.util.rawurlencode(edittoken),
 				type:'POST',
 				async: false
