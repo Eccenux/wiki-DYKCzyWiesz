@@ -11,7 +11,7 @@ importScript('Wikipedysta:Kaligula/js/CzyWiesz.js');
 
 */
 // @name		test na wiki czywiesz propozycje
-// @version		0.9.0 beta
+// @version		0.9.1 beta
 // @description	zgłaszanie czywiesza
 // @include		http[s]?://pl.wikipedia.org/wiki/Wikiprojekt:Czy_wiesz/propozycje
 // @autor		Kaligula
@@ -259,21 +259,6 @@ function DYKnomination(mode,params,debug) {
 		var buttons = {
 			"Zgłoś": function() {
 
-				//validate form
-				if (typeof TYTUL == "undefined") {console.error('podaj TYTUŁ')}
-				if (typeof GRAFIKA != "undefined") {
-					GRAFIKA = '[[Plik:' + (GRAFIKA.match(/^(Plik:|File:)/i) ? GRAFIKA.replace(/^(Plik:|File:)/i,'') : (GRAFIKA)) + '|100px|right]]\n'
-				}
-				if (typeof PYTANIE == "undefined") {
-					console.error('podaj PYTANIE')
-				}
-				else {
-					(PYTANIE.length > 10) ? (PYTANIE = '…' + (PYTANIE.match(/\?[\s]*$/) ? (PYTANIE) : (PYTANIE += '?')) + '\n') : (console.error('zadaj poprawne PYTANIE'))
-				}
-				if (typeof OBRAZKI == "undefined") {console.error('podaj OBRAZKI')}
-				if (typeof AUTOR == "undefined") {console.error('podaj AUTORA')}
-
-
 				//get the question
 				TYTUL = $('#CzyWieszTitle').val().replace(/^\s*(.*?)\s*$/,'$1'); //usuwa zbędne spacje na początku i końcu
 				PYTANIE = $('#CzyWieszQuestion').val().replace(/(.*?)(--)?~{3,5}\s*$/,'$1').replace(/^\s*(.*?)\s*$/,'$1'); //usuwa zbędne spacje na początku i końcu oraz podpis
@@ -281,6 +266,20 @@ function DYKnomination(mode,params,debug) {
 				OBRAZKI = $('#CzyWieszImages').val().replace(/^\s*(.*?)\s*$/,'$1'); //usuwa zbędne spacje na początku i końcu
 				AUTOR = $('#CzyWieszAuthor').val().replace(/^\s*(.*?)\s*$/,'$1'); //usuwa zbędne spacje na początku i końcu
 				PODPIS = $('#CzyWieszSignature').val().replace(/^\s*(.*?)\s*$/,'$1'); //usuwa zbędne spacje na początku i końcu
+
+				//validate form
+				if (typeof TYTUL == 'undefined' || TYTUL == '') {console.error('podaj TYTUŁ')}
+				if (typeof GRAFIKA != 'undefined') {
+					GRAFIKA = '[[Plik:' + (GRAFIKA.match(/^(Plik:|File:)/i) ? GRAFIKA.replace(/^(Plik:|File:)/i,'') : (GRAFIKA)) + '|100px|right]]\n'
+				}
+				if (typeof PYTANIE == 'undefined') {
+					console.error('podaj PYTANIE')
+				}
+				else {
+					(PYTANIE.length > 10) ? (PYTANIE = '…' + (PYTANIE.match(/\?[\s]*$/) ? (PYTANIE) : (PYTANIE += '?')) + '\n') : (console.error('zadaj poprawne PYTANIE'))
+				}
+				if (typeof OBRAZKI != 'number' || OBRAZKI == '') {console.error('podaj OBRAZKI')}
+				if (typeof AUTOR == 'undefined' || AUTOR == '') {console.error('podaj AUTORA')}
 
 				//get the wikiprojects
 				var $projsel = $('.czywiesz-wikiproject');
@@ -292,7 +291,8 @@ function DYKnomination(mode,params,debug) {
 				});
 				
 				var $params = [TYTUL, PYTANIE, GRAFIKA, OBRAZKI, AUTOR, PODPIS, WIKIPROJEKT];
-				DYKnomination('do',$params);
+				var debug = (typeof debug == 'boolean') ? debug : false;
+				DYKnomination('do',$params,debug);
 
 				$('#CzyWieszQuestion').remove();
 				$(this).dialog("destroy");
@@ -386,6 +386,7 @@ function DYKnomination(mode,params,debug) {
 		var input;
 		var summary = '/* ' + TYTUL + ' */ nowa sekcja';
 		var sectiontitle_author = 'Czy wiesz – zgłoszenie';
+		var sectiontitle_discussion = 'Czy wiesz – zgłoszenie';
 		var sectiontitle_wikiproject = 'Czy wiesz – zgłoszenie';
 		
 		var a,b,i;
@@ -485,6 +486,7 @@ function DYKnomination(mode,params,debug) {
 			
 		}).error(function(){
 			console.error('article: POST error');
+			console.error('URI: /w/api.php?action=edit&format=json&title=' + encodeURI(TYTUL + '&section=' + section + (uptodate ? '&appendtext=' : '&prependtext=') + input + '&summary=' + summary + '&token=') + mw.util.rawurlencode(edittoken));
 		});
 		
 		// powiadamianie autora artykułu
@@ -503,6 +505,10 @@ function DYKnomination(mode,params,debug) {
 			
 		}).error(function(){
 			console.error('author: POST error');
+			console.error('URI: /w/api.php?action=edit&format=json&title=' + encodeURI('Dyskusja wikipedysty:' + AUTOR) + '&section=new' 
+				+ '&sectiontitle=' + encodeURI(sectiontitle_author) 
+				+ '&text=' + encodeURI('{' + '{subst:Czy wiesz - autor|tytuł strony=[[' + TYTUL + ']]|dzień=' + dzien + '|miesiąc=' + miesiac + '|rok=' + rok + '|więcej stron=}}~' + '~' + '~' + '~') 
+				+ '&token=' + mw.util.rawurlencode(edittoken));
 		});
 		
 		// wstawianie do dyskusji hasła
@@ -521,6 +527,10 @@ function DYKnomination(mode,params,debug) {
 			
 		}).error(function(){
 			console.error('discussion: POST error');
+			console.error('URI: /w/api.php?action=edit&format=json&title=' + encodeURI('Dyskusja:' + TYTUL) + '&section=new' 
+			+ '&sectiontitle=' + encodeURI(sectiontitle_discussion) 
+			+ '&text=' + encodeURI('{' + '{Czy wiesz - artykuł|data=[[' + dzien + ' ' + miesiac + ']] [[' + rok + ']]}}~' + '~' + '~' + '~') 
+			+ '&token=' + mw.util.rawurlencode(edittoken));
 		});
 
 		// powiadamianie wikiprojektu
@@ -541,6 +551,10 @@ function DYKnomination(mode,params,debug) {
 				
 			}).error(function(){
 				console.error('wikiproject: POST error');
+				console.error('URI: /w/api.php?action=edit&format=json&title=' + encodeURI('Dyskusja wikiprojektu:' + WIKIPROJEKT[i]) + '&section=new' 
+				+ '&sectiontitle=' + encodeURI(sectiontitle_wikiproject) 
+				+ '&text=' + encodeURI('{' + '{subst:Czy wiesz - wikiprojekt|' + TYTUL + '}}~' + '~' + '~' + '~') 
+				+ '&token=' + mw.util.rawurlencode(edittoken));
 			});
 		}
 	}
