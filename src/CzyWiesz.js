@@ -11,7 +11,7 @@ importScript('Wikipedysta:Kaligula/js/CzyWiesz.js');
 
 */
 // @name		test na wiki czywiesz propozycje
-// @version		0.9.1 beta
+// @version		0.9.2 beta
 // @description	zgłaszanie czywiesza
 // @include		http[s]?://pl.wikipedia.org/wiki/Wikiprojekt:Czy_wiesz/propozycje
 // @autor		Kaligula
@@ -278,7 +278,7 @@ function DYKnomination(mode,params,debug) {
 				else {
 					(PYTANIE.length > 10) ? (PYTANIE = '…' + (PYTANIE.match(/\?[\s]*$/) ? (PYTANIE) : (PYTANIE += '?')) + '\n') : (console.error('zadaj poprawne PYTANIE'))
 				}
-				if (typeof OBRAZKI != 'number' || OBRAZKI == '') {console.error('podaj OBRAZKI')}
+				if (typeof OBRAZKI != 'number' || OBRAZKI === '') {console.error('podaj OBRAZKI')}
 				if ( (typeof AUTOR != 'string' && typeof AUTOR != 'number') || AUTOR == '') {console.error('podaj AUTORA')}
 
 				//get the wikiprojects
