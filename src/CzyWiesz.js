@@ -11,12 +11,12 @@ importScript('Wikipedysta:Kaligula/js/CzyWiesz.js');
 
 */
 // @name		test na wiki czywiesz propozycje
-// @version		0.9.5 beta
+// @version		0.9.6 beta
 // @description	zgłaszanie czywiesza
 // @include		http[s]?://pl.wikipedia.org/wiki/Wikiprojekt:Czy_wiesz/propozycje
 // @autor		Kaligula
  
-//póki co po wpisaniu w konsoli "DYKnomination('','',true)" aktulane info pokażą si​ę w console.log
+//póki co po wpisaniu w konsoli "DYKnomination('','',true)" aktulane info pokażą si​ę w console.log (debug=true)
 //TO DO: pozamieniać taby na spacje, żeby się db wyświetlało na wiki
 //TO DO: dorobić wybór obrazków z artykułu przy zgłaszaniu grafiki [?]
 //TO DO: encodeURIComponent odpowiednie komponenty zanim wsadzimy do linku! [?]
@@ -390,7 +390,7 @@ function DYKnomination(mode,params,debug) {
 		
 		var edittoken;
 		var input;
-		var summary = '/* ' + TYTUL + ' */ nowe zgłoszenie (przy użyciu [[Wikipedysta:Kaligula/js/CzyWiesz.js|tego automatycznego skryptu]])';
+		var summary = 'nowe zgłoszenie przy użyciu [[Wikipedysta:Kaligula/js/CzyWiesz.js|tego automatycznego skryptu]]'; //tylko część, reszta jest po określeniu numeru sekcji
 //		var sectiontitle_author = 'Czy wiesz – zgłoszenie';
 //		var sectiontitle_discussion = 'Czy wiesz – zgłoszenie';
 		var sectiontitle_wikiproject = 'Czy wiesz – zgłoszenie';
@@ -437,7 +437,8 @@ function DYKnomination(mode,params,debug) {
 			}
 		}
 		
-		// NR mamy
+		// NR mamy, poprawiamy summary
+		summary = '/* ' + NR + ' (' + TYTUL + ')' + ' */ ' + summary;
 
 		/* przygotowujemy dane do edycji */
 		$('#DYK-loader-bar-inner').css({width: '16%'});
