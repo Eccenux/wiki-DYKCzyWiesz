@@ -291,7 +291,9 @@ function DYKnomination(mode,params,debug) {
 				});
 				
 				var $params = [TYTUL, PYTANIE, GRAFIKA, OBRAZKI, AUTOR, PODPIS, WIKIPROJEKT];
+				(debug ? console.log('debug1: ' + debug) : {});
 				var debug = (typeof debug == 'boolean') ? debug : false;
+				(debug ? console.log('debug2: ' + debug) : {});
 				DYKnomination('do',$params,debug);
 
 				$('#CzyWieszQuestion').remove();
@@ -348,6 +350,7 @@ function DYKnomination(mode,params,debug) {
 		$('#DYK-loader-bar').css({display: 'block'});
 		$('#DYK-loader-bar-paragraph').text('Pobieram dane z formularza…');
 
+		(debug ? console.log('debug3: ' + debug) : {});
 		if (debug) {
 			//dane do debugowania skryptu
 			var TYTUL       = 'Wikipedysta:Kaligula/js/CzyWiesz.js/Wikiprojekt:Czy wiesz/propozycje';
@@ -385,8 +388,8 @@ function DYKnomination(mode,params,debug) {
 		var edittoken;
 		var input;
 		var summary = '/* ' + TYTUL + ' */ nowa sekcja';
-		var sectiontitle_author = 'Czy wiesz – zgłoszenie';
-		var sectiontitle_discussion = 'Czy wiesz – zgłoszenie';
+//		var sectiontitle_author = 'Czy wiesz – zgłoszenie';
+//		var sectiontitle_discussion = 'Czy wiesz – zgłoszenie';
 		var sectiontitle_wikiproject = 'Czy wiesz – zgłoszenie';
 		
 		var a,b,i;
@@ -489,7 +492,7 @@ function DYKnomination(mode,params,debug) {
 			console.error('URI: /w/api.php?action=edit&format=json&title=' + encodeURI(TYTUL + '&section=' + section + (uptodate ? '&appendtext=' : '&prependtext=') + input + '&summary=' + summary + '&token=') + mw.util.rawurlencode(edittoken));
 		});
 		
-		// powiadamianie autora artykułu
+/*		// powiadamianie autora artykułu
 		$('#DYK-loader-bar-inner').css({width: 4*(100/tasks) + '%'});
 		$('#DYK-loader-bar-paragraph').text('Zgłaszam autorowi…');
 		$.ajax({
@@ -532,7 +535,7 @@ function DYKnomination(mode,params,debug) {
 			+ '&text=' + encodeURI('{' + '{Czy wiesz - artykuł|data=[[' + dzien + ' ' + miesiac + ']] [[' + rok + ']]}}~' + '~' + '~' + '~') 
 			+ '&token=' + mw.util.rawurlencode(edittoken));
 		});
-
+*/
 		// powiadamianie wikiprojektu
 		$('#DYK-loader-bar-paragraph').text('Zgłaszam do wikiprojektu/ów…');
 		for (i=0;i<WIKIPROJEKT.length;i++) {
