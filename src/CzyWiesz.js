@@ -16,10 +16,10 @@ importScript('Wikipedysta:Kaligula/js/CzyWiesz.js');
 // @include		http[s]?://pl.wikipedia.org/wiki/Wikiprojekt:Czy_wiesz/propozycje
 // @autor		Kaligula
  
-//póki co po wpisaniu w konsoli "DYKnomination()" aktulane info pokażą si​ę w console.log
+//póki co po wpisaniu w konsoli "DYKnomination('','',true)" aktulane info pokażą si​ę w console.log
 //TO DO: pozamieniać taby na spacje, żeby się db wyświetlało na wiki
 //TO DO: dorobić wybór obrazków z artykułu przy zgłaszaniu grafiki [?]
-//TO DO: encodeURIComponent odpowiednie komponenty zanim wsadzimy do linku!
+//TO DO: encodeURIComponent odpowiednie komponenty zanim wsadzimy do linku! [?]
 //TO DO: jeśli skrypt będzie już przetestowany to usunąć wszystkie 'debug' [?]
 //TO DO: na końcu spr wszystkie „TODO” i „TO DO” i „console.*”
  
