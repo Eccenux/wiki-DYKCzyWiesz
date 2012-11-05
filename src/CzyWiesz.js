@@ -279,7 +279,7 @@ function DYKnomination(mode,params,debug) {
 					(PYTANIE.length > 10) ? (PYTANIE = '…' + (PYTANIE.match(/\?[\s]*$/) ? (PYTANIE) : (PYTANIE += '?')) + '\n') : (console.error('zadaj poprawne PYTANIE'))
 				}
 				if (typeof OBRAZKI != 'number' || OBRAZKI == '') {console.error('podaj OBRAZKI')}
-				if (typeof AUTOR == 'undefined' || AUTOR == '') {console.error('podaj AUTORA')}
+				if ( (typeof AUTOR != 'string' && typeof AUTOR != 'number') || AUTOR == '') {console.error('podaj AUTORA')}
 
 				//get the wikiprojects
 				var $projsel = $('.czywiesz-wikiproject');
