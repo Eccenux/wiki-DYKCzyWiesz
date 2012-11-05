@@ -11,7 +11,7 @@ importScript('Wikipedysta:Kaligula/js/CzyWiesz.js');
 
 */
 // @name		test na wiki czywiesz propozycje
-// @version		0.9.3 beta
+// @version		0.9.4 beta
 // @description	zgłaszanie czywiesza
 // @include		http[s]?://pl.wikipedia.org/wiki/Wikiprojekt:Czy_wiesz/propozycje
 // @autor		Kaligula
@@ -234,7 +234,7 @@ function DYKnomination(mode,params,debug) {
 				+ '<div id="DYK-loader-bar-inner" style="width: 0; height: 20px; background-color: #ABEC46; border: none; border-radius: 3px;"></div>');
 
 		//wikiproject row
-		$wikiproject_select = $('<select class="czywiesz-wikiproject"></select>').css('vertical-align', 'middle'); // !!!zmienna globalna $wikiproject_select
+		$wikiproject_select = $('<select class="czywiesz-wikiproject"></select>').css('vertical-align', 'middle'); // TO DO: !!!zmienna globalna $wikiproject_select
 		$wikiproject_select.append('<option value="none">żaden</option>');
 		for (i=0;i<wikiprojects.length;i++)
 		{
@@ -243,7 +243,8 @@ function DYKnomination(mode,params,debug) {
 		}
 		var $wikiproject_row = $('<span id="czywiesz-wikiproject-container"></span>').append($wikiproject_select.clone());
  		$wikiproject_row = $('<td></td>').append($wikiproject_row)
-			.append('<a href="javascript:$(\'#czywiesz-wikiproject-container\').append($wikiproject_select.clone())">(+)</a>');
+			.append('<a href="javascript:$(\'#czywiesz-wikiproject-container\').append($wikiproject_select.clone());' 
+			+'$(\'#DYK-loader-bar\')[0].parentNode.style.height = (+$(\'#DYK-loader-bar\')[0].parentNode.style.height.split(\'px\')[0]+24)+\'px\';">(+)</a>');
 		$wikiproject_row = $('<tr></tr>').append('<td>Powiadom wikiprojekt(y): </td>').append($wikiproject_row);
  
 		//rules paragraph
