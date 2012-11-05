@@ -11,7 +11,7 @@ importScript('Wikipedysta:Kaligula/js/CzyWiesz.js');
 
 */
 // @name		test na wiki czywiesz propozycje
-// @version		0.9.4 beta
+// @version		0.9.5 beta
 // @description	zgłaszanie czywiesza
 // @include		http[s]?://pl.wikipedia.org/wiki/Wikiprojekt:Czy_wiesz/propozycje
 // @autor		Kaligula
@@ -390,7 +390,7 @@ function DYKnomination(mode,params,debug) {
 		
 		var edittoken;
 		var input;
-		var summary = '/* ' + TYTUL + ' */ nowa sekcja';
+		var summary = '/* ' + TYTUL + ' */ nowe zgłoszenie (przy użyciu [[Wikipedysta:Kaligula/js/CzyWiesz.js|tego automatycznego skryptu]])';
 //		var sectiontitle_author = 'Czy wiesz – zgłoszenie';
 //		var sectiontitle_discussion = 'Czy wiesz – zgłoszenie';
 		var sectiontitle_wikiproject = 'Czy wiesz – zgłoszenie';
