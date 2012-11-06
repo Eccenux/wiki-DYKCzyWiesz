@@ -11,13 +11,14 @@ importScript('Wikipedysta:Kaligula/js/CzyWiesz.js');
 
 */
 // @name		test na wiki czywiesz propozycje
-// @version		0.9.7 beta
+// @version		0.9.8 beta
 // @description	zgłaszanie czywiesza
 // @include		http[s]?://pl.wikipedia.org/wiki/Wikiprojekt:Czy_wiesz/propozycje
 // @autor		Kaligula
  
 //póki co po wpisaniu w konsoli "DYKnomination('','',true)" aktulane info pokażą si​ę w console.log (debug=true)
 //TO DO: pozamieniać taby na spacje, żeby się db wyświetlało na wiki
+//TO DO: Wikiprojkety mają dziwne zgłaszanie, np. Wikiprojekt:Malarstwo chce action=edit&title=Dyskusja_wikiprojektu:Malarstwo&section=2&appendtext=
 //TO DO: dorobić wybór obrazków z artykułu przy zgłaszaniu grafiki [?]
 //TO DO: encodeURIComponent odpowiednie komponenty zanim wsadzimy do linku! [?]
 //TO DO: jeśli skrypt będzie już przetestowany to usunąć wszystkie 'debug' [?]
@@ -196,6 +197,24 @@ function DYKnomination(mode,params,debug) {
 
 		var TYTUL = wgPageName.replace(/_/g,' ');
 		var OBRAZKI = $('#mw-content-text .thumb').length + $('#mw-content-text .infobox .image').length;
+		var ZRODLA = {
+			ref:	false,
+			yes:	'<img alt="Crystal Clear app clean.png" src="//upload.wikimedia.org/wikipedia/commons/thumb/3/34/Crystal_Clear_app_clean.png/20px-Crystal_Clear_app_clean.png" width="20" height="20">',
+			no:		'<img alt="Crystal Clear action button cancel.png" src="//upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Crystal_Clear_action_button_cancel.png/20px-Crystal_Clear_action_button_cancel.png" width="20" height="20">'
+		}
+			var ar1=[''];
+			var ar2=['Bibliografia','Przypisy'];
+			var arS=0;
+			var arO;
+			$('.mw-headline').each(function(i){
+			 ar1.push( $(this).html().replace(/<span class="mw-headline-number">\d+<\/span> */,'') );
+			});
+			ar1=ar1.join('#')+'#';
+			for (i=0; i< ar2.length; i++) {
+			 arO = ar1.match('#' + ar2[i] + '#');
+			 if (arO != null) {arS += ar1.match('#' + ar2[i] + '#').length}
+			}
+			if (arS > 0 ) {ZRODLA.ref = true;}
 		var PODPIS = (wgUserName ? {name: wgUserName,disabled: ' disabled'} : {name: '',disabled: ''} ); //TODO: a co kiedy IP?
 		//var PODPIS = (wgUserName ? [wgUserName,' disabled'] : ['~' + '~' + '~',''] );
 		var WIKIPROJEKT=[];
@@ -219,6 +238,10 @@ function DYKnomination(mode,params,debug) {
 			.html('<td>Liczba grafik w artykule: </td>'
 				+ '<td><input type="text" id="CzyWieszImages" name="CzyWieszImages" value="' + OBRAZKI + '"' 
 				+ 'style="width: 8%;text-align: right;margin-left: 2px;" disabled></td>');
+
+		var $ref_row = $('<tr></tr>')
+			.html('<td>Źródła: </td>'
+				+ '<td>' + (ZRODLA.ref ? ZRODLA.yes : ZRODLA.no) + '</td>');
 
 		var $author_row = $('<tr></tr>')
 			.html('<td>Główny autor artykułu: </td>'
@@ -253,8 +276,8 @@ function DYKnomination(mode,params,debug) {
 			.html('<small>Zgłaszaj hasła nie później niż 10 dni od powstania lub rozbudowania hasła, posiadające źródła najlepiej w formie przypisów i zawierające co najmniej 2kb samej treści.</small>');
  
 		//build the dialog
-		var $dialog = $('<table></table>').css('width','100%').append($file_row).append($images_row).append($author_row)
-			.append($signature_row).append($wikiproject_row);
+		var $dialog = $('<table></table>').css('width','100%').append($file_row).append($images_row).append($ref_row)
+			.append($author_row).append($signature_row).append($wikiproject_row);
 		var $dialog = $('<div></div>').append($title_paragraph).append($question_paragraph).append($question_textarea_paragraph)
 			.append($dialog).append($rules_paragraph).append($loading_bar);
  
@@ -267,6 +290,7 @@ function DYKnomination(mode,params,debug) {
 				PYTANIE = $('#CzyWieszQuestion').val().replace(/(.*?)(--)?~{3,5}\s*$/,'$1').replace(/^\s*(.*?)\s*$/,'$1'); //usuwa zbędne spacje na początku i końcu oraz podpis
 				GRAFIKA = ( $('#CzyWieszFile1').attr('checked') ? $('#CzyWieszFile2').val().replace(/^\s*(.*?)\s*$/,'$1') : '' ); //usuwa zbędne spacje na początku i końcu
 				OBRAZKI = $('#CzyWieszImages').val().replace(/^\s*(.*?)\s*$/,'$1'); //usuwa zbędne spacje na początku i końcu
+				ZRODLA = (ZRODLA.ref ? '+' : ' ');
 				AUTOR = $('#CzyWieszAuthor').val().replace(/^\s*(.*?)\s*$/,'$1'); //usuwa zbędne spacje na początku i końcu
 				PODPIS = $('#CzyWieszSignature').val().replace(/^\s*(.*?)\s*$/,'$1'); //usuwa zbędne spacje na początku i końcu
 
@@ -294,7 +318,7 @@ function DYKnomination(mode,params,debug) {
 					}
 				});
 				
-				var $params = [TYTUL, PYTANIE, GRAFIKA, OBRAZKI, AUTOR, PODPIS, WIKIPROJEKT];
+				var $params = [TYTUL, PYTANIE, GRAFIKA, OBRAZKI, ZRODLA, AUTOR, PODPIS, WIKIPROJEKT];
 				DYKnomination('do',$params,debug);
 
 				setInterval(function(){
@@ -361,6 +385,7 @@ function DYKnomination(mode,params,debug) {
 			var PYTANIE     = '…czy skrypt dobrze działa?\n';
 			var GRAFIKA     = '[[Plik:Face-monkey.svg|100px|right]]\n';
 			var OBRAZKI     =  999;
+			var ZRODLA		=  '+';
 			var AUTOR       = 'Autor';
 			var PODPIS      = 'Wstawiajacy';
 			var WIKIPROJEKT =  [];
@@ -370,9 +395,10 @@ function DYKnomination(mode,params,debug) {
 			var PYTANIE     = params[1];
 			var GRAFIKA     = params[2];
 			var OBRAZKI     = params[3];
-			var AUTOR       = params[4];
-			var PODPIS      = params[5];
-			var WIKIPROJEKT = params[6];
+			var ZRODLA		= params[4];
+			var AUTOR       = params[5];
+			var PODPIS      = params[6];
+			var WIKIPROJEKT = params[7];
 		}
 		
 		//skrypt właściwy
@@ -450,7 +476,7 @@ function DYKnomination(mode,params,debug) {
 		input = '=== ' + NR + ' (' + TYTUL + ') ===\n'
 			+ GRAFIKA
 			+ PYTANIE
-			+ '{' + '{Wikiprojekt:Czy wiesz/weryfikacja|' + TYTUL + '|+|' + OBRAZKI + '|?|' + AUTOR + '|' + PODPIS + '|?|?|?}}';
+			+ '{' + '{Wikiprojekt:Czy wiesz/weryfikacja|' + TYTUL + '|' + ZRODLA + '|' + OBRAZKI + '|?|' + AUTOR + '|' + PODPIS + '|?|?|?}}';
 
 		// tekst gotowy
 		// określamy czy dodajemy nową sekcję czy nie
