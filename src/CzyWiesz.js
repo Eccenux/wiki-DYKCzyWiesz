@@ -11,7 +11,7 @@ importScript('Wikipedysta:Kaligula/js/CzyWiesz.js');
 
 */
 // @name		test na wiki czywiesz propozycje
-// @version		0.9.6 beta
+// @version		0.9.7 beta
 // @description	zgłaszanie czywiesza
 // @include		http[s]?://pl.wikipedia.org/wiki/Wikiprojekt:Czy_wiesz/propozycje
 // @autor		Kaligula
@@ -194,11 +194,12 @@ function DYKnomination(mode,params,debug) {
 
 		var debug = (typeof debug == 'boolean') ? debug : false;
 
-		var TYTUL = wgPageName.replace('_',' ');
+		var TYTUL = wgPageName.replace(/_/g,' ');
+		var OBRAZKI = $('#mw-content-text .thumb').length + $('#mw-content-text .infobox .image').length;
 		var PODPIS = (wgUserName ? {name: wgUserName,disabled: ' disabled'} : {name: '',disabled: ''} ); //TODO: a co kiedy IP?
 		//var PODPIS = (wgUserName ? [wgUserName,' disabled'] : ['~' + '~' + '~',''] );
 		var WIKIPROJEKT=[];
-		var PYTANIE, GRAFIKA, OBRAZKI, AUTOR;
+		var PYTANIE, GRAFIKA, AUTOR;
 
 		//workaround for Opera - the textarea must be inserted to a visible element
 
@@ -216,7 +217,7 @@ function DYKnomination(mode,params,debug) {
 
 		var $images_row = $('<tr></tr>')
 			.html('<td>Liczba grafik w artykule: </td>'
-				+ '<td><input type="text" id="CzyWieszImages" name="CzyWieszImages" value="' + $('#mw-content-text .thumb').length + '"' 
+				+ '<td><input type="text" id="CzyWieszImages" name="CzyWieszImages" value="' + OBRAZKI + '"' 
 				+ 'style="width: 8%;text-align: right;margin-left: 2px;" disabled></td>');
 
 		var $author_row = $('<tr></tr>')
