@@ -11,7 +11,7 @@ importScript('Wikipedysta:Kaligula/js/CzyWiesz.js');
 
 */
 // @name		test na wiki czywiesz propozycje
-// @version		0.10.2 beta
+// @version		0.10.3 beta
 // @description	zgłaszanie czywiesza
 // @include		http[s]?://pl.wikipedia.org/wiki/Wikiprojekt:Czy_wiesz/propozycje
 // @autor		Kaligula
@@ -375,7 +375,7 @@ function DYKnomination(mode,params,debug) {
 										for (var j=0; j<OBRAZK_1[OBRAZKI].charAt(2); j++) { //cols
 											OBRAZK_2 += '<td>';
 											if (OBRAZK_arr[i*OBRAZK_1[OBRAZKI].charAt(2) + j]) {
-												OBRAZK_2 += OBRAZK_arr[i*OBRAZK_1[OBRAZKI].charAt(2) + j].outerHTML.replace(/\" width=\"\d+\" height=\"\d+\"/,'" width="100" onclick=\"javascript:$(this).toggleClass(\'czy-wiesz-galeria-chosen\')\"');
+												OBRAZK_2 += OBRAZK_arr[i*OBRAZK_1[OBRAZKI].charAt(2) + j].outerHTML.replace(/\" width=\"\d+\" height=\"\d+\"/,'" width="100"');
 											}
 											else {
 												OBRAZK_2 += '&nbsp;';
@@ -409,6 +409,12 @@ function DYKnomination(mode,params,debug) {
 									$(this).dialog("close");
 								}
 							}
+						});
+						$('<style>.czy-wiesz-galeria-chosen { border: solid 2px red; }</style>').appendTo('head');
+						$('#CzyWieszGaleria img').each(function(){
+							$(this).click(function(){
+								$(this).toggleClass('czy-wiesz-galeria-chosen');
+							});
 						});
 					});
 				}
