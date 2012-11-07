@@ -11,7 +11,7 @@ importScript('Wikipedysta:Kaligula/js/CzyWiesz.js');
 
 */
 // @name		test na wiki czywiesz propozycje
-// @version		0.10.4 beta
+// @version		0.10.5 beta
 // @description	zgłaszanie czywiesza
 // @include		http[s]?://pl.wikipedia.org/wiki/Wikiprojekt:Czy_wiesz/propozycje
 // @autor		Kaligula
@@ -19,7 +19,7 @@ importScript('Wikipedysta:Kaligula/js/CzyWiesz.js');
 //póki co po wpisaniu w konsoli "DYKnomination('','',true)" aktulane info pokażą si​ę w console.log (debug=true)
 //TO DO: pozamieniać taby na spacje, żeby się db wyświetlało na wiki
 //TO DO: Wikiprojkety mają dziwne zgłaszanie, np. Wikiprojekt:Malarstwo chce action=edit&title=Dyskusja_wikiprojektu:Malarstwo&section=2&appendtext=
-//TO DO: dorobić wybór obrazków z artykułu przy zgłaszaniu grafiki [?]
+	// wg tego http://pl.wikipedia.org/wiki/MediaWiki:Gadget-AjaxQuickDelete.js (na końcu str jest lista)?
 //TO DO: encodeURIComponent odpowiednie komponenty zanim wsadzimy do linku! [?]
 //TO DO: jeśli skrypt będzie już przetestowany to usunąć wszystkie 'debug' [?]
 //TO DO: na końcu spr wszystkie „TODO” i „TO DO” i „console.*”
@@ -215,7 +215,7 @@ function DYKnomination(mode,params,debug) {
 				if (ZRODLA.arO != null) {ZRODLA.arS += ZRODLA.arO.length};
 			}
 			if (ZRODLA.arS > 0 ) {ZRODLA.ref = true;}
-		var PODPIS = (wgUserName ? {name: wgUserName,disabled: ' disabled'} : {name: '',disabled: ''} ); //TODO: a co kiedy IP?
+		var PODPIS = (wgUserName ? {name: wgUserName,disabled: ' disabled'} : {name: '',disabled: ''} ); //TO DO: a co kiedy IP?
 		//var PODPIS = (wgUserName ? [wgUserName,' disabled'] : ['~' + '~' + '~',''] );
 		var WIKIPROJEKT=[];
 		var PYTANIE, GRAFIKA, AUTOR;
@@ -435,6 +435,8 @@ function DYKnomination(mode,params,debug) {
 
 		//$('#DYK-loader-bar').css({display: 'block'});
 		$('#DYK-loader-bar-paragraph').text('Pobieram dane z formularza…');
+
+		if (debug) {console.log(arguments)}
 
 		if (debug) {
 			//dane do debugowania skryptu
