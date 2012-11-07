@@ -11,7 +11,7 @@ importScript('Wikipedysta:Kaligula/js/CzyWiesz.js');
 
 */
 // @name		test na wiki czywiesz propozycje
-// @version		0.10.0 beta
+// @version		0.10.1 beta
 // @description	zgłaszanie czywiesza
 // @include		http[s]?://pl.wikipedia.org/wiki/Wikiprojekt:Czy_wiesz/propozycje
 // @autor		Kaligula
@@ -212,7 +212,7 @@ function DYKnomination(mode,params,debug) {
 			ZRODLA.ar1 = ZRODLA.ar1.join('#') + '#';
 			for (var i=0; i < ZRODLA.ar2.length; i++) {
 				ZRODLA.arO = ZRODLA.ar1.match('#' + ZRODLA.ar2[i] + '#');
-				if (ZRODLA.arO != null) {ZRODLA.arS += ZRODLA.arO.length}
+				if (ZRODLA.arO != null) {ZRODLA.arS += ZRODLA.arO.length};
 			}
 			if (ZRODLA.arS > 0 ) {ZRODLA.ref = true;}
 		var PODPIS = (wgUserName ? {name: wgUserName,disabled: ' disabled'} : {name: '',disabled: ''} ); //TODO: a co kiedy IP?
@@ -276,7 +276,8 @@ function DYKnomination(mode,params,debug) {
  
 		//rules paragraph
 		var $rules_paragraph = $('<p></p>')
-			.html('<small>Zgłaszaj hasła nie później niż 10 dni od powstania lub rozbudowania hasła, posiadające źródła najlepiej w formie przypisów i zawierające co najmniej 2kb samej treści.</small>');
+			.html('<small>Zgłaszaj hasła nie później niż 10 dni od powstania lub rozbudowania hasła, '
+				+ 'posiadające źródła najlepiej w formie przypisów i zawierające co najmniej 2kb samej treści.</small>');
  
 		//build the dialog
 		var $dialog = $('<table></table>').css('width','100%').append($file_row).append($images_row).append($ref_row)
@@ -299,13 +300,13 @@ function DYKnomination(mode,params,debug) {
 				//validate form
 				if (typeof TYTUL != 'string' || TYTUL == '') {console.error('podaj TYTUŁ')}
 				if (typeof GRAFIKA == 'string' && GRAFIKA != '') {
-					GRAFIKA = '[[Plik:' + (GRAFIKA.match(/^(Plik:|File:)/i) ? GRAFIKA.replace(/^(Plik:|File:)/i,'') : (GRAFIKA)) + '|100px|right]]\n'
+					GRAFIKA = '[[Plik:' + (GRAFIKA.match(/^(Plik:|File:)/i) ? GRAFIKA.replace(/^(Plik:|File:)/i,'') : (GRAFIKA)) + '|100px|right]]\n';
 				}
 				if (typeof PYTANIE != 'string' || PYTANIE === '') {
-					console.error('podaj PYTANIE')
+					console.error('podaj PYTANIE');
 				}
 				else {
-					(PYTANIE.length > 10) ? (PYTANIE = '…' + (PYTANIE.match(/\?[\s]*$/) ? (PYTANIE) : (PYTANIE += '?')) + '\n') : (console.error('zadaj poprawne PYTANIE'))
+					(PYTANIE.length > 10) ? (PYTANIE = '…' + (PYTANIE.match(/\?[\s]*$/) ? (PYTANIE) : (PYTANIE += '?')) + '\n') : (console.error('zadaj poprawne PYTANIE'));
 				}
 				if (typeof OBRAZKI != 'string' || OBRAZKI === '') {console.error('podaj OBRAZKI')}
 				if (typeof AUTOR != 'string' || AUTOR === '') {console.error('podaj AUTORA')}
@@ -364,7 +365,7 @@ function DYKnomination(mode,params,debug) {
 				if (OBRAZKI > 0) { //TO DO: poniżej zmienne globalne! póki co debug
 					$('#CzyWieszGaleriaToggler').toggle();
 					$('#CzyWieszGaleriaToggler').click(function(){
-						OBRAZK_1 = ['','1x1','1x2','1x3','2x2','2x3','2x3','2x4','2x4','3x3','3x4','3x4','3x4','4x4','4x4','4x4','4x4','4x5','4x5','4x5','4x5','4x6','4x6','4x6','4x6','5x5','4x7','4x7','4x7','5x6','5x6']; //ile obrazków na stronie taka tabela (jest 0-30 → length=31)
+						OBRAZK_1 = ['','1x1','1x2','1x3','2x2','2x3','2x3','2x4','2x4','3x3','3x4','3x4','3x4','4x4','4x4','4x4','4x4','4x5','4x5','4x5','4x5','4x6','4x6','4x6','4x6','5x5','5x6','5x6','5x6','5x6','5x6']; //ile obrazków na stronie taka tabela (jest 0-30 → length=31)
 						OBRAZK_2 = '<div id="CzyWieszGaleriaHolder" style="position: relative; height: 0; display: none;">'
 									+	'<div id="CzyWieszGaleria" style="border: solid 1px red; background-color: #F2F5F7;">'
 									+		'<table><tbody>';
@@ -383,11 +384,11 @@ function DYKnomination(mode,params,debug) {
 										}
 										OBRAZK_2 += '</tr>';
 									}
-									+		'</tbody></table>'
+						OBRAZK_2	+=		'</tbody></table>'
 									+	'</div>'
 									+'</div>';
 						//$('#CzyWieszGaleriaToggler').after($(OBRAZK_2));
-						$dialog.dialog({
+						$(OBRAZK_2).dialog({
 							width: 602,
 							modal: true,
 							//title: 'Zgłaszanie artykułu do rubryki „Czy wiesz…”' + (debug ? ' <small id="DYKnomination-dialog-debug" style="display:none;">(debug)</small>' : ''),
