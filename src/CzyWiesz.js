@@ -11,7 +11,7 @@ importScript('Wikipedysta:Kaligula/js/CzyWiesz.js');
 
 */
 // @name		test na wiki czywiesz propozycje
-// @version		0.10.1 beta
+// @version		0.10.2 beta
 // @description	zgłaszanie czywiesza
 // @include		http[s]?://pl.wikipedia.org/wiki/Wikiprojekt:Czy_wiesz/propozycje
 // @autor		Kaligula
@@ -400,9 +400,7 @@ function DYKnomination(mode,params,debug) {
 								"Wybierz": function() {
 									$('#CzyWieszFile1').attr('checked',true);
 									$('#CzyWieszFile2').removeAttr('disabled');
-									var file = $('.czy-wiesz-galeria-chosen')[0].src.match(/upload\.wikimedia\.org\/wikipedia\/commons\/thumb\/.\/..\/([^\/]+)\//)[1].replace(/_/g,' ');
-									//upload.wikimedia.org/wikipedia/commons/thumb/0/0b/POL_Tychy_COA.svg/100px-POL_Tychy_COA.svg.png
-									$('#CzyWieszFile2').val(file); // ← tutaj nazwa pliku
+									$('#CzyWieszFile2').val( $('.czy-wiesz-galeria-chosen').length == 0 ? '' : $('.czy-wiesz-galeria-chosen')[0].alt ); // ← tutaj nazwa pliku
 
 									$(this).dialog("destroy");
 									$(this).remove();
