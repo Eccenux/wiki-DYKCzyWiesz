@@ -11,7 +11,7 @@ importScript('Wikipedysta:Kaligula/js/CzyWiesz.js');
 
 */
 // @name		test na wiki czywiesz propozycje
-// @version		0.10.5 beta
+// @version		0.10.6 beta
 // @description	zgłaszanie czywiesza
 // @include		http[s]?://pl.wikipedia.org/wiki/Wikiprojekt:Czy_wiesz/propozycje
 // @autor		Kaligula
@@ -559,7 +559,7 @@ function DYKnomination(mode,params,debug) {
 			edittoken = mw.user.tokens.values.editToken;
 		}
 		else {
-			$.ajax({url:'/w/api.php?action=query&prop=info&format=json&intoken=edit&indexpageids=&titles=' + encodeURI(TYTUL),
+			$.ajax({url:'/w/api.php?action=query&prop=info&format=json&intoken=edit&indexpageids=&titles=' + encodeURIComponent(TYTUL),
 				cache: false,
 				async: false
 			}).done(function(data){
@@ -579,7 +579,10 @@ function DYKnomination(mode,params,debug) {
 		$('#DYK-loader-bar-inner').css({width: '24%'});
 		$('#DYK-loader-bar-paragraph').text('Zgłaszam propozycję…');
 		$.ajax({
-			url: '/w/api.php?action=edit&format=json&title=' + encodeURI( (debug ? 'Wikipedysta:Kaligula/js/CzyWiesz.js/' : '') + 'Wikiprojekt:Czy wiesz/propozycje' + '&section=' + section + (uptodate ? '&appendtext=' : '&prependtext=') + input + '&summary=' + summary + '&token=') + mw.util.rawurlencode(edittoken),
+			url: '/w/api.php?action=edit&format=json&title=' 
+				+ encodeURIComponent( (debug ? 'Wikipedysta:Kaligula/js/CzyWiesz.js/' : '')	+ 'Wikiprojekt:Czy wiesz/propozycje') 
+				+ '&section=' + section + (uptodate ? '&appendtext=' : '&prependtext=') + encodeURIComponent(input) 
+				+ '&summary=' + encodeURIComponent(summary) + '&token=' + mw.util.rawurlencode(edittoken),
 			type: 'POST',
 			async: false
 		}).done(function(data){ //spr czy nie ma erroru
@@ -588,21 +591,22 @@ function DYKnomination(mode,params,debug) {
 			
 		}).fail(function(data){
 			console.error('DYK: POST error');
-			console.error('URI: /w/api.php?action=edit&format=json&title=' + encodeURI( 
-				+ (debug ? 'Wikipedysta:Kaligula/js/CzyWiesz.js/' : '') + 'Wikiprojekt:Czy wiesz/propozycje' 
-				+ '&section=' + section + (uptodate ? '&appendtext=' : '&prependtext=') + input 
-				+ '&summary=' + summary + '&token=') + mw.util.rawurlencode(edittoken));
+			console.error('/w/api.php?action=edit&format=json&title=' 
+				+ encodeURIComponent( (debug ? 'Wikipedysta:Kaligula/js/CzyWiesz.js/' : '')	+ 'Wikiprojekt:Czy wiesz/propozycje') 
+				+ '&section=' + section + (uptodate ? '&appendtext=' : '&prependtext=') + encodeURIComponent(input) 
+				+ '&summary=' + encodeURIComponent(summary) + '&token=' + mw.util.rawurlencode(edittoken))
 			console.error('server response:');
 			console.error(data);
 		});
 		
-/*		// powiadamianie autora artykułu
+/*		//URI są złe ponizej, wartości parametrów mają być w encodeURIComponent()
+		// powiadamianie autora artykułu
 		$('#DYK-loader-bar-inner').css({width: 4*(100/tasks) + '%'});
 		$('#DYK-loader-bar-paragraph').text('Zgłaszam autorowi…');
 		$.ajax({
-			url:'/w/api.php?action=edit&format=json&title=' + encodeURI('Dyskusja wikipedysty:' + AUTOR) + '&section=new' 
-				+ '&sectiontitle=' + encodeURI(sectiontitle_author) 
-				+ '&text=' + encodeURI('{' + '{subst:Czy wiesz - autor|tytuł strony=[[' + TYTUL + ']]|dzień=' + dzien + '|miesiąc=' + miesiac + '|rok=' + rok + '|więcej stron=}}~' + '~' + '~' + '~') 
+			url:'/w/api.php?action=edit&format=json&title=' + encodeURIComponent('Dyskusja wikipedysty:' + AUTOR) + '&section=new' 
+				+ '&sectiontitle=' + encodeURIComponent(sectiontitle_author) 
+				+ '&text=' + encodeURIComponent('{' + '{subst:Czy wiesz - autor|tytuł strony=[[' + TYTUL + ']]|dzień=' + dzien + '|miesiąc=' + miesiac + '|rok=' + rok + '|więcej stron=}}~' + '~' + '~' + '~') 
 				+ '&token=' + mw.util.rawurlencode(edittoken),
 			type:'POST',
 			async: false
@@ -612,9 +616,9 @@ function DYKnomination(mode,params,debug) {
 			
 		}).fail(function(){
 			console.error('author: POST error');
-			console.error('URI: /w/api.php?action=edit&format=json&title=' + encodeURI('Dyskusja wikipedysty:' + AUTOR) + '&section=new' 
-				+ '&sectiontitle=' + encodeURI(sectiontitle_author) 
-				+ '&text=' + encodeURI('{' + '{subst:Czy wiesz - autor|tytuł strony=[[' + TYTUL + ']]|dzień=' + dzien + '|miesiąc=' + miesiac + '|rok=' + rok + '|więcej stron=}}~' + '~' + '~' + '~') 
+			console.error('URI: /w/api.php?action=edit&format=json&title=' + encodeURIComponent('Dyskusja wikipedysty:' + AUTOR) + '&section=new' 
+				+ '&sectiontitle=' + encodeURIComponent(sectiontitle_author) 
+				+ '&text=' + encodeURIComponent('{' + '{subst:Czy wiesz - autor|tytuł strony=[[' + TYTUL + ']]|dzień=' + dzien + '|miesiąc=' + miesiac + '|rok=' + rok + '|więcej stron=}}~' + '~' + '~' + '~') 
 				+ '&token=' + mw.util.rawurlencode(edittoken));
 		});
 		
@@ -622,9 +626,9 @@ function DYKnomination(mode,params,debug) {
 		$('#DYK-loader-bar-inner').css({width: 5*(100/tasks) + '%'});
 		$('#DYK-loader-bar-paragraph').text('Wklejam do dyskusji artykułu…');
 		$.ajax({
-			url:'/w/api.php?action=edit&format=json&title=' + encodeURI('Dyskusja:' + TYTUL) + '&section=new' 
-			+ '&sectiontitle=' + encodeURI(sectiontitle_discussion) 
-			+ '&text=' + encodeURI('{' + '{Czy wiesz - artykuł|data=[[' + dzien + ' ' + miesiac + ']] [[' + rok + ']]}}~' + '~' + '~' + '~') 
+			url:'/w/api.php?action=edit&format=json&title=' + encodeURIComponent('Dyskusja:' + TYTUL) + '&section=new' 
+			+ '&sectiontitle=' + encodeURIComponent(sectiontitle_discussion) 
+			+ '&text=' + encodeURIComponent('{' + '{Czy wiesz - artykuł|data=[[' + dzien + ' ' + miesiac + ']] [[' + rok + ']]}}~' + '~' + '~' + '~') 
 			+ '&token=' + mw.util.rawurlencode(edittoken),
 			type:'POST',
 			async: false
@@ -634,9 +638,9 @@ function DYKnomination(mode,params,debug) {
 			
 		}).fail(function(){
 			console.error('discussion: POST error');
-			console.error('URI: /w/api.php?action=edit&format=json&title=' + encodeURI('Dyskusja:' + TYTUL) + '&section=new' 
-			+ '&sectiontitle=' + encodeURI(sectiontitle_discussion) 
-			+ '&text=' + encodeURI('{' + '{Czy wiesz - artykuł|data=[[' + dzien + ' ' + miesiac + ']] [[' + rok + ']]}}~' + '~' + '~' + '~') 
+			console.error('URI: /w/api.php?action=edit&format=json&title=' + encodeURIComponent('Dyskusja:' + TYTUL) + '&section=new' 
+			+ '&sectiontitle=' + encodeURIComponent(sectiontitle_discussion) 
+			+ '&text=' + encodeURIComponent('{' + '{Czy wiesz - artykuł|data=[[' + dzien + ' ' + miesiac + ']] [[' + rok + ']]}}~' + '~' + '~' + '~') 
 			+ '&token=' + mw.util.rawurlencode(edittoken));
 		});
 */
@@ -646,10 +650,10 @@ function DYKnomination(mode,params,debug) {
 		for (i=0;i<WIKIPROJEKT.length;i++) {
 			$('#DYK-loader-bar-inner').css({width: 50*(1+i/tasks) + '%'});
 			$.ajax({
-				url:'/w/api.php?action=edit&format=json&title=' + encodeURI('Dyskusja wikiprojektu:' + WIKIPROJEKT[i]) + '&section=new' 
-				+ '&sectiontitle=' + encodeURI(sectiontitle_wikiproject) 
-				+ '&text=' + encodeURI('{' + '{subst:Czy wiesz - wikiprojekt|' + TYTUL + '}}~' + '~' + '~' + '~') 
-				+ '&token=' + mw.util.rawurlencode(edittoken),
+				url:'/w/api.php?action=edit&format=json&title=' + encodeURIComponent('Dyskusja wikiprojektu:' + WIKIPROJEKT[i]) + '&section=new' 
+					+ '&sectiontitle=' + encodeURIComponent(sectiontitle_wikiproject) 
+					+ '&text=' + encodeURIComponent('{' + '{subst:Czy wiesz - wikiprojekt|' + TYTUL + '}}~' + '~' + '~' + '~') 
+					+ '&token=' + mw.util.rawurlencode(edittoken),
 				type:'POST',
 				async: false
 			}).done(function(data){ //spr czy nie ma erroru
@@ -659,10 +663,10 @@ function DYKnomination(mode,params,debug) {
 				
 			}).fail(function(data){
 				console.error('wikiproject: POST error');
-				console.error('URI: /w/api.php?action=edit&format=json&title=' + encodeURI('Dyskusja wikiprojektu:' + WIKIPROJEKT[i]) + '&section=new' 
-				+ '&sectiontitle=' + encodeURI(sectiontitle_wikiproject) 
-				+ '&text=' + encodeURI('{' + '{subst:Czy wiesz - wikiprojekt|' + TYTUL + '}}~' + '~' + '~' + '~') 
-				+ '&token=' + mw.util.rawurlencode(edittoken));
+				console.error('URI: /w/api.php?action=edit&format=json&title=' + encodeURIComponent('Dyskusja wikiprojektu:' + WIKIPROJEKT[i]) + '&section=new' 
+					+ '&sectiontitle=' + encodeURIComponent(sectiontitle_wikiproject) 
+					+ '&text=' + encodeURIComponent('{' + '{subst:Czy wiesz - wikiprojekt|' + TYTUL + '}}~' + '~' + '~' + '~') 
+					+ '&token=' + mw.util.rawurlencode(edittoken));
 				console.error('server response:');
 				console.error(data);
 			});
