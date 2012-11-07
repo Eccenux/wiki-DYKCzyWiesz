@@ -11,7 +11,7 @@ importScript('Wikipedysta:Kaligula/js/CzyWiesz.js');
 
 */
 // @name		test na wiki czywiesz propozycje
-// @version		0.10.6 beta
+// @version		0.10.7 beta
 // @description	zgłaszanie czywiesza
 // @include		http[s]?://pl.wikipedia.org/wiki/Wikiprojekt:Czy_wiesz/propozycje
 // @autor		Kaligula
@@ -365,31 +365,23 @@ function DYKnomination(mode,params,debug) {
 				if (OBRAZKI > 0) { //TO DO: poniżej zmienne globalne! póki co debug
 					$('#CzyWieszGaleriaToggler').toggle();
 					$('#CzyWieszGaleriaToggler').click(function(){
-						OBRAZK_1 = ['','1x1','1x2','1x3','2x2','2x3','2x3','2x4','2x4','3x3','3x4','3x4','3x4','4x4','4x4','4x4','4x4','4x5','4x5','4x5','4x5','4x6','4x6','4x6','4x6','5x5','5x6','5x6','5x6','5x6','5x6']; //ile obrazków na stronie taka tabela (jest 0-30 → length=31)
 						OBRAZK_2 = '<div id="CzyWieszGaleriaHolder">'
 									+	'<div id="CzyWieszGaleria" style="background-color: #F2F5F7;">'
 									+		'<table><tbody>';
 									OBRAZK_arr = $.merge($('#mw-content-text .infobox a.image img'),$('#mw-content-text .thumb a.image img'));
-									for (var i=0; i<OBRAZK_1[OBRAZKI].charAt(0); i++) { //rows
-										OBRAZK_2 += '<tr>';
-										for (var j=0; j<OBRAZK_1[OBRAZKI].charAt(2); j++) { //cols
-											OBRAZK_2 += '<td>';
-											if (OBRAZK_arr[i*OBRAZK_1[OBRAZKI].charAt(2) + j]) {
-												OBRAZK_2 += OBRAZK_arr[i*OBRAZK_1[OBRAZKI].charAt(2) + j].outerHTML.replace(/\" width=\"\d+\" height=\"\d+\"/,'" width="100"');
-											}
-											else {
-												OBRAZK_2 += '&nbsp;';
-											}
-											OBRAZK_2 += '</td>';
-										}
-										OBRAZK_2 += '</tr>';
+									for (var i=0; i<OBRAZK_arr.length; i++) {
+										if (i%5 == 0) {OBRAZK_2 += '<tr>';}
+										OBRAZK_2 += '<td>';
+										OBRAZK_2 += OBRAZK_arr[i].outerHTML.replace(/\" width=\"\d+\" height=\"\d+\"/,'" width="100"').replace(/ class=\"[^\"]*\"/g,'');
+										OBRAZK_2 += '</td>';
+										if (i%5 == 4) {OBRAZK_2 += '</tr>';}
 									}
 						OBRAZK_2	+=		'</tbody></table>'
 									+	'</div>'
 									+'</div>';
 						//$('#CzyWieszGaleriaToggler').after($(OBRAZK_2));
 						$(OBRAZK_2).dialog({
-							width: 602,
+							width: 547,
 							modal: true,
 							//title: 'Zgłaszanie artykułu do rubryki „Czy wiesz…”' + (debug ? ' <small id="DYKnomination-dialog-debug" style="display:none;">(debug)</small>' : ''),
 							title: 'Wybór grafiki do rubryki „Czy wiesz…”',
@@ -400,7 +392,7 @@ function DYKnomination(mode,params,debug) {
 								"Wybierz": function() {
 									$('#CzyWieszFile1').attr('checked',true);
 									$('#CzyWieszFile2').removeAttr('disabled');
-									$('#CzyWieszFile2').val( $('.czy-wiesz-galeria-chosen').length == 0 ? '' : $('.czy-wiesz-galeria-chosen')[0].alt ); // ← tutaj nazwa pliku
+									$('#CzyWieszFile2').val( $('.czy-wiesz-gallery-chosen').length == 0 ? '' : decodeURIComponent($('.czy-wiesz-gallery-chosen')[0].src.match(/\/\/upload\.wikimedia\.org\/wikipedia\/commons(\/thumb)?\/.\/..\/([^\/]+)\/?/)[2]).replace(/_/g,' ') ); // ← tutaj nazwa pliku
 
 									$(this).dialog("destroy");
 									$(this).remove();
@@ -410,10 +402,10 @@ function DYKnomination(mode,params,debug) {
 								}
 							}
 						});
-						$('<style>.czy-wiesz-galeria-chosen { border: solid 2px red; }</style>').appendTo('head');
+						$('<style>.czy-wiesz-gallery-chosen { border: solid 2px red; }</style>').appendTo('head');
 						$('#CzyWieszGaleria img').each(function(){
 							$(this).click(function(){
-								$(this).toggleClass('czy-wiesz-galeria-chosen');
+								$(this).toggleClass('czy-wiesz-gallery-chosen');
 							});
 						});
 					});
@@ -438,7 +430,7 @@ function DYKnomination(mode,params,debug) {
 
 		if (debug) {console.log(arguments)}
 
-		if (debug) {
+/*		if (debug) {
 			//dane do debugowania skryptu
 			//var TYTUL       = 'Wikipedysta:Kaligula/js/CzyWiesz.js/Wikiprojekt:Czy wiesz/propozycje';
 			var TYTUL       =  'Tytul strony';
@@ -451,7 +443,7 @@ function DYKnomination(mode,params,debug) {
 			var WIKIPROJEKT =  [];
 		}
 		else {
-			var TYTUL       = params[0];
+*/			var TYTUL       = params[0];
 			var PYTANIE     = params[1];
 			var GRAFIKA     = params[2];
 			var OBRAZKI     = params[3];
@@ -459,8 +451,8 @@ function DYKnomination(mode,params,debug) {
 			var AUTOR       = params[5];
 			var PODPIS      = params[6];
 			var WIKIPROJEKT = params[7];
-		}
-		
+/*		}
+*/		
 		//skrypt właściwy
 		var NR = 1;
 
