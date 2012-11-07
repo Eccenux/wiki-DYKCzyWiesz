@@ -11,7 +11,7 @@ importScript('Wikipedysta:Kaligula/js/CzyWiesz.js');
 
 */
 // @name		test na wiki czywiesz propozycje
-// @version		0.9.8 beta
+// @version		0.9.9 beta
 // @description	zgłaszanie czywiesza
 // @include		http[s]?://pl.wikipedia.org/wiki/Wikiprojekt:Czy_wiesz/propozycje
 // @autor		Kaligula
@@ -200,21 +200,21 @@ function DYKnomination(mode,params,debug) {
 		var ZRODLA = {
 			ref:	false,
 			yes:	'<img alt="Crystal Clear app clean.png" src="//upload.wikimedia.org/wikipedia/commons/thumb/3/34/Crystal_Clear_app_clean.png/20px-Crystal_Clear_app_clean.png" width="20" height="20">',
-			no:		'<img alt="Crystal Clear action button cancel.png" src="//upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Crystal_Clear_action_button_cancel.png/20px-Crystal_Clear_action_button_cancel.png" width="20" height="20">'
+			no:		'<img alt="Crystal Clear action button cancel.png" src="//upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Crystal_Clear_action_button_cancel.png/20px-Crystal_Clear_action_button_cancel.png" width="20" height="20">',
+			ar1:	[''],
+			ar2:	['Bibliografia','Przypisy'],
+			arS:	0,
+			arO:	''
 		}
-			var ar1=[''];
-			var ar2=['Bibliografia','Przypisy'];
-			var arS=0;
-			var arO;
 			$('.mw-headline').each(function(i){
-			 ar1.push( $(this).html().replace(/<span class="mw-headline-number">\d+<\/span> */,'') );
+				ZRODLA.ar1.push( $(this).html().replace(/<span class="mw-headline-number">\d+<\/span> */,'') );
 			});
-			ar1=ar1.join('#')+'#';
-			for (i=0; i< ar2.length; i++) {
-			 arO = ar1.match('#' + ar2[i] + '#');
-			 if (arO != null) {arS += ar1.match('#' + ar2[i] + '#').length}
+			ZRODLA.ar1 = ZRODLA.ar1.join('#') + '#';
+			for (var i=0; i < ZRODLA.ar2.length; i++) {
+				ZRODLA.arO = ZRODLA.ar1.match('#' + ZRODLA.ar2[i] + '#');
+				if (ZRODLA.arO != null) {ZRODLA.arS += ZRODLA.arO.length}
 			}
-			if (arS > 0 ) {ZRODLA.ref = true;}
+			if (ZRODLA.arS > 0 ) {ZRODLA.ref = true;}
 		var PODPIS = (wgUserName ? {name: wgUserName,disabled: ' disabled'} : {name: '',disabled: ''} ); //TODO: a co kiedy IP?
 		//var PODPIS = (wgUserName ? [wgUserName,' disabled'] : ['~' + '~' + '~',''] );
 		var WIKIPROJEKT=[];
@@ -237,7 +237,10 @@ function DYKnomination(mode,params,debug) {
 		var $images_row = $('<tr></tr>')
 			.html('<td>Liczba grafik w artykule: </td>'
 				+ '<td><input type="text" id="CzyWieszImages" name="CzyWieszImages" value="' + OBRAZKI + '"' 
-				+ 'style="width: 8%;text-align: right;margin-left: 2px;" disabled></td>');
+				+ 'style="width: 8%;text-align: right;margin-left: 2px;" disabled> '
+				//+ '<a id="CzyWieszGaleriaToggler" href="javascript:$(\'#CzyWieszGaleriaHolder\').toggle()"' + (OBRAZKI===0 ? ' style="display: none;"' : '') 
+				+ '<a id="CzyWieszGaleriaToggler" href="javascript:$(\'#CzyWieszGaleriaHolder\').toggle()" style="display: none;"' 
+				+ '>wybierz obrazek z artykułu</a></td>');
 
 		var $ref_row = $('<tr></tr>')
 			.html('<td>Źródła: </td>'
@@ -284,7 +287,6 @@ function DYKnomination(mode,params,debug) {
 		//main buttons
 		var buttons = {
 			"Zgłoś": function() {
-
 				//get the question
 				TYTUL = $('#CzyWieszTitle').val().replace(/^\s*(.*?)\s*$/,'$1'); //usuwa zbędne spacje na początku i końcu
 				PYTANIE = $('#CzyWieszQuestion').val().replace(/(.*?)(--)?~{3,5}\s*$/,'$1').replace(/^\s*(.*?)\s*$/,'$1'); //usuwa zbędne spacje na początku i końcu oraz podpis
@@ -321,11 +323,8 @@ function DYKnomination(mode,params,debug) {
 				var $params = [TYTUL, PYTANIE, GRAFIKA, OBRAZKI, ZRODLA, AUTOR, PODPIS, WIKIPROJEKT];
 				DYKnomination('do',$params,debug);
 
-				setInterval(function(){
-					//$('#CzyWieszQuestion').remove();
-					$(this).dialog("destroy");
-					$(this).remove();
-				},1000);
+				$(this).dialog("destroy");
+				$(this).remove();
 			},
 			"Anuluj" : function() {
 				$(this).dialog("close");
@@ -361,6 +360,60 @@ function DYKnomination(mode,params,debug) {
 		  }
 		  if (event.keyCode == '13') submitButton.click();
 		});*/
+
+				if (OBRAZKI > 0) { //TO DO: poniżej zmienne globalne! póki co debug
+					$('#CzyWieszGaleriaToggler').toggle();
+					$('#CzyWieszGaleriaToggler').click(function(){
+						OBRAZK_1 = ['','1x1','1x2','1x3','2x2','2x3','2x3','2x4','2x4','3x3','3x4','3x4','3x4','4x4','4x4','4x4','4x4','4x5','4x5','4x5','4x5','4x6','4x6','4x6','4x6','5x5','4x7','4x7','4x7','5x6','5x6']; //ile obrazków na stronie taka tabela (jest 0-30 → length=31)
+						OBRAZK_2 = '<div id="CzyWieszGaleriaHolder" style="position: relative; height: 0; display: none;">'
+									+	'<div id="CzyWieszGaleria" style="border: solid 1px red; background-color: #F2F5F7;">'
+									+		'<table><tbody>';
+									OBRAZK_arr = $.merge($('#mw-content-text .infobox a.image img'),$('#mw-content-text .thumb a.image img'));
+									for (var i=0; i<OBRAZK_1[OBRAZKI].charAt(0); i++) { //rows
+										OBRAZK_2 += '<tr>';
+										for (var j=0; j<OBRAZK_1[OBRAZKI].charAt(2); j++) { //cols
+											OBRAZK_2 += '<td>';
+											if (OBRAZK_arr[i*OBRAZK_1[OBRAZKI].charAt(2) + j]) {
+												OBRAZK_2 += OBRAZK_arr[i*OBRAZK_1[OBRAZKI].charAt(2) + j].outerHTML.replace(/\" width=\"\d+\" height=\"\d+\"/,'" width="100" onclick=\"javascript:$(this).toggleClass(\'czy-wiesz-galeria-chosen\')\"');
+											}
+											else {
+												OBRAZK_2 += '&nbsp;';
+											}
+											OBRAZK_2 += '</td>';
+										}
+										OBRAZK_2 += '</tr>';
+									}
+									+		'</tbody></table>'
+									+	'</div>'
+									+'</div>';
+						//$('#CzyWieszGaleriaToggler').after($(OBRAZK_2));
+						$dialog.dialog({
+							width: 602,
+							modal: true,
+							//title: 'Zgłaszanie artykułu do rubryki „Czy wiesz…”' + (debug ? ' <small id="DYKnomination-dialog-debug" style="display:none;">(debug)</small>' : ''),
+							title: 'Wybór grafiki do rubryki „Czy wiesz…”',
+							draggable: true,
+							dialogClass: "wikiEditor-toolbar-dialog",
+							close: function() { $(this).dialog("destroy"); $(this).remove();},
+							buttons: {
+								"Wybierz": function() {
+									$('#CzyWieszFile1').attr('checked',true);
+									$('#CzyWieszFile2').removeAttr('disabled');
+									var file = $('.czy-wiesz-galeria-chosen')[0].src.match(/upload\.wikimedia\.org\/wikipedia\/commons\/thumb\/.\/..\/([^\/]+)\//)[1].replace(/_/g,' ');
+									//upload.wikimedia.org/wikipedia/commons/thumb/0/0b/POL_Tychy_COA.svg/100px-POL_Tychy_COA.svg.png
+									$('#CzyWieszFile2').val(file); // ← tutaj nazwa pliku
+
+									$(this).dialog("destroy");
+									$(this).remove();
+								},
+								"Anuluj" : function() {
+									$(this).dialog("close");
+								}
+							}
+						});
+					});
+				}
+
 		$('#CzyWieszTitle').change(function(){
 			$('#CzyWieszImages').removeAttr('disabled');
 			$('#CzyWieszImages').val('');
