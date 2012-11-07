@@ -11,7 +11,7 @@ importScript('Wikipedysta:Kaligula/js/CzyWiesz.js');
 
 */
 // @name		test na wiki czywiesz propozycje
-// @version		0.10.3 beta
+// @version		0.10.4 beta
 // @description	zgłaszanie czywiesza
 // @include		http[s]?://pl.wikipedia.org/wiki/Wikiprojekt:Czy_wiesz/propozycje
 // @autor		Kaligula
@@ -366,8 +366,8 @@ function DYKnomination(mode,params,debug) {
 					$('#CzyWieszGaleriaToggler').toggle();
 					$('#CzyWieszGaleriaToggler').click(function(){
 						OBRAZK_1 = ['','1x1','1x2','1x3','2x2','2x3','2x3','2x4','2x4','3x3','3x4','3x4','3x4','4x4','4x4','4x4','4x4','4x5','4x5','4x5','4x5','4x6','4x6','4x6','4x6','5x5','5x6','5x6','5x6','5x6','5x6']; //ile obrazków na stronie taka tabela (jest 0-30 → length=31)
-						OBRAZK_2 = '<div id="CzyWieszGaleriaHolder" style="position: relative; height: 0; display: none;">'
-									+	'<div id="CzyWieszGaleria" style="border: solid 1px red; background-color: #F2F5F7;">'
+						OBRAZK_2 = '<div id="CzyWieszGaleriaHolder">'
+									+	'<div id="CzyWieszGaleria" style="background-color: #F2F5F7;">'
 									+		'<table><tbody>';
 									OBRAZK_arr = $.merge($('#mw-content-text .infobox a.image img'),$('#mw-content-text .thumb a.image img'));
 									for (var i=0; i<OBRAZK_1[OBRAZKI].charAt(0); i++) { //rows
