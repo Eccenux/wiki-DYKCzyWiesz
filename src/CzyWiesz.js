@@ -11,7 +11,7 @@ importScript('Wikipedysta:Kaligula/js/CzyWiesz.js');
 
 */
 // @name		test na wiki czywiesz propozycje
-// @version		0.10.9 beta
+// @version		0.10.10 beta
 // @description	zgłaszanie czywiesza
 // @include		http[s]?://pl.wikipedia.org/wiki/Wikiprojekt:Czy_wiesz/propozycje
 // @autor		Kaligula
@@ -245,7 +245,8 @@ function DYKnomination(mode,params,debug) {
 				+ '<td><input type="text" id="CzyWieszImages" name="CzyWieszImages" value="' + OBRAZKI + '"' 
 				+ 'style="width: 8%;text-align: right;margin-left: 2px;" disabled> '
 				//+ '<a id="CzyWieszGaleriaToggler" href="javascript:$(\'#CzyWieszGaleriaHolder\').toggle()"' + (OBRAZKI===0 ? ' style="display: none;"' : '') 
-				+ '<a id="CzyWieszGaleriaToggler" href="javascript:$(\'#CzyWieszGaleriaHolder\').toggle()" style="display: none;"' 
+				//+ '<a id="CzyWieszGaleriaToggler" href="javascript:$(\'#CzyWieszGaleriaHolder\').toggle()" style="display: none;"' 
+				+ '<a id="CzyWieszGaleriaToggler" style="display: none;"' 
 				+ '>wybierz obrazek z artykułu</a></td>');
 
 		var $ref_row = $('<tr></tr>')
@@ -411,7 +412,9 @@ function DYKnomination(mode,params,debug) {
 								}
 							}
 						});
-						$('<style>.czy-wiesz-gallery-chosen { border: solid 2px red; }</style>').appendTo('head');
+						if ($('#CzyWieszGalleryChosenStyle').length == 0) {
+							$('<style id="CzyWieszGalleryChosenStyle">.czy-wiesz-gallery-chosen { border: solid 2px red; }</style>').appendTo('head');
+						}
 						$('#CzyWieszGaleria img').each(function(){
 							$(this).click(function(){
 								$(this).toggleClass('czy-wiesz-gallery-chosen');
