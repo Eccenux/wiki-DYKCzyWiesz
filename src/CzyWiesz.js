@@ -11,7 +11,7 @@ importScript('Wikipedysta:Kaligula/js/CzyWiesz.js');
 
 */
 // @name		test na wiki czywiesz propozycje
-// @version		0.10.8 beta
+// @version		0.10.9 beta
 // @description	zgłaszanie czywiesza
 // @include		http[s]?://pl.wikipedia.org/wiki/Wikiprojekt:Czy_wiesz/propozycje
 // @autor		Kaligula
@@ -196,6 +196,7 @@ function DYKnomination(mode,params,debug) {
 
 		var debug = (typeof debug == 'boolean') ? debug : false;
 
+		//var TYTUL = wgTitle; //TO DO: ↓
 		var TYTUL = wgPageName.replace(/_/g,' ');
 		var OBRAZKI = $('#mw-content-text .thumb').length + $('#mw-content-text .infobox .image').length;
 		var ZRODLA = {
@@ -208,7 +209,7 @@ function DYKnomination(mode,params,debug) {
 			arO:	''
 		}
 			$('.mw-headline').each(function(i){
-				ZRODLA.ar1.push( $(this).html().replace(/<span class="mw-headline-number">\d+<\/span> */,'') );
+				ZRODLA.ar1.push( $(this).html().replace(/<span class="mw-headline-number"[^>]*>\d+<\/span> */,'') );
 			});
 			ZRODLA.ar1 = ZRODLA.ar1.join('#') + '#';
 			for (var i=0; i < ZRODLA.ar2.length; i++) {
@@ -216,7 +217,7 @@ function DYKnomination(mode,params,debug) {
 				if (ZRODLA.arO != null) {ZRODLA.arS += ZRODLA.arO.length};
 			}
 			if (ZRODLA.arS > 0 ) {ZRODLA.ref = true;}
-		var PODPIS = (wgUserName ? {name: wgUserName,disabled: ' disabled'} : {name: '',disabled: ''} ); //TO DO: a co kiedy IP?
+		var PODPIS = (wgUserName ? {name: wgUserName, disabled: ' disabled'} : {name: '', disabled: ''} ); //TO DO: a co kiedy IP?
 		//var PODPIS = (wgUserName ? [wgUserName,' disabled'] : ['~' + '~' + '~',''] );
 		var WIKIPROJEKT=[];
 		var PYTANIE, GRAFIKA, AUTOR;
@@ -291,7 +292,7 @@ function DYKnomination(mode,params,debug) {
 			"Zgłoś": function() {
 				//get the question
 				TYTUL = $('#CzyWieszTitle').val().replace(/^\s*(.*?)\s*$/,'$1'); //usuwa zbędne spacje na początku i końcu
-				PYTANIE = $('#CzyWieszQuestion').val().replace(/(.*?)(--)?~{3,5}\s*$/,'$1').replace(/^\s*(.*?)\s*$/,'$1'); //usuwa zbędne spacje na początku i końcu oraz podpis
+				PYTANIE = $('#CzyWieszQuestion').val().replace(/(.*?)(--)?~{3,5}\s*$/,'$1').replace(/^\s*(.*?)\s*$/,'$1').replace(/^(Czy wiesz)?[\s,\.]*/,''); //usuwa zbędne spacje na początku i końcu oraz podpis
 				GRAFIKA = ( $('#CzyWieszFile1').attr('checked') ? $('#CzyWieszFile2').val().replace(/^\s*(.*?)\s*$/,'$1') : '' ); //usuwa zbędne spacje na początku i końcu
 				OBRAZKI = $('#CzyWieszImages').val().replace(/^\s*(.*?)\s*$/,'$1'); //usuwa zbędne spacje na początku i końcu
 				ZRODLA = (ZRODLA.ref ? '+' : ' ');
@@ -672,8 +673,10 @@ function DYKnomination(mode,params,debug) {
 	}
 }
 
-$(document).ready(function() {
-	var menulink = '<li id="t-DYKnomination"><a href="javascript:DYKnomination();">Zgłoś do „Czy Wiesz…”</a></li>';
-	if ($('#t-ajaxquickdelete')[0]) {$('#t-ajaxquickdelete').after(menulink);}
-	else {$('#p-tb ul').append(menulink);}
-});
+if (wgNamespaceNumber === 0) {
+	$(document).ready(function() {
+		var menulink = '<li id="t-DYKnomination"><a href="javascript:DYKnomination();">Zgłoś do „Czy Wiesz…”</a></li>';
+		if ($('#t-ajaxquickdelete')[0]) {$('#t-ajaxquickdelete').after(menulink);}
+		else {$('#p-tb ul').append(menulink);}
+	});
+}
