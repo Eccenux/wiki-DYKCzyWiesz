@@ -25,6 +25,10 @@ importScript('Wikipedysta:Kaligula/js/CzyWiesz.js');
 //TO DO: jeśli skrypt będzie już przetestowany to usunąć wszystkie 'debug' [?]
 //TO DO: na końcu spr wszystkie „TODO” i „TO DO” i „console.*”
  
+if (wgNamespaceNumber === 0) {
+
+
+
 function DYKnomination(mode,params,debug) {
 
 	var wikiprojects = ['Albumy muzyczne',
@@ -673,10 +677,12 @@ function DYKnomination(mode,params,debug) {
 	}
 }
 
-if (wgNamespaceNumber === 0) {
-	$(document).ready(function() {
-		var menulink = '<li id="t-DYKnomination"><a href="javascript:DYKnomination();">Zgłoś do „Czy Wiesz…”</a></li>';
-		if ($('#t-ajaxquickdelete')[0]) {$('#t-ajaxquickdelete').after(menulink);}
-		else {$('#p-tb ul').append(menulink);}
-	});
+$(document).ready(function() {
+	var menulink = '<li id="t-DYKnomination"><a href="javascript:DYKnomination();">Zgłoś do „Czy Wiesz…”</a></li>';
+	if ($('#t-ajaxquickdelete')[0]) {$('#t-ajaxquickdelete').after(menulink);}
+	else {$('#p-tb ul').append(menulink);}
+});
+
+
+
 }
