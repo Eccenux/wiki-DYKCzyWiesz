@@ -1,26 +1,33 @@
 /*
 
     INSTALACJA:
-    do swojego commons.js wkleić obie poniższe linijki
+    do swojego commons.js (Wikipedysta:TWÓJ_NICK/common.js) wkleić obie poniższe linijki
 
-// testowanie skryptu zgłaszania czywiesza [[Wikipedysta:Kaligula/js/CzyWiesz.js]]
+// automatyczne zgłaszanie do Czywiesza [[Wikipedysta:Kaligula/js/CzyWiesz.js]]
 importScript('Wikipedysta:Kaligula/js/CzyWiesz.js');
+
+	można to naocznie zobaczyć tutaj:
+
+https://pl.wikipedia.org/w/index.php?diff=33438384
 
     !! linijka górna pozwoli skontaktować się z użytkownikami skryptu
        w przypadku niektórych zmian w kodzie !!
 
 */
+
+
 // @name		test na wiki czywiesz propozycje
-// @version		0.10.10 beta
+// @version		0.10.11 beta
 // @description	zgłaszanie czywiesza
 // @include		http[s]?://pl.wikipedia.org/wiki/Wikiprojekt:Czy_wiesz/propozycje
 // @autor		Kaligula
  
 //póki co po wpisaniu w konsoli "DYKnomination('','',true)" aktulane info pokażą si​ę w console.log (debug=true)
 
-//TO DO: ograniczyć link do stron z artykułami
 //TO DO: Wikiprojkety mają dziwne zgłaszanie, np. Wikiprojekt:Malarstwo chce action=edit&title=Dyskusja_wikiprojektu:Malarstwo&section=2&appendtext=
 	// wg tego http://pl.wikipedia.org/wiki/MediaWiki:Gadget-AjaxQuickDelete.js (na końcu str jest lista)?
+
+//kosmetyczne:
 //TO DO: pozamieniać taby na spacje, żeby się db wyświetlało na wiki
 //TO DO: jeśli skrypt będzie już przetestowany to usunąć wszystkie 'debug' [?]
 //TO DO: na końcu spr wszystkie „TODO” i „TO DO” i „console.*”
@@ -229,7 +236,7 @@ function DYKnomination(mode,params,debug) {
 		//workaround for Opera - the textarea must be inserted to a visible element
 
 		var $title_paragraph = $('<p></p>')
-			.html('Tytuł artykułu: <input type="text" id="CzyWieszTitle" name="CzyWieszTitle" value="' + TYTUL + '" style="width: 484px;">');
+			.html('Tytuł artykułu: &nbsp;&nbsp;<input type="text" id="CzyWieszTitle" name="CzyWieszTitle" value="' + TYTUL + '" style="width: 476px;">');
 
 		var $question_paragraph = $('<p><strong>Zaproponuj pytanie:</strong></p>');
 
@@ -237,17 +244,18 @@ function DYKnomination(mode,params,debug) {
 			.html('<textarea id="CzyWieszQuestion" style="width: 570px;" rows="2" value="" autofocus></textarea>');
 
 		var $file_row = $('<tr></tr>')
-			.html('<td style="width: 36%;"><input type="checkbox" id="CzyWieszFile1" name="CzyWieszFile1"> Zaproponuj zdjęcie/grafikę: </td>' // style="width: 36%;
+			.html('<td style="width: 28%;"><input type="checkbox" id="CzyWieszFile1" name="CzyWieszFile1"> Zaproponuj grafikę: </td>' // style="width: 36%;
 				+ '<td><tt>[[Plik:</tt><input type="text" id="CzyWieszFile2" name="CzyWieszFile2" style="width: 52%;" disabled><tt>|100px|right]]</tt></td>');
 
 		var $images_row = $('<tr></tr>')
 			.html('<td>Liczba grafik w artykule: </td>'
 				+ '<td><input type="text" id="CzyWieszImages" name="CzyWieszImages" value="' + OBRAZKI + '"' 
 				+ 'style="width: 8%;text-align: right;margin-left: 2px;" disabled> '
-				//+ '<a id="CzyWieszGaleriaToggler" href="javascript:$(\'#CzyWieszGaleriaHolder\').toggle()"' + (OBRAZKI===0 ? ' style="display: none;"' : '') 
-				//+ '<a id="CzyWieszGaleriaToggler" href="javascript:$(\'#CzyWieszGaleriaHolder\').toggle()" style="display: none;"' 
-				+ '<a id="CzyWieszGaleriaToggler" style="display: none;"' 
-				+ '>wybierz obrazek z artykułu</a></td>');
+/*				//+ '<a id="CzyWieszGalleryToggler" href="javascript:$(\'#CzyWieszGalleryHolder\').toggle()"' + (OBRAZKI===0 ? ' style="display: none;"' : '') 
+				//+ '<a id="CzyWieszGalleryToggler" href="javascript:$(\'#CzyWieszGalleryHolder\').toggle()" style="display: none;"' 
+				+ '<a id="CzyWieszGalleryToggler" style="display: none;"' 
+				+ '>wybierz obrazek z artykułu</a></td>');*/
+				+ '→ (<a id="CzyWieszGalleryToggler" class="external">wybierz grafikę z artykułu</a>)');
 
 		var $ref_row = $('<tr></tr>')
 			.html('<td>Źródła: </td>'
@@ -373,36 +381,38 @@ function DYKnomination(mode,params,debug) {
 		});*/
 
 				if (OBRAZKI > 0) { //TO DO: poniżej zmienne globalne! póki co debug
-					$('#CzyWieszGaleriaToggler').toggle();
-					$('#CzyWieszGaleriaToggler').click(function(){
-						OBRAZK_2 = '<div id="CzyWieszGaleriaHolder">'
-									+	'<div id="CzyWieszGaleria" style="background-color: #F2F5F7;">'
+					$('#CzyWieszGalleryToggler').toggle();
+					$('#CzyWieszGalleryToggler').click(function(){
+						OBRAZK_2 = '<div id="CzyWieszGalleryHolder">'
+									+	'<div id="CzyWieszGallery" style="background-color: #F2F5F7;">'
 									+		'<table><tbody>';
 									OBRAZK_arr = $.merge($('#mw-content-text .infobox a.image img'),$('#mw-content-text .thumb a.image img'));
 									for (var i=0; i<OBRAZK_arr.length; i++) {
 										if (i%5 == 0) {OBRAZK_2 += '<tr>';}
 										OBRAZK_2 += '<td>';
-										OBRAZK_2 += OBRAZK_arr[i].outerHTML.replace(/\" width=\"\d+\" height=\"\d+\"/,'" width="100"').replace(/ class=\"[^\"]*\"/g,'');
+										OBRAZK_2 += OBRAZK_arr[i].outerHTML.replace(/ width=\"\d+\"/,' width="100"').replace(/ height=\"[^\"]*\"/,'').replace(/ class=\"[^\"]*\"/g,'');
 										OBRAZK_2 += '</td>';
 										if (i%5 == 4) {OBRAZK_2 += '</tr>';}
 									}
 						OBRAZK_2	+=		'</tbody></table>'
 									+	'</div>'
 									+'</div>';
-						//$('#CzyWieszGaleriaToggler').after($(OBRAZK_2));
+						//$('#CzyWieszGalleryToggler').after($(OBRAZK_2));
 						$(OBRAZK_2).dialog({
 							width: 547,
 							modal: true,
 							//title: 'Zgłaszanie artykułu do rubryki „Czy wiesz…”' + (debug ? ' <small id="DYKnomination-dialog-debug" style="display:none;">(debug)</small>' : ''),
-							title: 'Wybór grafiki do rubryki „Czy wiesz…”',
+							title: 'Wybierz grafikę:',
 							draggable: true,
 							dialogClass: "wikiEditor-toolbar-dialog",
 							close: function() { $(this).dialog("destroy"); $(this).remove();},
 							buttons: {
 								"Wybierz": function() {
-									$('#CzyWieszFile1').attr('checked',true);
-									$('#CzyWieszFile2').removeAttr('disabled');
-									$('#CzyWieszFile2').val( $('.czy-wiesz-gallery-chosen').length == 0 ? '' : decodeURIComponent($('.czy-wiesz-gallery-chosen')[0].src.match(/\/\/upload\.wikimedia\.org\/wikipedia\/commons(\/thumb)?\/.\/..\/([^\/]+)\/?/)[2]).replace(/_/g,' ') ); // ← tutaj nazwa pliku
+									if ($('#CzyWieszFile1').length > 0) {
+										$('#CzyWieszFile1').attr('checked',true);
+										$('#CzyWieszFile2').removeAttr('disabled');
+										$('#CzyWieszFile2').val( $('.czy-wiesz-gallery-chosen').length == 0 ? '' : decodeURIComponent($('.czy-wiesz-gallery-chosen')[0].src.match(/\/\/upload\.wikimedia\.org\/wikipedia\/commons(\/thumb)?\/.\/..\/([^\/]+)\/?/)[2]).replace(/_/g,' ') ); // ← tutaj nazwa pliku
+									}
 
 									$(this).dialog("destroy");
 									$(this).remove();
@@ -412,10 +422,10 @@ function DYKnomination(mode,params,debug) {
 								}
 							}
 						});
-						if ($('#CzyWieszGalleryChosenStyle').length == 0) {
-							$('<style id="CzyWieszGalleryChosenStyle">.czy-wiesz-gallery-chosen { border: solid 2px red; }</style>').appendTo('head');
+						if ($('#CzyWieszStyleTag').length == 0) {
+							$('<style id="CzyWieszStyleTag">.wikiEditor-toolbar-dialog .czy-wiesz-gallery-chosen { border: solid 2px red; }\n#CzyWieszGalleryToggler { color: #0645AD; text-decoration: underline; cursor: pointer }</style>').appendTo('head');
 						}
-						$('#CzyWieszGaleria img').each(function(){
+						$('#CzyWieszGallery img').each(function(){
 							$(this).click(function(){
 								$(this).toggleClass('czy-wiesz-gallery-chosen');
 							});
@@ -475,7 +485,7 @@ function DYKnomination(mode,params,debug) {
 		var rok = data.getYear()+1900;
 		(debug ? console.log('dzisiaj: ' + dzien + ' ' + miesiac) : {});
 		
-		var tasks = WIKIPROJEKT.length;
+		var tasks = 4 + WIKIPROJEKT.length;
 
 		var uptodate = false;
 		
@@ -489,7 +499,7 @@ function DYKnomination(mode,params,debug) {
 		var a,b,i;
 
 		/* przygotowujemy miejsce edycji */
-		$('#DYK-loader-bar-inner').css({width: '8%'});
+		$('#DYK-loader-bar-inner').css({width: 100*1/tasks + '%'});
 		$('#DYK-loader-bar-paragraph').text('Sprawdzam stronę zgłoszeń…');
 
 		// szuka pierwszego nagłówka w formacie 'dd mmmm', bo mogą być jakieś typu 'Białowieski megaczywiesz na koniec sierpnia (ew. pocz. września)'
@@ -532,7 +542,7 @@ function DYKnomination(mode,params,debug) {
 		summary = '/* ' + NR + ' (' + TYTUL + ')' + ' */ ' + summary;
 
 		/* przygotowujemy dane do edycji */
-		$('#DYK-loader-bar-inner').css({width: '16%'});
+		$('#DYK-loader-bar-inner').css({width: 100*2/tasks + '%'});
 		$('#DYK-loader-bar-paragraph').text('Przygotowuję dane do wysłania​…');
 
 		// teraz sama zawartość
@@ -580,7 +590,7 @@ function DYKnomination(mode,params,debug) {
 		/* edit and save section */
 
 		// zgłaszanie do CzyWiesza
-		$('#DYK-loader-bar-inner').css({width: '24%'});
+		$('#DYK-loader-bar-inner').css({width: 100*3/tasks + '%'});
 		$('#DYK-loader-bar-paragraph').text('Zgłaszam propozycję…');
 		$.ajax({
 			url: '/w/api.php?action=edit&format=json&title=' 
@@ -652,7 +662,7 @@ function DYKnomination(mode,params,debug) {
 		// powiadamianie wikiprojektu
 		$('#DYK-loader-bar-paragraph').text('Zgłaszam do wikiprojektu/ów…');
 		for (i=0;i<WIKIPROJEKT.length;i++) {
-			$('#DYK-loader-bar-inner').css({width: 50*(1+i/tasks) + '%'});
+			$('#DYK-loader-bar-inner').css({width: 100*(4+i/tasks) + '%'});
 			$.ajax({
 				url:'/w/api.php?action=edit&format=json&title=' + encodeURIComponent('Dyskusja wikiprojektu:' + WIKIPROJEKT[i]) + '&section=new' 
 					+ '&sectiontitle=' + encodeURIComponent(sectiontitle_wikiproject) 
