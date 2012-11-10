@@ -17,7 +17,7 @@ https://pl.wikipedia.org/w/index.php?diff=33438384
 
 
 // @name		test na wiki czywiesz propozycje
-// @version		0.10.12 beta
+// @version		0.10.13 beta
 // @description	zgłaszanie czywiesza
 // @include		http[s]?://pl.wikipedia.org/wiki/Wikiprojekt:Czy_wiesz/propozycje
 // @autor		Kaligula
@@ -432,7 +432,7 @@ function DYKnomination(mode,params,debug) {
 
 		
 		if ($('#CzyWieszStyleTag').length == 0) {
-			$('<style id="CzyWieszStyleTag">.wikiEditor-toolbar-dialog .czy-wiesz-gallery-chosen { border: solid 2px red; }\n#CzyWieszGalleryToggler { color: #0645AD; text-decoration: underline; cursor: pointer }</style>').appendTo('head');
+			$('<style id="CzyWieszStyleTag">.wikiEditor-toolbar-dialog .czy-wiesz-gallery-chosen { border: solid 2px red; }\n#CzyWieszGalleryToggler { color: #0645AD; text-decoration: underline; cursor: pointer; background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAVklEQVR4Xn3PgQkAMQhDUXfqTu7kTtkpd5RA8AInfArtQ2iRXFWT2QedAfttj2FsPIOE1eCOlEuoWWjgzYaB/IkeGOrxXhqB+uA9Bfcm0lAZuh+YIeAD+cAqSz4kCMUAAAAASUVORK5CYII=) center right no-repeat; background: url(//bits.wikimedia.org/static-1.21wmf3/skins/vector/images/external-link-ltr-icon.png?2012-10-29T15:20:00Z) center right no-repeat!ie; padding-right: 13px; }</style>').appendTo('head');
 		}
 		
 		$('#CzyWieszTitle').change(function(){
