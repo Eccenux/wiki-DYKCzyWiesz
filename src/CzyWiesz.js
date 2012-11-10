@@ -17,7 +17,7 @@ https://pl.wikipedia.org/w/index.php?diff=33438384
 
 
 // @name		test na wiki czywiesz propozycje
-// @version		0.10.11 beta
+// @version		0.10.12 beta
 // @description	zgłaszanie czywiesza
 // @include		http[s]?://pl.wikipedia.org/wiki/Wikiprojekt:Czy_wiesz/propozycje
 // @autor		Kaligula
@@ -255,7 +255,7 @@ function DYKnomination(mode,params,debug) {
 				//+ '<a id="CzyWieszGalleryToggler" href="javascript:$(\'#CzyWieszGalleryHolder\').toggle()" style="display: none;"' 
 				+ '<a id="CzyWieszGalleryToggler" style="display: none;"' 
 				+ '>wybierz obrazek z artykułu</a></td>');*/
-				+ '→ (<a id="CzyWieszGalleryToggler" class="external">wybierz grafikę z artykułu</a>)');
+				+ '→ (<a id="CzyWieszGalleryToggler" class="external" style="display: none;">wybierz grafikę z artykułu</a>)');
 
 		var $ref_row = $('<tr></tr>')
 			.html('<td>Źródła: </td>'
@@ -422,9 +422,6 @@ function DYKnomination(mode,params,debug) {
 								}
 							}
 						});
-						if ($('#CzyWieszStyleTag').length == 0) {
-							$('<style id="CzyWieszStyleTag">.wikiEditor-toolbar-dialog .czy-wiesz-gallery-chosen { border: solid 2px red; }\n#CzyWieszGalleryToggler { color: #0645AD; text-decoration: underline; cursor: pointer }</style>').appendTo('head');
-						}
 						$('#CzyWieszGallery img').each(function(){
 							$(this).click(function(){
 								$(this).toggleClass('czy-wiesz-gallery-chosen');
@@ -433,6 +430,11 @@ function DYKnomination(mode,params,debug) {
 					});
 				}
 
+		
+		if ($('#CzyWieszStyleTag').length == 0) {
+			$('<style id="CzyWieszStyleTag">.wikiEditor-toolbar-dialog .czy-wiesz-gallery-chosen { border: solid 2px red; }\n#CzyWieszGalleryToggler { color: #0645AD; text-decoration: underline; cursor: pointer }</style>').appendTo('head');
+		}
+		
 		$('#CzyWieszTitle').change(function(){
 			$('#CzyWieszImages').removeAttr('disabled');
 			$('#CzyWieszImages').val('');
