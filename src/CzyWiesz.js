@@ -17,7 +17,7 @@ https://pl.wikipedia.org/w/index.php?diff=33438384
 
 
 // @name		test na wiki czywiesz propozycje
-// @version		1.0.1
+// @version		1.1.0
 // @description	zgłaszanie czywiesza
 // @include		http[s]?://pl.wikipedia.org/wiki/Wikiprojekt:Czy_wiesz/propozycje
 // @autor		Kaligula
@@ -209,11 +209,11 @@ function DYKnomination(mode,params,debug) {
 
 		var debug = (typeof debug == 'boolean') ? debug : false;
 
-		var TYTUL = wgTitle;
-		//var TYTUL = wgPageName.replace(/_/g,' ');
+		var TITLE = wgTitle;
+		//var TITLE = wgPageName.replace(/_/g,' ');
 		var IMG_ARR = $.merge($('#mw-content-text .infobox a.image img'),$('#mw-content-text .thumb a.image img'));
-		var OBRAZKI = IMG_ARR.length;
-		var ZRODLA = {
+		var IMAGES = IMG_ARR.length;
+		var REFS = {
 			ref:	false,
 			yes:	'<img alt="Crystal Clear app clean.png" src="//upload.wikimedia.org/wikipedia/commons/thumb/3/34/Crystal_Clear_app_clean.png/20px-Crystal_Clear_app_clean.png" width="20" height="20">',
 			no:		'<img alt="Crystal Clear action button cancel.png" src="//upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Crystal_Clear_action_button_cancel.png/20px-Crystal_Clear_action_button_cancel.png" width="20" height="20">',
@@ -221,21 +221,21 @@ function DYKnomination(mode,params,debug) {
 			ar2:	['Bibliografia','Przypisy']
 		}
 			$('.mw-headline').each(function(i){
-				ZRODLA.ar1.push( $(this).html().replace(/<span class="mw-headline-number"[^>]*>\d+<\/span> */,'') );
+				REFS.ar1.push( $(this).html().replace(/<span class="mw-headline-number"[^>]*>\d+<\/span> */,'') );
 			});
-			ZRODLA.ar1 = ZRODLA.ar1.join('#') + '#';
-			for (var i=0; i < ZRODLA.ar2.length; i++) {
-				if ( ZRODLA.ar1.match('#' + ZRODLA.ar2[i] + '#') ) {ZRODLA.ref = true; break;}
+			REFS.ar1 = REFS.ar1.join('#') + '#';
+			for (var i=0; i < REFS.ar2.length; i++) {
+				if ( REFS.ar1.match('#' + REFS.ar2[i] + '#') ) {REFS.ref = true; break;}
 			}
-		//var PODPIS = (wgUserName ? {name: wgUserName, disabled: ' disabled'} : {name: '', disabled: ''} ); //TO DO: a co kiedy IP?
-		var PODPIS = (wgUserName ? {name: wgUserName, disabled: ' disabled'} : {name: '~' + '~' + '~', disabled: ' disabled'} );
-		var WIKIPROJEKT=[];
-		var PYTANIE, GRAFIKA, AUTOR;
+		//var SIGNATURE = (wgUserName ? {name: wgUserName, disabled: ' disabled'} : {name: '', disabled: ''} ); //TO DO: a co kiedy IP?
+		var SIGNATURE = (wgUserName ? {name: wgUserName, disabled: ' disabled'} : {name: '~' + '~' + '~', disabled: ' disabled'} );
+		var WIKIPROJECT=[];
+		var QUESTION, FILE, AUTHOR;
 
 		//workaround for Opera - the textarea must be inserted to a visible element
 
 		var $title_paragraph = $('<p></p>')
-			.html('Tytuł artykułu: &nbsp;&nbsp;<input type="text" id="CzyWieszTitle" name="CzyWieszTitle" value="' + TYTUL + '" style="width: 476px;">');
+			.html('Tytuł artykułu: &nbsp;&nbsp;<input type="text" id="CzyWieszTitle" name="CzyWieszTitle" value="' + TITLE + '" style="width: 476px;">');
 
 		var $question_paragraph = $('<p><strong>Zaproponuj pytanie:</strong></p>');
 
@@ -248,13 +248,13 @@ function DYKnomination(mode,params,debug) {
 
 		var $images_row = $('<tr></tr>')
 			.html('<td>Liczba grafik w artykule: </td>'
-				+ '<td><input type="text" id="CzyWieszImages" name="CzyWieszImages" value="' + OBRAZKI + '"' 
+				+ '<td><input type="text" id="CzyWieszImages" name="CzyWieszImages" value="' + IMAGES + '"' 
 				+ 'style="width: 8%;text-align: right;margin-left: 2px;" disabled>'
 				+ '<span id="CzyWieszGalleryToggler" style="display: none;"> → (<a class="external">wybierz grafikę z artykułu</a>)</span>');
 
 		var $ref_row = $('<tr></tr>')
 			.html('<td>Źródła: </td>'
-				+ '<td>' + (ZRODLA.ref ? ZRODLA.yes : ZRODLA.no) + '</td>');
+				+ '<td>' + (REFS.ref ? REFS.yes : REFS.no) + '</td>');
 
 		var $author_row = $('<tr></tr>')
 			.html('<td>Główny autor artykułu: </td>'
@@ -263,7 +263,7 @@ function DYKnomination(mode,params,debug) {
 		var $signature_row = $('<tr></tr>')
 			.html('<td>Twój podpis: </td>'
 				+ '<td><input type="text" id="CzyWieszSignature" name="CzyWieszSignature" value="' 
-				+ PODPIS.name + '" style="width: 50%;margin-left: 2px;"' + PODPIS.disabled + '></td>');
+				+ SIGNATURE.name + '" style="width: 50%;margin-left: 2px;"' + SIGNATURE.disabled + '></td>');
 
 		var $loading_bar = $('<div id="DYK-loader-bar"></div>')
 			.css({width: '100%', backgroundColor: 'rgb(220, 220, 220)', border: '1px solid rgb(187, 187, 187)', borderRadius: '3px'})
@@ -299,50 +299,58 @@ function DYKnomination(mode,params,debug) {
 		var buttons = {
 			"Zgłoś": function() {
 				//get the question
-				TYTUL = $('#CzyWieszTitle').val().replace(/^\s*(.*?)\s*$/,'$1'); //usuwa zbędne spacje na początku i końcu
-				PYTANIE = $('#CzyWieszQuestion').val().replace(/(.*?)(--)?~{3,5}\s*$/,'$1').replace(/^\s*(.*?)\s*$/,'$1').replace(/^(Czy wiesz)?[\s,\.]*/,''); //usuwa zbędne spacje na początku i końcu oraz podpis
-				GRAFIKA = ( $('#CzyWieszFile1').attr('checked') ? $('#CzyWieszFile2').val().replace(/^\s*(.*?)\s*$/,'$1') : '' ); //usuwa zbędne spacje na początku i końcu
-				OBRAZKI = $('#CzyWieszImages').val().replace(/^\s*(.*?)\s*$/,'$1'); //usuwa zbędne spacje na początku i końcu
-				ZRODLA = (ZRODLA.ref ? '+' : ' ');
-				AUTOR = $('#CzyWieszAuthor').val().replace(/^\s*(.*?)\s*$/,'$1'); //usuwa zbędne spacje na początku i końcu
-				PODPIS = $('#CzyWieszSignature').val().replace(/^\s*(.*?)\s*$/,'$1'); //usuwa zbędne spacje na początku i końcu
+				TITLE = $('#CzyWieszTitle').val().replace(/^\s*(.*?)\s*$/,'$1'); //usuwa zbędne spacje na początku i końcu
+				QUESTION = $('#CzyWieszQuestion').val().replace(/(.*?)(--)?~{3,5}\s*$/,'$1').replace(/^\s*(.*?)\s*$/,'$1').replace(/^([Cc]zy wiesz)?[\s,\.]*/,''); //usuwa podpis, zbędne spacje na początku i końcu oraz początek pytania „Czy wiesz"
+				FILE = ( $('#CzyWieszFile1').attr('checked') ? $('#CzyWieszFile2').val().replace(/^\s*(.*?)\s*$/,'$1') : '' ); //usuwa zbędne spacje na początku i końcu
+				IMAGES = $('#CzyWieszImages').val().replace(/^\s*(.*?)\s*$/,'$1'); //usuwa zbędne spacje na początku i końcu
+				REFS = (REFS.ref ? '+' : ' ');
+				AUTHOR = $('#CzyWieszAuthor').val().replace(/^\s*(.*?)\s*$/,'$1'); //usuwa zbędne spacje na początku i końcu
+				SIGNATURE = $('#CzyWieszSignature').val().replace(/^\s*(.*?)\s*$/,'$1'); //usuwa zbędne spacje na początku i końcu
 
 				//validate form
 				var invalid = {is: false, fields: []};
-					if (typeof TYTUL != 'string' || TYTUL == '') {
+					if (typeof TITLE != 'string' || TITLE == '') {
 						invalid.is = true;
 						invalid.fields.push('Title');
 						alert('Podaj tytuł artykułu.')
 					}
-					if (typeof PYTANIE != 'string' || PYTANIE === '') {
+					if (typeof QUESTION != 'string' || QUESTION === '') {
 						invalid.is = true;
 						invalid.fields.push('Question');
 						alert('Wpisz pytanie.');
 					}
 					else {
-						if (PYTANIE.length > 10) {
-							PYTANIE = '…' + (PYTANIE.match(/\?[\s]*$/) ? (PYTANIE) : (PYTANIE += '?')) + '\n';
-						}
-						else {
+						if (QUESTION.length < 10) {
 							invalid.is = true;
-							if ( !$.inArray('Question',invalid.fields) ) {invalid.fields.push('Question');};
+							invalid.fields.push('Question');
 							alert('Zadaj poprawne pytanie.');
 						}
+						else if (QUESTION.match('\\[\\['+TITLE)) {
+							invalid.is = true;
+							invalid.fields.push('Question');
+							alert('Pytanie musi zawierać link do artykułu.');
+						}
+						else{
+							if (QUESTION.match(' \'\'\'\\[\\['+TITLE+'(\\|.*?)?\\]\\][^\\s\\?\\,\\;\\:\\"\\”\\!]*\'\'\'')) { // if needed: bold the link to article
+								QUESTION.replace(RegExp(' \\[\\['+TITLE+'(\\|.*?)?\\]\\]([^\\s\\?\\,\\;\\:\\"\\”\\!]*)'),' \'\'\'[['+TITLE+'$1]]$2\'\'\'');
+							}
+							QUESTION = '…' + (QUESTION.match(/\?[\s]*$/) ? (QUESTION) : (QUESTION += '?')) + '\n';
+						}
 					}
-					if (typeof GRAFIKA == 'string' && GRAFIKA != '') {
-						GRAFIKA = '[[Plik:' + (GRAFIKA.match(/^(Plik:|File:)/i) ? GRAFIKA.replace(/^(Plik:|File:)/i,'') : (GRAFIKA)) + '|100px|right]]\n';
+					if (typeof FILE == 'string' && FILE != '') {
+						FILE = '[[Plik:' + (FILE.match(/^(Plik:|File:)/i) ? FILE.replace(/^(Plik:|File:)/i,'') : (FILE)) + '|100px|right]]\n';
 					}
-					if (typeof OBRAZKI != 'string' || OBRAZKI === '') {
+					if (typeof IMAGES != 'string' || IMAGES === '') {
 						invalid.is = true;
 						invalid.fields.push('Images');
 						alert('Podaj liczbę grafik w artykule.');
 					}
-					if (typeof AUTOR != 'string' || AUTOR === '') {
+					if (typeof AUTHOR != 'string' || AUTHOR === '') {
 						invalid.is = true;
 						invalid.fields.push('Author');
 						alert('Podaj autora artykułu.');
 					}
-					if (typeof PODPIS != 'string' || PODPIS === '') {
+					if (typeof SIGNATURE != 'string' || SIGNATURE === '') {
 						invalid.is = true;
 						invalid.fields.push('Signature');
 						alert('Podpisz się.');
@@ -361,11 +369,11 @@ function DYKnomination(mode,params,debug) {
 					$projsel.each( function(index) {
 						var val = $(this).val();
 						if (val != 'none') {
-							WIKIPROJEKT.push(wikiprojects[val]);
+							WIKIPROJECT.push(wikiprojects[val]);
 						}
 					});
 					
-					var $params = [TYTUL, PYTANIE, GRAFIKA, OBRAZKI, ZRODLA, AUTOR, PODPIS, WIKIPROJEKT];
+					var $params = [TITLE, QUESTION, FILE, IMAGES, REFS, AUTHOR, SIGNATURE, WIKIPROJECT];
 					var errors = DYKnomination('do',$params,debug);
 
 					if (!errors) {
@@ -422,7 +430,7 @@ function DYKnomination(mode,params,debug) {
 		$('#CzyWieszQuestion').keyup();
 		$('#CzyWieszQuestion').focus();
 
-		if (OBRAZKI > 0) {
+		if (IMAGES > 0) {
 			$('#CzyWieszGalleryToggler').toggle();
 			$('#CzyWieszGalleryToggler a').click(function(){
 				var GALLERY = '<div id="CzyWieszGalleryHolder">'
@@ -476,14 +484,14 @@ function DYKnomination(mode,params,debug) {
 
 		if (debug) {console.log(arguments)}
 
-		var TYTUL       = params[0];
-		var PYTANIE     = params[1];
-		var GRAFIKA     = params[2];
-		var OBRAZKI     = params[3];
-		var ZRODLA		= params[4];
-		var AUTOR       = params[5];
-		var PODPIS      = params[6];
-		var WIKIPROJEKT = params[7];
+		var TITLE       = params[0];
+		var QUESTION     = params[1];
+		var FILE     = params[2];
+		var IMAGES     = params[3];
+		var REFS		= params[4];
+		var AUTHOR       = params[5];
+		var SIGNATURE      = params[6];
+		var WIKIPROJECT = params[7];
 
 		var NR = 1;
 
@@ -494,7 +502,7 @@ function DYKnomination(mode,params,debug) {
 		var rok = data.getYear()+1900;
 		(debug ? console.log('dzisiaj: ' + dzien + ' ' + miesiac) : {});
 		
-		var tasks = 4 + WIKIPROJEKT.length;
+		var tasks = 4 + WIKIPROJECT.length;
 
 		var uptodate = false;
 		
@@ -546,7 +554,7 @@ function DYKnomination(mode,params,debug) {
 		}
 		
 		// NR ready, make summary
-		summary = '/* ' + NR + ' (' + TYTUL + ')' + ' */ ' + summary;
+		summary = '/* ' + NR + ' (' + TITLE + ')' + ' */ ' + summary;
 
 		/* making data ready */
 		$('#DYK-loader-bar-inner').css({width: 100*2/tasks + '%'});
@@ -554,10 +562,10 @@ function DYKnomination(mode,params,debug) {
 
 		// making content
 		
-		input = '=== ' + NR + ' (' + TYTUL + ') ===\n'
-			+ GRAFIKA
-			+ PYTANIE
-			+ '{' + '{Wikiprojekt:Czy wiesz/weryfikacja|' + TYTUL + '|' + ZRODLA + '|' + OBRAZKI + '|?|' + AUTOR + '|' + PODPIS + '|?|?|?}}';
+		input = '=== ' + NR + ' (' + TITLE + ') ===\n'
+			+ FILE
+			+ QUESTION
+			+ '{' + '{Wikiprojekt:Czy wiesz/weryfikacja|' + TITLE + '|' + REFS + '|' + IMAGES + '|?|' + AUTHOR + '|' + SIGNATURE + '|?|?|?}}';
 
 		// text ready
 		// ↓ new section or not?
@@ -576,7 +584,7 @@ function DYKnomination(mode,params,debug) {
 			edittoken = mw.user.tokens.values.editToken;
 		}
 		else {
-			$.ajax({url:'/w/api.php?action=query&prop=info&format=json&intoken=edit&indexpageids=&titles=' + encodeURIComponent(TYTUL),
+			$.ajax({url:'/w/api.php?action=query&prop=info&format=json&intoken=edit&indexpageids=&titles=' + encodeURIComponent(TITLE),
 				cache: false,
 				async: false
 			}).done(function(data){
@@ -634,12 +642,12 @@ function DYKnomination(mode,params,debug) {
 		
 		// wikiprojects
 		$('#DYK-loader-bar-paragraph').text('Zgłaszam do wikiprojektu/ów…');
-		for (i=0;i<WIKIPROJEKT.length;i++) {
+		for (i=0;i<WIKIPROJECT.length;i++) {
 			$('#DYK-loader-bar-inner').css({width: 100*(3+(i+1)/tasks) + '%'});
 			$.ajax({
-				url:'/w/api.php?action=edit&format=json&title=' + encodeURIComponent('Dyskusja wikiprojektu:' + WIKIPROJEKT[i]) + '&section=new' 
+				url:'/w/api.php?action=edit&format=json&title=' + encodeURIComponent('Dyskusja wikiprojektu:' + WIKIPROJECT[i]) + '&section=new' 
 					+ '&sectiontitle=' + encodeURIComponent(sectiontitle_wikiproject) 
-					+ '&text=' + encodeURIComponent('{' + '{subst:Czy wiesz - wikiprojekt|' + TYTUL + '}}~' + '~' + '~' + '~') 
+					+ '&text=' + encodeURIComponent('{' + '{subst:Czy wiesz - wikiprojekt|' + TITLE + '}}~' + '~' + '~' + '~') 
 					+ '&token=' + encodeURIComponent(edittoken),
 				type:'POST',
 				async: false
@@ -655,9 +663,9 @@ function DYKnomination(mode,params,debug) {
 				}
 			}).fail(function(data){
 				console.error('wikiproject: błąd POST');
-				console.error('URI: /w/api.php?action=edit&format=json&title=' + encodeURIComponent('Dyskusja wikiprojektu:' + WIKIPROJEKT[i]) + '&section=new' 
+				console.error('URI: /w/api.php?action=edit&format=json&title=' + encodeURIComponent('Dyskusja wikiprojektu:' + WIKIPROJECT[i]) + '&section=new' 
 					+ '&sectiontitle=' + encodeURIComponent(sectiontitle_wikiproject) 
-					+ '&text=' + encodeURIComponent('{' + '{subst:Czy wiesz - wikiprojekt|' + TYTUL + '}}~' + '~' + '~' + '~') 
+					+ '&text=' + encodeURIComponent('{' + '{subst:Czy wiesz - wikiprojekt|' + TITLE + '}}~' + '~' + '~' + '~') 
 					+ '&token=' + encodeURIComponent(edittoken));
 				console.error('odpowiedź serwera:');
 				console.error(data);
