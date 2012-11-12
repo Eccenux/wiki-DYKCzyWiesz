@@ -15,199 +15,453 @@ https://pl.wikipedia.org/w/index.php?diff=33438384
 
 */
 
-
-// @name		test na wiki czywiesz propozycje
-// @version		1.2.1
-// @description	zgłaszanie czywiesza
-// @include		http[s]?://pl.wikipedia.org/wiki/Wikiprojekt:Czy_wiesz/propozycje
-// @autor		Kaligula
- 
 //TO DO: Wikiprojkety mają dziwne zgłaszanie, np. Wikiprojekt:Malarstwo chce action=edit&title=Dyskusja_wikiprojektu:Malarstwo&section=2&appendtext=
 	// wg tego http://pl.wikipedia.org/wiki/MediaWiki:Gadget-AjaxQuickDelete.js (na końcu str jest lista)?
-// !!! zmienna globalna DYKnomination_wikiproject_select
+// !!! zmienna globalna DYKnomination.wikiproject_select
 
 //kosmetyczne:
 //TO DO: pozamieniać taby na spacje, żeby się db wyświetlało na wiki
 //TO DO: jeśli skrypt będzie już przetestowany to usunąć wszystkie 'debug' [?]
 //TO DO: na końcu spr wszystkie „TODO” i „TO DO” i „console.*”
 
-// DEBUG: póki co po wpisaniu w konsoli "DYKnomination('','',true)" aktulane info pokażą si​ę w console.log 
+// DEBUG: póki co po wpisaniu w konsoli "DYKnomination.askuser('debug')" aktulane info pokażą si​ę w console.log 
 // i zgłoszenie pójdzie nie do projektu ale na stronę roboczą (debug=true)
 
 if (wgNamespaceNumber === 0) {
 
 
 
-function DYKnomination(mode,params,debug) {
+window.DYKnomination = {};
 
-	var wikiprojects = ['Albumy muzyczne',
-						'Anarchizm',
-						'Antropologia',
-						'Architektura',
-						'Astronautyka',
-						'Astronomia',
-						'Białystok',
-						'Biathlon',
-						'Biblia',
-						'Bieżące wydarzenia',
-						'Biografie',
-						'Biologia',
-						'Bitwy',
-						'Botanika',
-						'Bydgoszcz',
-						'Chemia',
-						'Chiny',
-						'Chrześcijaństwo',
-						'Cmentarze żydowskie w Polsce',
-						'Częstochowa',
-						'Czechy',
-						'Dinozaury',
-						'Dolny Śląsk',
-						'Drogi i autostrady',
-						'Dyskografie',
-						'Dzielnice Krakowa',
-						'Ekonomia',
-						'Elektronika',
-						'Entomologia',
-						'Euro 2012',
-						'Eurowizja',
-						'Fantastyka',
-						'Filmy',
-						'Filozofia',
-						'Fizyka',
-						'Formuła 1',
-						'Francja',
-						'Futbol amerykański',
-						'Górny Śląsk',
-						'Góry Polski',
-						'Gdańsk',
-						'Gender Studies',
-						'Genetyka i biologia molekularna',
-						'Geografia',
-						'Gry komputerowe',
-						'Gwiezdne wrota',
-						'Harcerstwo',
-						'Harry Potter',
-						'Herby',
-						'Hinduizm',
-						'Hip-Hop',
-						'Historia',
-						'Igrzyska olimpijskie',
-						'Imiona',
-						'Informatyka',
-						'Irlandia',
-						'Islam',
-						'Izrael',
-						'Japonia',
-						'Kluby sportowe',
-						'Kolarstwo',
-						'Kolej',
-						'Kompozytorzy',
-						'Komputerowe gry fabularne',
-						'Komunikacja miejska',
-						'Konflikty współczesne',
-						'Korea',
-						'Koszykówka',
-						'Kraków',
-						'Kynologia',
-						'Lekkoatletyka',
-						'LGBT',
-						'Linie lotnicze',
-						'Linux',
-						'Literatura',
-						'Literaturoznawstwo',
-						'Lotnictwo',
-						'Łódź',
-						'Malarstwo',
-						'Matematyka',
-						'Meblarstwo',
-						'Metro',
-						'Mikrobiologia',
-						'Militaria',
-						'Minerały',
-						'Mistrzostwa Świata w Piłce Nożnej 2014',
-						'Mitologia grecka',
-						'Mitologia rzymska',
-						'Mitologia słowiańska',
-						'Motoryzacja',
-						'Muzyka i muzykologia',
-						'Muzyka poważna',
-						'National Basketball Association',
-						'Nauki medyczne',
-						'Nauru',
-						'Nazwiska',
-						'Niemcy',
-						'Nowy Sącz',
-						'Olsztyn',
-						'Opis polskich wsi i gmin',
-						'Państwa świata',
-						'Paleontologia',
-						'Pallotyni',
-						'Parki narodowe, krajobrazowe i rezerwaty przyrody',
-						'Petanque',
-						'Piłka nożna',
-						'Piłka siatkowa',
-						'Piastowie',
-						'Podlaskie',
-						'Pokémon',
-						'Polityka',
-						'Powiat radomski',
-						'Powiat szydłowiecki',
-						'Powiat wrzesiński',
-						'Poznań',
-						'Prawo',
-						'Programy telewizyjne',
-						'Psychologia',
-						'Racibórz',
-						'Radio',
-						'Radio',
-						'Religioznawstwo',
-						'Rock progresywny',
-						'Rosja',
-						'Słowacja',
-						'Seksuologia',
-						'Seriale telewizyjne',
-						'Skoki narciarskie',
-						'Snooker',
-						'Socjologia',
-						'Spółdzielczość',
-						'Sport',
-						'Sporty motorowe',
-						'Sporty zimowe',
-						'Stany Zjednoczone',
-						'Starożytność',
-						'Stosunki polsko-ukraińskie',
-						'Synagogi w Polsce',
-						'Szkoła austriacka (ekonomia)',
-						'Sztuka współczesna',
-						'Śródziemie',
-						'Średniowiecze',
-						'Technika',
-						'Telefony komórkowe',
-						'Tenis ziemny',
-						'Transport',
-						'Turystyka',
-						'Tybet',
-						'U-Boot',
-						'Ukraina',
-						'Unia Europejska',
-						'Warhammer',
-						'Warszawa',
-						'Wawel',
-						'Wielka Brytania',
-						'Województwo świętokrzyskie',
-						'Województwo warmińsko-mazurskie',
-						'Wrestling',
-						'Wspinaczka',
-						'XML',
-						'Zoologia',
-						'Żegluga',
-						'Żużel',
-						'Życie codzienne'];
+	DYKnomination.about = {
+		version    : '2.0.0',
+		author     : 'Kaligula',
+		authorlink : 'w:pl:user:Kaligula',
+		credits    : 'Tomasz Wachowski, Matma Rex'
+	}
 
-	if ( (typeof mode != 'string') || (mode != 'do') ){
+	DYKnomination.wikiprojects = {
+		list : ['Albumy muzyczne',
+			'Anarchizm',
+			'Antropologia',
+			'Architektura',
+			'Astronautyka',
+			'Astronomia',
+			'Białystok',
+			'Biathlon',
+			'Biblia',
+			'Bieżące wydarzenia',
+			'Biografie',
+			'Biologia',
+			'Bitwy',
+			'Botanika',
+			'Bydgoszcz',
+			'Chemia',
+			'Chiny',
+			'Chrześcijaństwo',
+			'Cmentarze żydowskie w Polsce',
+			'Częstochowa',
+			'Czechy',
+			'Dinozaury',
+			'Dolny Śląsk',
+			'Drogi i autostrady',
+			'Dyskografie',
+			'Dzielnice Krakowa',
+			'Ekonomia',
+			'Elektronika',
+			'Entomologia',
+			'Euro 2012',
+			'Eurowizja',
+			'Fantastyka',
+			'Filmy',
+			'Filozofia',
+			'Fizyka',
+			'Formuła 1',
+			'Francja',
+			'Futbol amerykański',
+			'Górny Śląsk',
+			'Góry Polski',
+			'Gdańsk',
+			'Gender Studies',
+			'Genetyka i biologia molekularna',
+			'Geografia',
+			'Gry komputerowe',
+			'Gwiezdne wrota',
+			'Harcerstwo',
+			'Harry Potter',
+			'Herby',
+			'Hinduizm',
+			'Hip-Hop',
+			'Historia',
+			'Igrzyska olimpijskie',
+			'Imiona',
+			'Informatyka',
+			'Irlandia',
+			'Islam',
+			'Izrael',
+			'Japonia',
+			'Kluby sportowe',
+			'Kolarstwo',
+			'Kolej',
+			'Kompozytorzy',
+			'Komputerowe gry fabularne',
+			'Komunikacja miejska',
+			'Konflikty współczesne',
+			'Korea',
+			'Koszykówka',
+			'Kraków',
+			'Kynologia',
+			'Lekkoatletyka',
+			'LGBT',
+			'Linie lotnicze',
+			'Linux',
+			'Literatura',
+			'Literaturoznawstwo',
+			'Lotnictwo',
+			'Łódź',
+			'Malarstwo',
+			'Matematyka',
+			'Meblarstwo',
+			'Metro',
+			'Mikrobiologia',
+			'Militaria',
+			'Minerały',
+			'Mistrzostwa Świata w Piłce Nożnej 2014',
+			'Mitologia grecka',
+			'Mitologia rzymska',
+			'Mitologia słowiańska',
+			'Motoryzacja',
+			'Muzyka i muzykologia',
+			'Muzyka poważna',
+			'National Basketball Association',
+			'Nauki medyczne',
+			'Nauru',
+			'Nazwiska',
+			'Niemcy',
+			'Nowy Sącz',
+			'Olsztyn',
+			'Opis polskich wsi i gmin',
+			'Państwa świata',
+			'Paleontologia',
+			'Pallotyni',
+			'Parki narodowe, krajobrazowe i rezerwaty przyrody',
+			'Petanque',
+			'Piłka nożna',
+			'Piłka siatkowa',
+			'Piastowie',
+			'Podlaskie',
+			'Pokémon',
+			'Polityka',
+			'Powiat radomski',
+			'Powiat szydłowiecki',
+			'Powiat wrzesiński',
+			'Poznań',
+			'Prawo',
+			'Programy telewizyjne',
+			'Psychologia',
+			'Racibórz',
+			'Radio',
+			'Radio',
+			'Religioznawstwo',
+			'Rock progresywny',
+			'Rosja',
+			'Słowacja',
+			'Seksuologia',
+			'Seriale telewizyjne',
+			'Skoki narciarskie',
+			'Snooker',
+			'Socjologia',
+			'Spółdzielczość',
+			'Sport',
+			'Sporty motorowe',
+			'Sporty zimowe',
+			'Stany Zjednoczone',
+			'Starożytność',
+			'Stosunki polsko-ukraińskie',
+			'Synagogi w Polsce',
+			'Szkoła austriacka (ekonomia)',
+			'Sztuka współczesna',
+			'Śródziemie',
+			'Średniowiecze',
+			'Technika',
+			'Telefony komórkowe',
+			'Tenis ziemny',
+			'Transport',
+			'Turystyka',
+			'Tybet',
+			'U-Boot',
+			'Ukraina',
+			'Unia Europejska',
+			'Warhammer',
+			'Warszawa',
+			'Wawel',
+			'Wielka Brytania',
+			'Województwo świętokrzyskie',
+			'Województwo warmińsko-mazurskie',
+			'Wrestling',
+			'Wspinaczka',
+			'XML',
+			'Zoologia',
+			'Żegluga',
+			'Żużel',
+			'Życie codzienne'],
+		list2 : [
+			{
+				label : 'Anarchizm',
+				page : 'Dyskusja Wikiprojektu:Anarchizm',
+				type : 'talk'
+			},
+			{
+				label : 'Astronomia',
+				page : 'Wikiprojekt:Astronomia',
+				type : 'section'
+			},
+			{
+				label : 'Biblia',
+				page : 'Wikiprojekt:Biblia',
+				type : 'section'
+			},
+			{
+				label : 'Botanika',
+				page : 'Wikiprojekt:Botanika',
+				type : 'section'
+			},
+			{
+				label : 'Chemia',
+				page : 'Wikiprojekt:Chemia',
+				type : 'section'
+			},
+			{
+				label : 'Chiny',
+				page : 'Wikiprojekt:Chiny',
+				type : 'section'
+			},
+			{
+				label : 'Chrześcijaństwo',
+				page : 'Wikiprojekt:Chrześcijaństwo',
+				type : 'section'
+			},
+			{
+				label : 'Dinozaury',
+				page : 'Wikiprojekt:Dinozaury',
+				type : 'section'
+			},
+			{
+				label : 'Euro 2012',
+				page : 'Dyskusja Wikiprojektu:Euro 2012',
+				type : 'talk'
+			},
+			{
+				label : 'Filmy',
+				page : 'Wikiprojekt:Filmy',
+				type : 'section'
+			},
+			{
+				label : 'Fizyka',
+				page : 'Wikiprojekt:Fizyka',
+				type : 'section'
+			},
+			{
+				label : 'Formuła 1',
+				page : 'Dyskusja Wikiprojektu:Formuła 1',
+				type : 'talk'
+			},
+			{
+				label : 'Genetyka i biologia molekularna',
+				page : 'Wikiprojekt:Genetyka i biologia molekularna',
+				type : 'section'
+			},
+			{
+				label : 'Geografia',
+				page : 'Wikiprojekt:Geografia',
+				type : 'section'
+			},
+			{
+				label : 'Gry komputerowe',
+				page : 'Dyskusja Wikiprojektu:Gry komputerowe',
+				type : 'talk'
+			},
+			{
+				label : 'Góry Polski',
+				page : 'Wikiprojekt:Góry Polski',
+				type : 'section'
+			},
+			{
+				label : 'Hinduizm',
+				page : 'Wikiprojekt:Hinduizm',
+				type : 'section'
+			},
+			{
+				label : 'Igrzyska olimpijskie',
+				page : 'Dyskusja Wikiprojektu:Igrzyska olimpijskie',
+				type : 'talk'
+			},
+			{
+				label : 'Ilustrowanie',
+				page : 'Wikiprojekt:Ilustrowanie',
+				type : 'section'
+			},
+			{
+				label : 'Infoboksy',
+				page : 'Wikiprojekt:Infoboksy',
+				type : 'section'
+			},
+			{
+				label : 'Informatyka',
+				page : 'Dyskusja Wikiprojektu:Informatyka',
+				type : 'talk'
+			},
+			{
+				label : 'Kategoryzacja',
+				page : 'Dyskusja Wikiprojektu:Kategoryzacja',
+				type : 'talk'
+			},
+			{
+				label : 'Kolej',
+				page : 'Wikiprojekt:Kolej',
+				type : 'section'
+			},
+			{
+				label : 'Koszykówka',
+				page : 'Dyskusja Wikiprojektu:Koszykówka',
+				type : 'talk'
+			},
+			{
+				label : 'Kraków',
+				page : 'Dyskusja Wikiprojektu:Kraków',
+				type : 'talk'
+			},
+			{
+				label : 'LGBT',
+				page : 'Wikiprojekt:LGBT',
+				type : 'section'
+			},
+			{
+				label : 'Literatura',
+				page : 'Dyskusja Wikiprojektu:Literatura',
+				type : 'section'
+			},
+			{
+				label : 'Literaturoznawstwo',
+				page : 'Wikiprojekt:Literaturoznawstwo',
+				type : 'section'
+			},
+			{
+				label : 'Łódź',
+				page : 'Wikiprojekt:Łódź',
+				type : 'section'
+			},
+			{
+				label : 'Matematyka',
+				page : 'Dyskusja Wikiprojektu:Matematyka',
+				type : 'talk'
+			},
+			{
+				label : 'Mikrobiologia',
+				page : 'Wikiprojekt:Mikrobiologia',
+				type : 'section'
+			},
+			{
+				label : 'Militaria',
+				page : 'Wikiprojekt:Militaria',
+				type : 'section'
+			},
+			{
+				label : 'Muzyka i muzykologia',
+				page : 'Dyskusja Wikiprojektu:Muzyka i muzykologia',
+				type : 'talk'
+			},
+			{
+				label : 'Nauki medyczne',
+				page : 'Wikiprojekt:Nauki medyczne',
+				type : 'section'
+			},
+			{
+				label : 'Nowy Sącz',
+				page : 'Wikiprojekt:Nowy Sącz',
+				type : 'section'
+			},
+			{
+				label : 'Olsztyn',
+				page : 'Wikiprojekt:Olsztyn',
+				type : 'section'
+			},
+			{
+				label : 'Paleontologia',
+				page : 'Wikiprojekt:Paleontologia',
+				type : 'section'
+			},
+			{
+				label : 'Pallotyni',
+				page : 'Wikiprojekt:Pallotyni',
+				type : 'section'
+			},
+			{
+				label : 'Piłka nożna',
+				page : 'Dyskusja Wikiprojektu:Piłka nożna',
+				type : 'talk'
+			},
+			{
+				label : 'Piłka siatkowa',
+				page : 'Wikiprojekt:Piłka siatkowa',
+				type : 'section'
+			},
+			{
+				label : 'Polityka',
+				page : 'Wikiprojekt:Polityka',
+				type : 'section'
+			},
+			{
+				label : 'Prawo',
+				page : 'Wikiprojekt:Prawo',
+				type : 'section'
+			},
+			{
+				label : 'Racibórz',
+				page : 'Dyskusja Wikiprojektu:Racibórz',
+				type : 'talk'
+			},
+			{
+				label : 'Sport',
+				page : 'Wikiprojekt:Sport',
+				type : 'section'
+			},
+			{
+				label : 'Sporty zimowe',
+				page : 'Wikiprojekt:Sporty zimowe',
+				type : 'section'
+			},
+			{
+				label : 'Synagogi w Polsce',
+				page : 'Wikiprojekt:Synagogi w Polsce',
+				type : 'section'
+			},
+			{
+				label : 'Tenis ziemny',
+				page : 'Wikiprojekt:Tenis ziemny',
+				type : 'section'
+			},
+			{
+				label : 'Unia Europejska',
+				page : 'Wikiprojekt:Unia Europejska',
+				type : 'section'
+			},
+			{
+				label : 'Warszawa',
+				page : 'Wikiprojekt:Warszawa',
+				type : 'talk'
+			},
+			{
+				label : 'Zoologia',
+				page : 'Wikiprojekt:Zoologia',
+				type : 'section'
+			}
+		];
+	}
 
-		var debug = (typeof debug == 'boolean') ? debug : false;
+	DYKnomination.askuser = function (debug) {
+
+		var debug = (typeof debug == 'string' && debug == 'debug') ? true : false;
 
 		var TITLE = wgTitle;
 		//var TITLE = wgPageName.replace(/_/g,' ');
@@ -216,7 +470,8 @@ function DYKnomination(mode,params,debug) {
 		var REFS = {
 			ref:	false,
 			yes:	'<img alt="Crystal Clear app clean.png" src="//upload.wikimedia.org/wikipedia/commons/thumb/3/34/Crystal_Clear_app_clean.png/20px-Crystal_Clear_app_clean.png" width="20" height="20">',
-			no:		'<img alt="Crystal Clear action button cancel.png" src="//upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Crystal_Clear_action_button_cancel.png/20px-Crystal_Clear_action_button_cancel.png" width="20" height="20">',
+			no:		'<img alt="Crystal Clear action button cancel.png" src="//upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Crystal_Clear_action_button_cancel.png/20px-Crystal_Clear_action_button_cancel.png" width="20" height="20">'
+					+ '&nbsp;&nbsp;<strong style="color: red;">Brak źródeł dyskwalifikuje artykuł ze zgłoszenia!!</strong> <small><a class="external">(czytaj więcej…)</a></small>',
 			ar1:	[''],
 			ar2:	['Bibliografia','Przypisy']
 		}
@@ -254,7 +509,7 @@ function DYKnomination(mode,params,debug) {
 
 		var $ref_row = $('<tr></tr>')
 			.html('<td>Źródła: </td>'
-				+ '<td>' + (REFS.ref ? REFS.yes : REFS.no) + '</td>');
+				+ '<td id="CzyWieszRefs">' + (REFS.ref ? REFS.yes : REFS.no) + '</td>');
 
 		var $author_row = $('<tr></tr>')
 			.html('<td>Główny autor artykułu: </td>'
@@ -271,15 +526,15 @@ function DYKnomination(mode,params,debug) {
 				+ '<div id="DYK-loader-bar-inner" style="width: 0; height: 20px; background-color: #ABEC46; border: none; border-radius: 3px;"></div>');
 
 		//wikiproject row
-		DYKnomination_wikiproject_select = $('<select class="czywiesz-wikiproject"></select>').css('vertical-align', 'middle');
-		DYKnomination_wikiproject_select.append('<option value="none">-- (żaden) --</option>');
-		for (i=0;i<wikiprojects.length;i++)
+		DYKnomination.wikiproject_select = $('<select class="czywiesz-wikiproject"></select>').css('vertical-align', 'middle');
+		DYKnomination.wikiproject_select.append('<option value="none">-- (żaden) --</option>');
+		for (i=0;i<DYKnomination.wikiprojects.list.length;i++)
 		{
-			if (typeof(wikiprojects[i]) == 'function') continue; //on IE wikibits adds indexOf method for arrays. skip it.
-			$('<option value="' + i + '">' + wikiprojects[i] + '</option>').appendTo(DYKnomination_wikiproject_select);
+			if (typeof(DYKnomination.wikiprojects.list[i]) == 'function') continue; //on IE wikibits adds indexOf method for arrays. skip it.
+			$('<option value="' + i + '">' + DYKnomination.wikiprojects.list[i] + '</option>').appendTo(DYKnomination.wikiproject_select);
 		}
-		var $wikiproject_row = $('<span id="CzyWieszWikiprojectContainer"></span>').append(DYKnomination_wikiproject_select.clone());
- 		$wikiproject_row = $('<td></td>').append($wikiproject_row)
+		var $wikiproject_row = $('<span id="CzyWieszWikiprojectContainer"></span>').append(DYKnomination.wikiproject_select.clone());
+		$wikiproject_row = $('<td></td>').append($wikiproject_row)
 			.append('<a id="CzyWieszWikiprojectAdd">(+)</a>');
 		$wikiproject_row = $('<tr></tr>').append('<td>Powiadom wikiprojekt(y): </td>').append($wikiproject_row);
  
@@ -297,95 +552,103 @@ function DYKnomination(mode,params,debug) {
 		//main buttons
 		var buttons = {
 			"Zgłoś": function() {
-				//get the question
-				TITLE = $('#CzyWieszTitle').val().replace(/^\s*(.*?)\s*$/,'$1'); // remove spaces on beginning and end
-				QUESTION = $('#CzyWieszQuestion').val().replace(/(.*?)(--)?~{3,5}\s*$/,'$1').replace(/^\s*(.*?)\s*$/,'$1').replace(/^([Cc]zy wiesz)?[\s,\.]*/,''); // remove signature, spaces on beginning and end, beginning of question ("Czy wiesz")
-				FILE = ( $('#CzyWieszFile1').attr('checked') ? $('#CzyWieszFile2').val().replace(/^\s*(.*?)\s*$/,'$1') : '' ); // remove spaces on beginning and end
-				IMAGES = $('#CzyWieszImages').val().replace(/^\s*(.*?)\s*$/,'$1'); // remove spaces on beginning and end
-				REFS = (REFS.ref ? '+' : ' ');
-				AUTHOR = $('#CzyWieszAuthor').val().replace(/^\s*(.*?)\s*$/,'$1'); // remove spaces on beginning and end
-				SIGNATURE = $('#CzyWieszSignature').val().replace(/^\s*(.*?)\s*$/,'$1'); // remove spaces on beginning and end
+				if (!REFS.ref) {
 
-				//validate form
-				var invalid = {is: false, fields: []};
-					if (typeof TITLE != 'string' || TITLE == '') {
-						invalid.is = true;
-						invalid.fields.push('Title');
-						alert('Podaj tytuł artykułu.')
-					}
-					if (typeof QUESTION != 'string' || QUESTION === '') {
-						invalid.is = true;
-						invalid.fields.push('Question');
-						alert('Wpisz pytanie.');
+					//get the question
+					TITLE = $('#CzyWieszTitle').val().replace(/^\s*(.*?)\s*$/,'$1'); // remove spaces on beginning and end
+					QUESTION = $('#CzyWieszQuestion').val().replace(/(.*?)(--)?~{3,5}\s*$/,'$1').replace(/^\s*(.*?)\s*$/,'$1').replace(/^([Cc]zy wiesz)?[\s,\.]*/,''); // remove signature, spaces on beginning and end, beginning of question ("Czy wiesz")
+					FILE = ( $('#CzyWieszFile1').attr('checked') ? $('#CzyWieszFile2').val().replace(/^\s*(.*?)\s*$/,'$1') : '' ); // remove spaces on beginning and end
+					IMAGES = $('#CzyWieszImages').val().replace(/^\s*(.*?)\s*$/,'$1'); // remove spaces on beginning and end
+					REFS = (REFS.ref ? '+' : ' ');
+					AUTHOR = $('#CzyWieszAuthor').val().replace(/^\s*(.*?)\s*$/,'$1'); // remove spaces on beginning and end
+					SIGNATURE = $('#CzyWieszSignature').val().replace(/^\s*(.*?)\s*$/,'$1'); // remove spaces on beginning and end
+
+					//validate form
+					var invalid = {is: false, fields: []};
+						if (typeof TITLE != 'string' || TITLE == '') {
+							invalid.is = true;
+							invalid.fields.push('Title');
+							alert('Podaj tytuł artykułu.')
+						}
+						if (typeof QUESTION != 'string' || QUESTION === '') {
+							invalid.is = true;
+							invalid.fields.push('Question');
+							alert('Wpisz pytanie.');
+						}
+						else {
+							if (QUESTION.length < 10) {
+								invalid.is = true;
+								invalid.fields.push('Question');
+								alert('Zadaj poprawne pytanie.');
+							}
+							else if (QUESTION.match('\\[\\['+TITLE)) {
+								invalid.is = true;
+								invalid.fields.push('Question');
+								alert('Pytanie musi zawierać link do artykułu.');
+							}
+							else{
+								if (QUESTION.match(' \'\'\'\\[\\['+TITLE+'(\\|.*?)?\\]\\][^\\s\\?\\,\\;\\:\\"\\”\\!]*\'\'\'')) { // if needed: bold the link to article
+									QUESTION.replace(RegExp(' \\[\\['+TITLE+'(\\|.*?)?\\]\\]([^\\s\\?\\,\\;\\:\\"\\”\\!]*)'),' \'\'\'[['+TITLE+'$1]]$2\'\'\'');
+								}
+								QUESTION = '…' + (QUESTION.match(/\?[\s]*$/) ? (QUESTION) : (QUESTION += '?')) + '\n';
+							}
+						}
+						if (typeof FILE == 'string' && FILE != '') {
+							FILE = '[[Plik:' + (FILE.match(/^(Plik:|File:)/i) ? FILE.replace(/^(Plik:|File:)/i,'') : (FILE)) + '|100px|right]]\n';
+						}
+						if (typeof IMAGES != 'string' || IMAGES === '') {
+							invalid.is = true;
+							invalid.fields.push('Images');
+							alert('Podaj liczbę grafik w artykule.');
+						}
+						if (typeof AUTHOR != 'string' || AUTHOR === '') {
+							invalid.is = true;
+							invalid.fields.push('Author');
+							alert('Podaj autora artykułu.');
+						}
+						if (typeof SIGNATURE != 'string' || SIGNATURE === '') {
+							invalid.is = true;
+							invalid.fields.push('Signature');
+							alert('Podpisz się.');
+						}
+
+					if (invalid.is) {
+						$(invalid.fields).each(function(){
+							$('#CzyWiesz'+this).css({border: 'solid 2px red'}).change(function(){
+								$(this).css({border: 'none'});
+							});
+						});
 					}
 					else {
-						if (QUESTION.length < 10) {
-							invalid.is = true;
-							invalid.fields.push('Question');
-							alert('Zadaj poprawne pytanie.');
-						}
-						else if (QUESTION.match('\\[\\['+TITLE)) {
-							invalid.is = true;
-							invalid.fields.push('Question');
-							alert('Pytanie musi zawierać link do artykułu.');
-						}
-						else{
-							if (QUESTION.match(' \'\'\'\\[\\['+TITLE+'(\\|.*?)?\\]\\][^\\s\\?\\,\\;\\:\\"\\”\\!]*\'\'\'')) { // if needed: bold the link to article
-								QUESTION.replace(RegExp(' \\[\\['+TITLE+'(\\|.*?)?\\]\\]([^\\s\\?\\,\\;\\:\\"\\”\\!]*)'),' \'\'\'[['+TITLE+'$1]]$2\'\'\'');
+						//get the wikiprojects
+						var $projsel = $('.czywiesz-wikiproject');
+						$projsel.each( function(index) {
+							var val = $(this).val();
+							if (val != 'none') {
+								WIKIPROJECT.push(DYKnomination.wikiprojects.list[val]);
 							}
-							QUESTION = '…' + (QUESTION.match(/\?[\s]*$/) ? (QUESTION) : (QUESTION += '?')) + '\n';
+						});
+						
+						var $params = [TITLE, QUESTION, FILE, IMAGES, REFS, AUTHOR, SIGNATURE, WIKIPROJECT];
+						var errors = DYKnomination.nominate($params,debug);
+
+						if (!errors) {
+							$(this).dialog("destroy");
+							$(this).remove();
+
+							// end dialog: "Finished!"
+							$('<div><div class="floatright"><img alt="PL Wiki CzyWiesz ikona.svg" src="//upload.wikimedia.org/wikipedia/commons/thumb/f/f4/PL_Wiki_CzyWiesz_ikona.svg/80px-PL_Wiki_CzyWiesz_ikona.svg.png" width="80" height="80" srcset="//upload.wikimedia.org/wikipedia/commons/thumb/f/f4/PL_Wiki_CzyWiesz_ikona.svg/120px-PL_Wiki_CzyWiesz_ikona.svg.png 1.5x, //upload.wikimedia.org/wikipedia/commons/thumb/f/f4/PL_Wiki_CzyWiesz_ikona.svg/160px-PL_Wiki_CzyWiesz_ikona.svg.png 2x"></div><p style="margin-top: 10px;"><span class="template-done"><img alt="Crystal Clear app clean.png" src="//upload.wikimedia.org/wikipedia/commons/thumb/3/34/Crystal_Clear_app_clean.png/20px-Crystal_Clear_app_clean.png" width="20" height="20" srcset="//upload.wikimedia.org/wikipedia/commons/thumb/3/34/Crystal_Clear_app_clean.png/30px-Crystal_Clear_app_clean.png 1.5x, //upload.wikimedia.org/wikipedia/commons/thumb/3/34/Crystal_Clear_app_clean.png/40px-Crystal_Clear_app_clean.png 2x"><span style="display:none">T</span> <b>Załatwione</b></span></p><p style="margin-left: 10px;">Dziękujemy za <a id="CzyWieszLinkAfter" href="' + location.protocol + '//pl.wikipedia.org/w/index.php?title=Wikiprojekt:Czy_wiesz/propozycje&diff=cur&oldid=0" class="external">zgłoszenie</a>,<br><a href="/wiki/Wikiprojekt:Czy_wiesz" title="Wikiprojekt:Czy wiesz">Wikiprojekt Czy wiesz</a></p></div>')
+							.dialog({ modal: true, dialogClass: "wikiEditor-toolbar-dialog", close: function() { $(this).dialog("destroy"); $(this).remove();} });
+						}
+						else {
+							// end dialog: "Error!"
+							$('<div><div class="floatright"><img alt="PL Wiki CzyWiesz ikona.svg" src="//upload.wikimedia.org/wikipedia/commons/thumb/f/f4/PL_Wiki_CzyWiesz_ikona.svg/80px-PL_Wiki_CzyWiesz_ikona.svg.png" width="80" height="80" srcset="//upload.wikimedia.org/wikipedia/commons/thumb/f/f4/PL_Wiki_CzyWiesz_ikona.svg/120px-PL_Wiki_CzyWiesz_ikona.svg.png 1.5x, //upload.wikimedia.org/wikipedia/commons/thumb/f/f4/PL_Wiki_CzyWiesz_ikona.svg/160px-PL_Wiki_CzyWiesz_ikona.svg.png 2x"></div><p style="margin-top: 10px;"><span class="template-not-done"><img alt="Crystal Clear action button cancel.png" src="//upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Crystal_Clear_action_button_cancel.png/20px-Crystal_Clear_action_button_cancel.png" width="20" height="20" srcset="//upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Crystal_Clear_action_button_cancel.png/30px-Crystal_Clear_action_button_cancel.png 1.5x, //upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Crystal_Clear_action_button_cancel.png/40px-Crystal_Clear_action_button_cancel.png 2x"><span style="display:none">N</span> <b>Niezałatwione</b></span></p><p style="margin-left: 10px;">Wystąpił błąd. Więcej informacji w konsoli przeglądarki.<br />Przepraszamy,<br /><a href="/wiki/Wikiprojekt:Czy_wiesz" title="Wikiprojekt:Czy wiesz">Wikiprojekt Czy wiesz</a></p></div>')
+							.dialog({ modal: true, dialogClass: "wikiEditor-toolbar-dialog", close: function() { $(this).dialog("destroy"); $(this).remove();} });
 						}
 					}
-					if (typeof FILE == 'string' && FILE != '') {
-						FILE = '[[Plik:' + (FILE.match(/^(Plik:|File:)/i) ? FILE.replace(/^(Plik:|File:)/i,'') : (FILE)) + '|100px|right]]\n';
-					}
-					if (typeof IMAGES != 'string' || IMAGES === '') {
-						invalid.is = true;
-						invalid.fields.push('Images');
-						alert('Podaj liczbę grafik w artykule.');
-					}
-					if (typeof AUTHOR != 'string' || AUTHOR === '') {
-						invalid.is = true;
-						invalid.fields.push('Author');
-						alert('Podaj autora artykułu.');
-					}
-					if (typeof SIGNATURE != 'string' || SIGNATURE === '') {
-						invalid.is = true;
-						invalid.fields.push('Signature');
-						alert('Podpisz się.');
-					}
-
-				if (invalid.is) {
-					$(invalid.fields).each(function(){
-						$('#CzyWiesz'+this).css({border: 'solid 2px red'}).change(function(){
-							$(this).css({border: 'none'});
-						});
-					});
 				}
 				else {
-					//get the wikiprojects
-					var $projsel = $('.czywiesz-wikiproject');
-					$projsel.each( function(index) {
-						var val = $(this).val();
-						if (val != 'none') {
-							WIKIPROJECT.push(wikiprojects[val]);
-						}
-					});
-					
-					var $params = [TITLE, QUESTION, FILE, IMAGES, REFS, AUTHOR, SIGNATURE, WIKIPROJECT];
-					var errors = DYKnomination('do',$params,debug);
-
-					if (!errors) {
-						$(this).dialog("destroy");
-						$(this).remove();
-
-						// end dialog: "Finished!"
-						$('<div><div class="floatright"><img alt="PL Wiki CzyWiesz ikona.svg" src="//upload.wikimedia.org/wikipedia/commons/thumb/f/f4/PL_Wiki_CzyWiesz_ikona.svg/80px-PL_Wiki_CzyWiesz_ikona.svg.png" width="80" height="80" srcset="//upload.wikimedia.org/wikipedia/commons/thumb/f/f4/PL_Wiki_CzyWiesz_ikona.svg/120px-PL_Wiki_CzyWiesz_ikona.svg.png 1.5x, //upload.wikimedia.org/wikipedia/commons/thumb/f/f4/PL_Wiki_CzyWiesz_ikona.svg/160px-PL_Wiki_CzyWiesz_ikona.svg.png 2x"></div><p style="margin-top: 10px;"><span class="template-done"><img alt="Crystal Clear app clean.png" src="//upload.wikimedia.org/wikipedia/commons/thumb/3/34/Crystal_Clear_app_clean.png/20px-Crystal_Clear_app_clean.png" width="20" height="20" srcset="//upload.wikimedia.org/wikipedia/commons/thumb/3/34/Crystal_Clear_app_clean.png/30px-Crystal_Clear_app_clean.png 1.5x, //upload.wikimedia.org/wikipedia/commons/thumb/3/34/Crystal_Clear_app_clean.png/40px-Crystal_Clear_app_clean.png 2x"><span style="display:none">T</span> <b>Załatwione</b></span></p><p style="margin-left: 10px;">Dziękujemy za <a id="CzyWieszLinkAfter" href="' + location.protocol + '//pl.wikipedia.org/w/index.php?title=Wikiprojekt:Czy_wiesz/propozycje&diff=cur&oldid=0" class="external">zgłoszenie</a>,<br><a href="/wiki/Wikiprojekt:Czy_wiesz" title="Wikiprojekt:Czy wiesz">Wikiprojekt Czy wiesz</a></p></div>').dialog({ modal: true, dialogClass: "wikiEditor-toolbar-dialog", close: function() { $(this).dialog("destroy"); $(this).remove();} });
-					}
-					else {
-						// end dialog: "Error!"
-						$('<div><div class="floatright"><img alt="PL Wiki CzyWiesz ikona.svg" src="//upload.wikimedia.org/wikipedia/commons/thumb/f/f4/PL_Wiki_CzyWiesz_ikona.svg/80px-PL_Wiki_CzyWiesz_ikona.svg.png" width="80" height="80" srcset="//upload.wikimedia.org/wikipedia/commons/thumb/f/f4/PL_Wiki_CzyWiesz_ikona.svg/120px-PL_Wiki_CzyWiesz_ikona.svg.png 1.5x, //upload.wikimedia.org/wikipedia/commons/thumb/f/f4/PL_Wiki_CzyWiesz_ikona.svg/160px-PL_Wiki_CzyWiesz_ikona.svg.png 2x"></div><p style="margin-top: 10px;"><span class="template-not-done"><img alt="Crystal Clear action button cancel.png" src="//upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Crystal_Clear_action_button_cancel.png/20px-Crystal_Clear_action_button_cancel.png" width="20" height="20" srcset="//upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Crystal_Clear_action_button_cancel.png/30px-Crystal_Clear_action_button_cancel.png 1.5x, //upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Crystal_Clear_action_button_cancel.png/40px-Crystal_Clear_action_button_cancel.png 2x"><span style="display:none">N</span> <b>Niezałatwione</b></span></p><p style="margin-left: 10px;">Wystąpił błąd. Więcej informacji w konsoli przeglądarki.<br />Przepraszamy,<br /><a href="/wiki/Wikiprojekt:Czy_wiesz" title="Wikiprojekt:Czy wiesz">Wikiprojekt Czy wiesz</a></p></div>').dialog({ modal: true, dialogClass: "wikiEditor-toolbar-dialog", close: function() { $(this).dialog("destroy"); $(this).remove();} });
-					}
+					alert('Artykuł bez źródeł jest zdyskwalifikowany z nominacji. (Jeśli źródła są to zwróć uwagę czy tytuł sekcji jest prawidłowy, tzn. „Przypisy” lub „Bibliografia”.)')
 				}
 			},
 			"Anuluj" : function() {
@@ -417,33 +680,36 @@ function DYKnomination(mode,params,debug) {
 		if ($('#CzyWieszStyleTag').length == 0) {
 			$('<style id="CzyWieszStyleTag">' 
 			+ '.wikiEditor-toolbar-dialog .czy-wiesz-gallery-chosen { border: solid 2px red; }\n' 
-			+ '#CzyWieszGalleryToggler a, a#CzyWieszLinkAfter { color: #0645AD; text-decoration: underline; cursor: pointer; padding-right: 13px; '
+			+ '#CzyWieszGalleryToggler a, a#CzyWieszLinkAfter, #CzyWieszRefs a { color: #0645AD; text-decoration: underline; cursor: pointer; padding-right: 13px; '
 			+ 'background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAVklEQVR4Xn3PgQkAMQhDUXfqTu7kTtkpd5RA8AInfArtQ2'
 			+ 'iRXFWT2QedAfttj2FsPIOE1eCOlEuoWWjgzYaB/IkeGOrxXhqB+uA9Bfcm0lAZuh+YIeAD+cAqSz4kCMUAAAAASUVORK5CYII=) center right no-repeat; '
 			+ 'background: url(//bits.wikimedia.org/static-1.21wmf3/skins/vector/images/external-link-ltr-icon.png) center right no-repeat!ie; }'
 			+ '</style>').appendTo('head');
 		}
-		
+
 		// when title changed → user can input number of images (← just in case user wants to nominate another article than current)
 		$('#CzyWieszTitle').change(function(){
 			$('#CzyWieszImages').removeAttr('disabled');
 			$('#CzyWieszImages').val('');
 		});
-		
+
 		// when user ticks he wants to nominate with picture → enable picture/file field
 		$('#CzyWieszFile1').change(function(){
 			var a=$('#CzyWieszFile2');
 			(a.attr('disabled') ? a.removeAttr('disabled') : a.attr('disabled','true'))
-		})
-		
+		});
+
+		// in there's no refs (or they're badly named) → append this dialog to a link in $ref_row
+		$('#CzyWieszRefs small a').click(function(){
+			$('<div><div class="floatright"><img alt="PL Wiki CzyWiesz ikona.svg" src="//upload.wikimedia.org/wikipedia/commons/thumb/f/f4/PL_Wiki_CzyWiesz_ikona.svg/80px-PL_Wiki_CzyWiesz_ikona.svg.png" width="80" height="80" srcset="//upload.wikimedia.org/wikipedia/commons/thumb/f/f4/PL_Wiki_CzyWiesz_ikona.svg/120px-PL_Wiki_CzyWiesz_ikona.svg.png 1.5x, //upload.wikimedia.org/wikipedia/commons/thumb/f/f4/PL_Wiki_CzyWiesz_ikona.svg/160px-PL_Wiki_CzyWiesz_ikona.svg.png 2x"></div><p style="margin-left: 10px;">Zgodnie z wytycznymi <a href="/wiki/Wikiprojekt:Czy_wiesz" title="Wikiprojekt:Czy wiesz">Wikiprojektu Czy wiesz</a> zgłaszane hasło powinno posiadać źródła w formie bibliografii lub przypisów. <a href="/wiki/Wikiprojekt:Czy_wiesz/pomoc#Zg.C5.82aszanie_propozycji_i_poprawa_hase.C5.82" title="Wikiprojekt:Czy wiesz/pomoc#Zgłaszanie propozycji i poprawa haseł">(Więcej…)</a><br /><small>Możliwe, że w artykule sekcje ze żródłami są błędnie nazwane.</small></p></div>')
+			.dialog({ modal: true, dialogClass: "wikiEditor-toolbar-dialog", close: function() { $(this).dialog("destroy"); $(this).remove();} });
+		});
+
 		// click on (+) near wikiprojects combo box → add new combo box and enlarge the dialog window
 		$('CzyWieszWikiprojectAdd').click(function(){
-			$('#CzyWieszWikiprojectContainer').append(DYKnomination_wikiproject_select.clone());
+			$('#CzyWieszWikiprojectContainer').append(DYKnomination.wikiproject_select.clone());
 			$('#DYK-loader-bar').parent().css({height: '+=24'});
 		});
-		
-		$('#CzyWieszQuestion').keyup();
-		$('#CzyWieszQuestion').focus();
 
 		if (IMAGES > 0) {
 			$('#CzyWieszGalleryToggler').toggle();
@@ -472,7 +738,7 @@ function DYKnomination(mode,params,debug) {
 							if ($('#CzyWieszFile1').length > 0) {
 								$('#CzyWieszFile1').attr('checked',true);
 								$('#CzyWieszFile2').removeAttr('disabled');
-								$('#CzyWieszFile2').val( $('.czy-wiesz-gallery-chosen').length == 0 ? '' : decodeURIComponent($('.czy-wiesz-gallery-chosen')[0].src.match(/\/\/upload\.wikimedia\.org\/wikipedia\/commons(\/thumb)?\/.\/..\/([^\/]+)\/?/)[2]).replace(/_/g,' ') ); // ← tutaj nazwa pliku
+								$('#CzyWieszFile2').val( $('.czy-wiesz-gallery-chosen').length == 0 ? '' : decodeURIComponent($('.czy-wiesz-gallery-chosen')[0].src.match(/\/\/upload\.wikimedia\.org\/wikipedia\/commons(\/thumb)?\/.\/..\/([^\/]+)\/?/)[2]).replace(/_/g,' ') ); // ← extract file name
 							}
 
 							$(this).dialog("destroy");
@@ -494,8 +760,12 @@ function DYKnomination(mode,params,debug) {
 			});
 		}
 		
+		$('#CzyWieszQuestion').keyup();
+		$('#CzyWieszQuestion').focus();
+		
 	}
-	else if (mode == 'do'){
+
+	DYKnomination.nominate = function (params,debug) {
 
 		//$('#DYK-loader-bar').css({display: 'block'});
 		$('#DYK-loader-bar-paragraph').text('Pobieram dane z formularza…');
@@ -699,10 +969,10 @@ function DYKnomination(mode,params,debug) {
 
 		return server_error;
 	}
-}
+
 
 $(document).ready(function() {
-	var menulink = '<li id="t-DYKnomination"><a href="javascript:DYKnomination();">Zgłoś do „Czy Wiesz…”</a></li>';
+	var menulink = '<li id="t-DYKnomination"><a href="javascript:DYKnomination.askuser();">Zgłoś do „Czy Wiesz…”</a></li>';
 	if ($('#t-ajaxquickdelete')[0]) {$('#t-ajaxquickdelete').after(menulink);}
 	else {$('#p-tb ul').append(menulink);}
 });
