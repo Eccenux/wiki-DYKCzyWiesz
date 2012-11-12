@@ -17,7 +17,7 @@ https://pl.wikipedia.org/w/index.php?diff=33438384
 
 
 // @name		test na wiki czywiesz propozycje
-// @version		0.10.14 beta
+// @version		0.10.15 beta
 // @description	zgłaszanie czywiesza
 // @include		http[s]?://pl.wikipedia.org/wiki/Wikiprojekt:Czy_wiesz/propozycje
 // @autor		Kaligula
@@ -26,12 +26,13 @@ https://pl.wikipedia.org/w/index.php?diff=33438384
 
 //TO DO: Wikiprojkety mają dziwne zgłaszanie, np. Wikiprojekt:Malarstwo chce action=edit&title=Dyskusja_wikiprojektu:Malarstwo&section=2&appendtext=
 	// wg tego http://pl.wikipedia.org/wiki/MediaWiki:Gadget-AjaxQuickDelete.js (na końcu str jest lista)?
+// !!! zmienna globalna DYKnomination_wikiproject_select
 
 //kosmetyczne:
 //TO DO: pozamieniać taby na spacje, żeby się db wyświetlało na wiki
 //TO DO: jeśli skrypt będzie już przetestowany to usunąć wszystkie 'debug' [?]
 //TO DO: na końcu spr wszystkie „TODO” i „TO DO” i „console.*”
- 
+
 if (wgNamespaceNumber === 0) {
 
 
@@ -251,8 +252,8 @@ function DYKnomination(mode,params,debug) {
 		var $images_row = $('<tr></tr>')
 			.html('<td>Liczba grafik w artykule: </td>'
 				+ '<td><input type="text" id="CzyWieszImages" name="CzyWieszImages" value="' + OBRAZKI + '"' 
-				+ 'style="width: 8%;text-align: right;margin-left: 2px;" disabled> '
-				+ '→ (<a id="CzyWieszGalleryToggler" class="external" style="display: none;">wybierz grafikę z artykułu</a>)');
+				+ 'style="width: 8%;text-align: right;margin-left: 2px;" disabled>'
+				+ '<span id="CzyWieszGalleryToggler" style="display: none;"> → (<a class="external">wybierz grafikę z artykułu</a></span>)');
 
 		var $ref_row = $('<tr></tr>')
 			.html('<td>Źródła: </td>'
@@ -273,16 +274,16 @@ function DYKnomination(mode,params,debug) {
 				+ '<div id="DYK-loader-bar-inner" style="width: 0; height: 20px; background-color: #ABEC46; border: none; border-radius: 3px;"></div>');
 
 		//wikiproject row
-		$wikiproject_select = $('<select class="czywiesz-wikiproject"></select>').css('vertical-align', 'middle'); // TO DO: !!!zmienna globalna $wikiproject_select
-		$wikiproject_select.append('<option value="none">żaden</option>');
+		DYKnomination_wikiproject_select = $('<select class="czywiesz-wikiproject"></select>').css('vertical-align', 'middle');
+		DYKnomination_wikiproject_select.append('<option value="none">-- (żaden) --</option>');
 		for (i=0;i<wikiprojects.length;i++)
 		{
 			if (typeof(wikiprojects[i]) == 'function') continue; //on IE wikibits adds indexOf method for arrays. skip it.
-			$('<option value="' + i + '">' + wikiprojects[i] + '</option>').appendTo($wikiproject_select);
+			$('<option value="' + i + '">' + wikiprojects[i] + '</option>').appendTo(DYKnomination_wikiproject_select);
 		}
-		var $wikiproject_row = $('<span id="czywiesz-wikiproject-container"></span>').append($wikiproject_select.clone());
+		var $wikiproject_row = $('<span id="czywiesz-wikiproject-container"></span>').append(DYKnomination_wikiproject_select.clone());
  		$wikiproject_row = $('<td></td>').append($wikiproject_row)
-			.append('<a href="javascript:$(\'#czywiesz-wikiproject-container\').append($wikiproject_select.clone());' 
+			.append('<a href="javascript:$(\'#czywiesz-wikiproject-container\').append(DYKnomination_wikiproject_select.clone());' 
 			+'$(\'#DYK-loader-bar\')[0].parentNode.style.height = (+$(\'#DYK-loader-bar\')[0].parentNode.style.height.split(\'px\')[0]+24)+\'px\';">(+)</a>');
 		$wikiproject_row = $('<tr></tr>').append('<td>Powiadom wikiprojekt(y): </td>').append($wikiproject_row);
  
@@ -410,7 +411,7 @@ function DYKnomination(mode,params,debug) {
 		});*/
 
 		if ($('#CzyWieszStyleTag').length == 0) {
-			$('<style id="CzyWieszStyleTag">.wikiEditor-toolbar-dialog .czy-wiesz-gallery-chosen { border: solid 2px red; }\n#CzyWieszGalleryToggler { color: #0645AD; text-decoration: underline; cursor: pointer; background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAVklEQVR4Xn3PgQkAMQhDUXfqTu7kTtkpd5RA8AInfArtQ2iRXFWT2QedAfttj2FsPIOE1eCOlEuoWWjgzYaB/IkeGOrxXhqB+uA9Bfcm0lAZuh+YIeAD+cAqSz4kCMUAAAAASUVORK5CYII=) center right no-repeat; background: url(//bits.wikimedia.org/static-1.21wmf3/skins/vector/images/external-link-ltr-icon.png?2012-10-29T15:20:00Z) center right no-repeat!ie; padding-right: 13px; }</style>').appendTo('head');
+			$('<style id="CzyWieszStyleTag">.wikiEditor-toolbar-dialog .czy-wiesz-gallery-chosen { border: solid 2px red; }\n#CzyWieszGalleryToggler a { color: #0645AD; text-decoration: underline; cursor: pointer; background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAVklEQVR4Xn3PgQkAMQhDUXfqTu7kTtkpd5RA8AInfArtQ2iRXFWT2QedAfttj2FsPIOE1eCOlEuoWWjgzYaB/IkeGOrxXhqB+uA9Bfcm0lAZuh+YIeAD+cAqSz4kCMUAAAAASUVORK5CYII=) center right no-repeat; background: url(//bits.wikimedia.org/static-1.21wmf3/skins/vector/images/external-link-ltr-icon.png?2012-10-29T15:20:00Z) center right no-repeat!ie; padding-right: 13px; }</style>').appendTo('head');
 		}
 		
 		$('#CzyWieszTitle').change(function(){
@@ -426,7 +427,7 @@ function DYKnomination(mode,params,debug) {
 
 		if (OBRAZKI > 0) {
 			$('#CzyWieszGalleryToggler').toggle();
-			$('#CzyWieszGalleryToggler').click(function(){
+			$('#CzyWieszGalleryToggler a').click(function(){
 				var GALLERY = '<div id="CzyWieszGalleryHolder">'
 						+ '<div id="CzyWieszGallery" style="background-color: #F2F5F7;">'
 						+ '<table><tbody>';
@@ -487,7 +488,6 @@ function DYKnomination(mode,params,debug) {
 		var PODPIS      = params[6];
 		var WIKIPROJEKT = params[7];
 
-		//skrypt właściwy
 		var NR = 1;
 
 		var miesiacArr = ['stycznia', 'lutego', 'marca', 'kwietnia', 'maja', 'czerwca', 'lipca', 'sierpnia', 'września', 'października', 'listopada', 'grudnia'];
@@ -510,11 +510,11 @@ function DYKnomination(mode,params,debug) {
 		
 		var a,b,i;
 
-		/* przygotowujemy miejsce edycji */
+		/* prepare place for edition */
 		$('#DYK-loader-bar-inner').css({width: 100*1/tasks + '%'});
 		$('#DYK-loader-bar-paragraph').text('Sprawdzam stronę zgłoszeń…');
 
-		// szuka pierwszego nagłówka w formacie 'dd mmmm', bo mogą być jakieś typu 'Białowieski megaczywiesz na koniec sierpnia (ew. pocz. września)'
+		// search for section 'dd mmmm', because there may be a section like 'Białowieski megaczywiesz na koniec sierpnia (ew. pocz. września)'
 		$.ajax({url: '/w/api.php?action=mobileview&format=json&page=' + (debug ? 'Wikipedysta%3AKaligula%2Fjs%2FCzyWiesz.js%2F' : '') + 'Wikiprojekt%3ACzy%20wiesz%2Fpropozycje&prop=sections&sectionprop=level%7Cline%7Cnumber%7Canchor&noimages=',
 				cache: false,
 				async: false
@@ -525,7 +525,7 @@ function DYKnomination(mode,params,debug) {
 					var a = sections[i].line.match(/^\d+/);
 					var b = sections[i].line.split(' ');
 					if ((sections[i].level == 2) && (a) && ($.inArray(b[1],miesiacArr))) {
-						( (a[0] == dzien) && (b[1] == miesiac) ) ? (uptodate = true) : (uptodate = false); //sprawdza czy pierwszy napotkany (najnowszy) datowany nagłówek jest z dzisiejszego dnia
+						( (a[0] == dzien) && (b[1] == miesiac) ) ? (uptodate = true) : (uptodate = false); // checks if first section with date is from today (uptodate)
 						section = i;
 						(debug ? console.log('Najbardziej aktualna sekcja:' + section + '. (uptodate: ' + uptodate + ')') : {});
 						break;
@@ -536,11 +536,10 @@ function DYKnomination(mode,params,debug) {
 			console.error('getsections: POST error');
 			console.error('server response:');
 			console.error(data);
-		}); // zwraca sections i section
-		// mamy pierwszy interesujący nagłówek (section), wiemy też czy jest z dzisiaj (uptodate:boolean)
-		// więc tworzymy tekst do wstawienia
+		}); // returns sections and section
+		// we know the section to edit (section) and if it's up-to-date (uptodate:boolean)
 
-		// najpierw, jeśli mamy dostawić podsekcję do istniejące sekcji to trzeba wiedzieć jaki numer porządkowy (NR) ma mieć
+		// if up-to-date → check NR of section to insert to
 		if (uptodate) {
 			i = section+1;
 			while (sections[i] && sections[i].level != 2) {
@@ -549,27 +548,27 @@ function DYKnomination(mode,params,debug) {
 			}
 		}
 		
-		// NR mamy, poprawiamy summary
+		// NR ready, make summary
 		summary = '/* ' + NR + ' (' + TYTUL + ')' + ' */ ' + summary;
 
-		/* przygotowujemy dane do edycji */
+		/* making data ready */
 		$('#DYK-loader-bar-inner').css({width: 100*2/tasks + '%'});
 		$('#DYK-loader-bar-paragraph').text('Przygotowuję dane do wysłania​…');
 
-		// teraz sama zawartość
+		// making content
 		
 		input = '=== ' + NR + ' (' + TYTUL + ') ===\n'
 			+ GRAFIKA
 			+ PYTANIE
 			+ '{' + '{Wikiprojekt:Czy wiesz/weryfikacja|' + TYTUL + '|' + ZRODLA + '|' + OBRAZKI + '|?|' + AUTOR + '|' + PODPIS + '|?|?|?}}';
 
-		// tekst gotowy
-		// określamy czy dodajemy nową sekcję czy nie
+		// text ready
+		// ↓ new section or not?
 
-		if (uptodate) { // jeśli jest aktualny to dodajemy na końcu jego sekcji nową podsekcję
+		if (uptodate) { // if up-to-date → new subsection inside date section
 			input = '\n\n' + input;
 		}
-		else { // jesli nie  aktualny to dodajemy na początku przed jego sekcją nową sekcję z podsekcją
+		else { // if not up-to-date → new section with date + new subsection inside date section
 			input = '== ' + dzien + ' ' + miesiac +' ==\n' + input + '\n\n';
 		}
 		
@@ -601,23 +600,21 @@ function DYKnomination(mode,params,debug) {
 		}
 		(debug ? console.log(edittoken) : {});
 
-		/* edytujemy */
-
-		// i tutaj dochodzi do rzeczywistej edycji
+		/* edit */
 
 		/* edit and save section */
 
-		// zgłaszanie do CzyWiesza
+		// Wikiprojekt:Czy wiesz
 		$('#DYK-loader-bar-inner').css({width: 100*3/tasks + '%'});
 		$('#DYK-loader-bar-paragraph').text('Zgłaszam propozycję…');
 		$.ajax({
 			url: '/w/api.php?action=edit&format=json&title=' 
 				+ encodeURIComponent( (debug ? 'Wikipedysta:Kaligula/js/CzyWiesz.js/' : '')	+ 'Wikiprojekt:Czy wiesz/propozycje') 
 				+ '&section=' + section + (uptodate ? '&appendtext=' : '&prependtext=') + encodeURIComponent(input) 
-				+ '&summary=' + encodeURIComponent(summary) + '&token=' + mw.util.rawurlencode(edittoken),
+				+ '&summary=' + encodeURIComponent(summary) + '&token=' + encodeURIComponent(edittoken),
 			type: 'POST',
 			async: false
-		}).done(function(data){ //spr czy nie ma erroru
+		}).done(function(data){
 			if (debug) {
 				console.log('DYK: POST done\nserver response:');
 				console.log(data);
@@ -628,17 +625,17 @@ function DYKnomination(mode,params,debug) {
 				alert('Wystąpił błąd przy zgłaszaniu do rubryki. Odpowiedź serwera: ' + data.error.info + '. Więcej informacji w konsoli przeglądarki.');
 			}
 		}).fail(function(data){
-			console.error('DYK: błąd POST error');
+			console.error('DYK: błąd POST');
 			console.error('/w/api.php?action=edit&format=json&title=' 
 				+ encodeURIComponent( (debug ? 'Wikipedysta:Kaligula/js/CzyWiesz.js/' : '')	+ 'Wikiprojekt:Czy wiesz/propozycje') 
 				+ '&section=' + section + (uptodate ? '&appendtext=' : '&prependtext=') + encodeURIComponent(input) 
-				+ '&summary=' + encodeURIComponent(summary) + '&token=' + mw.util.rawurlencode(edittoken))
+				+ '&summary=' + encodeURIComponent(summary) + '&token=' + encodeURIComponent(edittoken))
 			console.error('odpowiedź serwera:');
 			console.error(data);
 			alert('Wystąpił problem przy zgłaszaniu do rubryki. Więcej informacji w konsoli przeglądarki.')
 		});
 		
-		// powiadamianie wikiprojektu
+		// wikiprojects
 		$('#DYK-loader-bar-paragraph').text('Zgłaszam do wikiprojektu/ów…');
 		for (i=0;i<WIKIPROJEKT.length;i++) {
 			$('#DYK-loader-bar-inner').css({width: 100*(3+(i+1)/tasks) + '%'});
@@ -646,10 +643,10 @@ function DYKnomination(mode,params,debug) {
 				url:'/w/api.php?action=edit&format=json&title=' + encodeURIComponent('Dyskusja wikiprojektu:' + WIKIPROJEKT[i]) + '&section=new' 
 					+ '&sectiontitle=' + encodeURIComponent(sectiontitle_wikiproject) 
 					+ '&text=' + encodeURIComponent('{' + '{subst:Czy wiesz - wikiprojekt|' + TYTUL + '}}~' + '~' + '~' + '~') 
-					+ '&token=' + mw.util.rawurlencode(edittoken),
+					+ '&token=' + encodeURIComponent(edittoken),
 				type:'POST',
 				async: false
-			}).done(function(data){ //spr czy nie ma erroru
+			}).done(function(data){
 				if (debug) {
 					console.log('wikiproject['+i+']: komenda POST zakończona\nodpowiedź serwera:');
 					console.log(data)
@@ -664,7 +661,7 @@ function DYKnomination(mode,params,debug) {
 				console.error('URI: /w/api.php?action=edit&format=json&title=' + encodeURIComponent('Dyskusja wikiprojektu:' + WIKIPROJEKT[i]) + '&section=new' 
 					+ '&sectiontitle=' + encodeURIComponent(sectiontitle_wikiproject) 
 					+ '&text=' + encodeURIComponent('{' + '{subst:Czy wiesz - wikiprojekt|' + TYTUL + '}}~' + '~' + '~' + '~') 
-					+ '&token=' + mw.util.rawurlencode(edittoken));
+					+ '&token=' + encodeURIComponent(edittoken));
 				console.error('odpowiedź serwera:');
 				console.error(data);
 				alert('Wystąpił problem przy zgłaszaniu ' + (i+1) + '-go wikiprojektu. Więcej informacji w konsoli przeglądarki.')
