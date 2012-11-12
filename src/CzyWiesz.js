@@ -456,7 +456,7 @@ window.DYKnomination = {};
 				page : 'Wikiprojekt:Zoologia',
 				type : 'section'
 			}
-		];
+		]
 	}
 
 	DYKnomination.askuser = function (debug) {
@@ -552,7 +552,7 @@ window.DYKnomination = {};
 		//main buttons
 		var buttons = {
 			"Zgłoś": function() {
-				if (!REFS.ref) {
+				if (REFS.ref) {
 
 					//get the question
 					TITLE = $('#CzyWieszTitle').val().replace(/^\s*(.*?)\s*$/,'$1'); // remove spaces on beginning and end
