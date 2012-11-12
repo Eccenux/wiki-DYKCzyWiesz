@@ -17,7 +17,7 @@ https://pl.wikipedia.org/w/index.php?diff=33438384
 
 
 // @name		test na wiki czywiesz propozycje
-// @version		1.2.0
+// @version		1.2.1
 // @description	zgłaszanie czywiesza
 // @include		http[s]?://pl.wikipedia.org/wiki/Wikiprojekt:Czy_wiesz/propozycje
 // @autor		Kaligula
@@ -278,10 +278,9 @@ function DYKnomination(mode,params,debug) {
 			if (typeof(wikiprojects[i]) == 'function') continue; //on IE wikibits adds indexOf method for arrays. skip it.
 			$('<option value="' + i + '">' + wikiprojects[i] + '</option>').appendTo(DYKnomination_wikiproject_select);
 		}
-		var $wikiproject_row = $('<span id="czywiesz-wikiproject-container"></span>').append(DYKnomination_wikiproject_select.clone());
+		var $wikiproject_row = $('<span id="CzyWieszWikiprojectContainer"></span>').append(DYKnomination_wikiproject_select.clone());
  		$wikiproject_row = $('<td></td>').append($wikiproject_row)
-			.append('<a href="javascript:$(\'#czywiesz-wikiproject-container\').append(DYKnomination_wikiproject_select.clone());' 
-			+'$(\'#DYK-loader-bar\')[0].parentNode.style.height = (+$(\'#DYK-loader-bar\')[0].parentNode.style.height.split(\'px\')[0]+24)+\'px\';">(+)</a>');
+			.append('<a id="CzyWieszWikiprojectAdd">(+)</a>');
 		$wikiproject_row = $('<tr></tr>').append('<td>Powiadom wikiprojekt(y): </td>').append($wikiproject_row);
  
 		//rules paragraph
@@ -299,13 +298,13 @@ function DYKnomination(mode,params,debug) {
 		var buttons = {
 			"Zgłoś": function() {
 				//get the question
-				TITLE = $('#CzyWieszTitle').val().replace(/^\s*(.*?)\s*$/,'$1'); //usuwa zbędne spacje na początku i końcu
-				QUESTION = $('#CzyWieszQuestion').val().replace(/(.*?)(--)?~{3,5}\s*$/,'$1').replace(/^\s*(.*?)\s*$/,'$1').replace(/^([Cc]zy wiesz)?[\s,\.]*/,''); //usuwa podpis, zbędne spacje na początku i końcu oraz początek pytania „Czy wiesz"
-				FILE = ( $('#CzyWieszFile1').attr('checked') ? $('#CzyWieszFile2').val().replace(/^\s*(.*?)\s*$/,'$1') : '' ); //usuwa zbędne spacje na początku i końcu
-				IMAGES = $('#CzyWieszImages').val().replace(/^\s*(.*?)\s*$/,'$1'); //usuwa zbędne spacje na początku i końcu
+				TITLE = $('#CzyWieszTitle').val().replace(/^\s*(.*?)\s*$/,'$1'); // remove spaces on beginning and end
+				QUESTION = $('#CzyWieszQuestion').val().replace(/(.*?)(--)?~{3,5}\s*$/,'$1').replace(/^\s*(.*?)\s*$/,'$1').replace(/^([Cc]zy wiesz)?[\s,\.]*/,''); // remove signature, spaces on beginning and end, beginning of question ("Czy wiesz")
+				FILE = ( $('#CzyWieszFile1').attr('checked') ? $('#CzyWieszFile2').val().replace(/^\s*(.*?)\s*$/,'$1') : '' ); // remove spaces on beginning and end
+				IMAGES = $('#CzyWieszImages').val().replace(/^\s*(.*?)\s*$/,'$1'); // remove spaces on beginning and end
 				REFS = (REFS.ref ? '+' : ' ');
-				AUTHOR = $('#CzyWieszAuthor').val().replace(/^\s*(.*?)\s*$/,'$1'); //usuwa zbędne spacje na początku i końcu
-				SIGNATURE = $('#CzyWieszSignature').val().replace(/^\s*(.*?)\s*$/,'$1'); //usuwa zbędne spacje na początku i końcu
+				AUTHOR = $('#CzyWieszAuthor').val().replace(/^\s*(.*?)\s*$/,'$1'); // remove spaces on beginning and end
+				SIGNATURE = $('#CzyWieszSignature').val().replace(/^\s*(.*?)\s*$/,'$1'); // remove spaces on beginning and end
 
 				//validate form
 				var invalid = {is: false, fields: []};
@@ -425,14 +424,24 @@ function DYKnomination(mode,params,debug) {
 			+ '</style>').appendTo('head');
 		}
 		
+		// when title changed → user can input number of images (← just in case user wants to nominate another article than current)
 		$('#CzyWieszTitle').change(function(){
 			$('#CzyWieszImages').removeAttr('disabled');
 			$('#CzyWieszImages').val('');
 		});
+		
+		// when user ticks he wants to nominate with picture → enable picture/file field
 		$('#CzyWieszFile1').change(function(){
 			var a=$('#CzyWieszFile2');
 			(a.attr('disabled') ? a.removeAttr('disabled') : a.attr('disabled','true'))
 		})
+		
+		// click on (+) near wikiprojects combo box → add new combo box and enlarge the dialog window
+		$('CzyWieszWikiprojectAdd').click(function(){
+			$('#CzyWieszWikiprojectContainer').append(DYKnomination_wikiproject_select.clone());
+			$('#DYK-loader-bar').parent().css({height: '+=24'});
+		});
+		
 		$('#CzyWieszQuestion').keyup();
 		$('#CzyWieszQuestion').focus();
 
@@ -476,6 +485,9 @@ function DYKnomination(mode,params,debug) {
 				});
 				$('#CzyWieszGallery img').each(function(){
 					$(this).click(function(){
+						$('.czy-wiesz-gallery-chosen').each(function(){
+							$(this).toggleClass('czy-wiesz-gallery-chosen');
+						});
 						$(this).toggleClass('czy-wiesz-gallery-chosen');
 					});
 				});
@@ -612,8 +624,6 @@ function DYKnomination(mode,params,debug) {
 		(debug ? console.log(edittoken) : {});
 
 		/* edit */
-
-		/* edit and save section */
 
 		// Wikiprojekt:Czy wiesz
 		$('#DYK-loader-bar-inner').css({width: 100*3/tasks + '%'});
