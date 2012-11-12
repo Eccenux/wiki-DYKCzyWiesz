@@ -15,17 +15,12 @@ https://pl.wikipedia.org/w/index.php?diff=33438384
 
 */
 
-//TO DO: Wikiprojkety mają dziwne zgłaszanie, np. Wikiprojekt:Malarstwo chce action=edit&title=Dyskusja_wikiprojektu:Malarstwo&section=2&appendtext=
-	// wg tego http://pl.wikipedia.org/wiki/MediaWiki:Gadget-AjaxQuickDelete.js (na końcu str jest lista)?
-// !!! zmienna globalna DYKnomination.wikiproject_select
-
-//kosmetyczne:
-//TO DO: pozamieniać taby na spacje, żeby się db wyświetlało na wiki
-//TO DO: jeśli skrypt będzie już przetestowany to usunąć wszystkie 'debug' [?]
-//TO DO: na końcu spr wszystkie „TODO” i „TO DO” i „console.*”
-
 // DEBUG: póki co po wpisaniu w konsoli "DYKnomination.askuser('debug')" aktulane info pokażą si​ę w console.log 
 // i zgłoszenie pójdzie nie do projektu ale na stronę roboczą (debug=true)
+
+//TO DO: Resource Loader: mw.loader.using(…)
+//TO DO: Wikiprojkety mają dziwne zgłaszanie, np. Wikiprojekt:Malarstwo chce action=edit&title=Dyskusja_wikiprojektu:Malarstwo&section=2&appendtext=
+//TO DO: pozamieniać taby na spacje, żeby się db wyświetlało na wiki
 
 if (wgNamespaceNumber === 0) {
 
@@ -34,7 +29,7 @@ if (wgNamespaceNumber === 0) {
 window.DYKnomination = {};
 
 	DYKnomination.about = {
-		version    : '2.0.0',
+		version    : '2.0.1',
 		author     : 'Kaligula',
 		authorlink : 'w:pl:user:Kaligula',
 		credits    : 'Tomasz Wachowski, Matma Rex'
@@ -482,7 +477,6 @@ window.DYKnomination = {};
 			for (var i=0; i < REFS.ar2.length; i++) {
 				if ( REFS.ar1.match('#' + REFS.ar2[i] + '#') ) {REFS.ref = true; break;}
 			}
-		//var SIGNATURE = (wgUserName ? {name: wgUserName, disabled: ' disabled'} : {name: '', disabled: ''} ); //TO DO: a co kiedy IP?
 		var SIGNATURE = (wgUserName ? {name: wgUserName, disabled: ' disabled'} : {name: '~' + '~' + '~', disabled: ' disabled'} );
 		var WIKIPROJECT=[];
 		var QUESTION, FILE, AUTHOR;
