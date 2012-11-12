@@ -17,13 +17,11 @@ https://pl.wikipedia.org/w/index.php?diff=33438384
 
 
 // @name		test na wiki czywiesz propozycje
-// @version		1.0.0
+// @version		1.0.1
 // @description	zgłaszanie czywiesza
 // @include		http[s]?://pl.wikipedia.org/wiki/Wikiprojekt:Czy_wiesz/propozycje
 // @autor		Kaligula
  
-//póki co po wpisaniu w konsoli "DYKnomination('','',true)" aktulane info pokażą si​ę w console.log (debug=true)
-
 //TO DO: Wikiprojkety mają dziwne zgłaszanie, np. Wikiprojekt:Malarstwo chce action=edit&title=Dyskusja_wikiprojektu:Malarstwo&section=2&appendtext=
 	// wg tego http://pl.wikipedia.org/wiki/MediaWiki:Gadget-AjaxQuickDelete.js (na końcu str jest lista)?
 // !!! zmienna globalna DYKnomination_wikiproject_select
@@ -32,6 +30,9 @@ https://pl.wikipedia.org/w/index.php?diff=33438384
 //TO DO: pozamieniać taby na spacje, żeby się db wyświetlało na wiki
 //TO DO: jeśli skrypt będzie już przetestowany to usunąć wszystkie 'debug' [?]
 //TO DO: na końcu spr wszystkie „TODO” i „TO DO” i „console.*”
+
+// DEBUG: póki co po wpisaniu w konsoli "DYKnomination('','',true)" aktulane info pokażą si​ę w console.log 
+// i zgłoszenie pójdzie nie do projektu ale na stronę roboczą (debug=true)
 
 if (wgNamespaceNumber === 0) {
 
@@ -217,19 +218,15 @@ function DYKnomination(mode,params,debug) {
 			yes:	'<img alt="Crystal Clear app clean.png" src="//upload.wikimedia.org/wikipedia/commons/thumb/3/34/Crystal_Clear_app_clean.png/20px-Crystal_Clear_app_clean.png" width="20" height="20">',
 			no:		'<img alt="Crystal Clear action button cancel.png" src="//upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Crystal_Clear_action_button_cancel.png/20px-Crystal_Clear_action_button_cancel.png" width="20" height="20">',
 			ar1:	[''],
-			ar2:	['Bibliografia','Przypisy'],
-			arS:	0,
-			arO:	''
+			ar2:	['Bibliografia','Przypisy']
 		}
 			$('.mw-headline').each(function(i){
 				ZRODLA.ar1.push( $(this).html().replace(/<span class="mw-headline-number"[^>]*>\d+<\/span> */,'') );
 			});
 			ZRODLA.ar1 = ZRODLA.ar1.join('#') + '#';
 			for (var i=0; i < ZRODLA.ar2.length; i++) {
-				ZRODLA.arO = ZRODLA.ar1.match('#' + ZRODLA.ar2[i] + '#');
-				if (ZRODLA.arO != null) {ZRODLA.arS += ZRODLA.arO.length};
+				if ( ZRODLA.ar1.match('#' + ZRODLA.ar2[i] + '#') ) {ZRODLA.ref = true; break;}
 			}
-			if (ZRODLA.arS > 0 ) {ZRODLA.ref = true;}
 		//var PODPIS = (wgUserName ? {name: wgUserName, disabled: ' disabled'} : {name: '', disabled: ''} ); //TO DO: a co kiedy IP?
 		var PODPIS = (wgUserName ? {name: wgUserName, disabled: ' disabled'} : {name: '~' + '~' + '~', disabled: ' disabled'} );
 		var WIKIPROJEKT=[];
@@ -253,7 +250,7 @@ function DYKnomination(mode,params,debug) {
 			.html('<td>Liczba grafik w artykule: </td>'
 				+ '<td><input type="text" id="CzyWieszImages" name="CzyWieszImages" value="' + OBRAZKI + '"' 
 				+ 'style="width: 8%;text-align: right;margin-left: 2px;" disabled>'
-				+ '<span id="CzyWieszGalleryToggler" style="display: none;"> → (<a class="external">wybierz grafikę z artykułu</a></span>)');
+				+ '<span id="CzyWieszGalleryToggler" style="display: none;"> → (<a class="external">wybierz grafikę z artykułu</a>)</span>');
 
 		var $ref_row = $('<tr></tr>')
 			.html('<td>Źródła: </td>'
@@ -392,7 +389,7 @@ function DYKnomination(mode,params,debug) {
 		$dialog.dialog({
 		  width: 600,
 		  modal: true,
-		  title: 'Zgłaszanie artykułu do rubryki „Czy wiesz…”' + (debug ? ' &nbsp; (<small id="DYKnomination-dialog-debug">(TRYB DEBUG)</small>)' : ''),
+		  title: 'Zgłaszanie artykułu do rubryki „Czy wiesz…”' + (debug ? ' &nbsp; (<small id="DYKnomination-dialog-debug">TRYB DEBUG</small>)' : ''),
 		  draggable: true,
 		  dialogClass: "wikiEditor-toolbar-dialog",
 		  close: function() { $(this).dialog("destroy"); $(this).remove();},
