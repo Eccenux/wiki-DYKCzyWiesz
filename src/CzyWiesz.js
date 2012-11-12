@@ -17,7 +17,7 @@ https://pl.wikipedia.org/w/index.php?diff=33438384
 
 
 // @name		test na wiki czywiesz propozycje
-// @version		0.10.15 beta
+// @version		1.0.0
 // @description	zgłaszanie czywiesza
 // @include		http[s]?://pl.wikipedia.org/wiki/Wikiprojekt:Czy_wiesz/propozycje
 // @autor		Kaligula
