@@ -16,11 +16,13 @@ https://pl.wikipedia.org/w/index.php?diff=33438384
 */
 
 // DEBUG: póki co po wpisaniu w konsoli "DYKnomination.askuser('debug')" aktulane info pokażą si​ę w console.log 
-// i zgłoszenie pójdzie nie do projektu ale na stronę roboczą (debug=true)
+// i zgłoszenie pójdzie nie do projektu ale na stronę roboczą Wikipedysta:Kaligula/js/CzyWiesz.js/test
 
+//TO DO: pozmieniać id na DYK albo CzyWiesz
 //TO DO: Resource Loader: mw.loader.using(…)
 //TO DO: Wikiprojkety mają dziwne zgłaszanie, np. Wikiprojekt:Malarstwo chce action=edit&title=Dyskusja_wikiprojektu:Malarstwo&section=2&appendtext=
 //TO DO: pozamieniać taby na spacje, żeby się db wyświetlało na wiki
+
 
 if (wgNamespaceNumber === 0) {
 
@@ -28,7 +30,7 @@ if (wgNamespaceNumber === 0) {
 window.DYKnomination = {};
 
 	DYKnomination.about = {
-		version    : '2.1.0',
+		version    : '2.1.1',
 		author     : 'Kaligula',
 		authorlink : 'w:pl:user:Kaligula',
 		credits    : 'Tomasz Wachowski, Matma Rex'
@@ -464,7 +466,7 @@ window.DYKnomination = {};
 		var REFS = {
 			yes:	'<img alt="Crystal Clear app clean.png" src="//upload.wikimedia.org/wikipedia/commons/thumb/3/34/Crystal_Clear_app_clean.png/20px-Crystal_Clear_app_clean.png" width="20" height="20">',
 			no:		'<img alt="Crystal Clear action button cancel.png" src="//upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Crystal_Clear_action_button_cancel.png/20px-Crystal_Clear_action_button_cancel.png" width="20" height="20">'
-					+ '&nbsp;&nbsp;<strong style="color: red;">Brak źródeł dyskwalifikuje artykuł ze zgłoszenia!!</strong> <small><a class="external">(czytaj więcej…)</a></small>',
+					+ '&nbsp;&nbsp;<strong style="color: red;">Brak źródeł dyskwalifikuje artykuł ze zgłoszenia!!</strong> <small>(<a class="external">info</a>)</small>',
 			ar1:	[''],
 			ar2:	['Bibliografia','Przypisy']
 		}
@@ -532,9 +534,10 @@ window.DYKnomination = {};
 		$wikiproject_row = $('<tr></tr>').append('<td>Powiadom wikiprojekt(y): </td>').append($wikiproject_row);
  
 		//rules paragraph
-		var $rules_paragraph = $('<p></p>')
+		var $rules_paragraph = $('<p id="CzyWieszRules"></p>')
 			.html('<small>Zgłaszaj hasła nie później niż 10 dni od powstania lub rozbudowania hasła, '
-				+ 'posiadające źródła najlepiej w formie przypisów i zawierające co najmniej 2kb samej treści.</small>');
+				+ 'posiadające źródła najlepiej w formie przypisów i zawierające co najmniej 2kb samej treści.</small>')
+			.css({border: '1px solid #F0F080', backgroundColor: '#FFFFE0', paddingLeft: '5px'});
  
 		//build the dialog
 		var $dialog = $('<table></table>').css('width','100%').append($file_row).append($images_row).append($ref_row)
@@ -574,7 +577,7 @@ window.DYKnomination = {};
 								invalid.fields.push('Question');
 								invalid.alert.push('Zadaj poprawne pytanie.');
 							}
-							else if (!QUESTION.match('\\[\\['+TITLE)) {
+							else if (!( QUESTION.match('\\[\\['+TITLE) || QUESTION.match('\\[\\['+TITLE.charAt(0).toLowerCase()+TITLE.substr(1)) )) { // if is link or link starting with lowercase
 								invalid.is = true;
 								invalid.fields.push('Question');
 								invalid.alert.push('Pytanie musi zawierać link do artykułu.');
@@ -653,7 +656,7 @@ window.DYKnomination = {};
 		$dialog.dialog({
 		  width: 600,
 		  modal: true,
-		  title: 'Zgłaszanie artykułu do rubryki „Czy wiesz…”' + (debug ? ' &nbsp; (<small id="DYKnomination-dialog-debug">TRYB DEBUG</small>)' : ''),
+		  title: 'Zgłaszanie artykułu do rubryki „Czy wiesz…”' + (debug ? ' &nbsp; (<small id="DYKnomination-dialog-debug">TRYB DEBUG</small>)' : ''),
 		  draggable: true,
 		  dialogClass: "wikiEditor-toolbar-dialog",
 		  close: function() { $(this).dialog("destroy"); $(this).remove();},
@@ -695,7 +698,7 @@ window.DYKnomination = {};
 
 		// in there's no refs (or they're badly named) → append this dialog to a link in $ref_row
 		$('#CzyWieszRefs small a').click(function(){
-			$('<div><div class="floatright"><img alt="PL Wiki CzyWiesz ikona.svg" src="//upload.wikimedia.org/wikipedia/commons/thumb/f/f4/PL_Wiki_CzyWiesz_ikona.svg/80px-PL_Wiki_CzyWiesz_ikona.svg.png" width="80" height="80" srcset="//upload.wikimedia.org/wikipedia/commons/thumb/f/f4/PL_Wiki_CzyWiesz_ikona.svg/120px-PL_Wiki_CzyWiesz_ikona.svg.png 1.5x, //upload.wikimedia.org/wikipedia/commons/thumb/f/f4/PL_Wiki_CzyWiesz_ikona.svg/160px-PL_Wiki_CzyWiesz_ikona.svg.png 2x"></div><p style="margin-left: 10px;">Zgodnie z wytycznymi <a href="/wiki/Wikiprojekt:Czy_wiesz" title="Wikiprojekt:Czy wiesz">Wikiprojektu Czy wiesz</a> zgłaszane hasło powinno posiadać źródła w formie bibliografii lub przypisów. <a href="/wiki/Wikiprojekt:Czy_wiesz/pomoc#Zg.C5.82aszanie_propozycji_i_poprawa_hase.C5.82" title="Wikiprojekt:Czy wiesz/pomoc#Zgłaszanie propozycji i poprawa haseł">(Więcej…)</a><br /><small>Możliwe, że w artykule sekcje ze żródłami są błędnie nazwane.</small></p></div>')
+			$('<div><div class="floatright"><img alt="PL Wiki CzyWiesz ikona.svg" src="//upload.wikimedia.org/wikipedia/commons/thumb/f/f4/PL_Wiki_CzyWiesz_ikona.svg/80px-PL_Wiki_CzyWiesz_ikona.svg.png" width="80" height="80" srcset="//upload.wikimedia.org/wikipedia/commons/thumb/f/f4/PL_Wiki_CzyWiesz_ikona.svg/120px-PL_Wiki_CzyWiesz_ikona.svg.png 1.5x, //upload.wikimedia.org/wikipedia/commons/thumb/f/f4/PL_Wiki_CzyWiesz_ikona.svg/160px-PL_Wiki_CzyWiesz_ikona.svg.png 2x"></div><p style="margin-left: 10px;">Zgodnie z wytycznymi <a href="/wiki/Wikiprojekt:Czy_wiesz" title="Wikiprojekt:Czy wiesz">Wikiprojektu Czy wiesz</a> zgłaszane hasło powinno posiadać źródła w formie bibliografii lub przypisów. <a href="/wiki/Wikiprojekt:Czy_wiesz/pomoc#Zg.C5.82aszanie_propozycji_i_poprawa_hase.C5.82" title="Wikiprojekt:Czy wiesz/pomoc#Zgłaszanie propozycji i poprawa haseł">(Więcej…)</a><br /><small>Możliwe, że w artykule sekcje ze źródłami są błędnie nazwane.</small></p></div>')
 			.dialog({ modal: true, dialogClass: "wikiEditor-toolbar-dialog", close: function() { $(this).dialog("destroy"); $(this).remove();} });
 		});
 
