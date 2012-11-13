@@ -1,28 +1,7 @@
-/*
+// DEBUG: póki co po wpisaniu w konsoli "DYKnomination.askuser('debug')" aktualne info pokażą się w console.log 
+// i zgłoszenie pójdzie nie do projektu, ale na stronę roboczą Wikipedysta:Kaligula/js/CzyWiesz.js/test
 
-    INSTALACJA:
-    do swojego commons.js (Wikipedysta:TWÓJ_NICK/common.js) wkleić obie poniższe linijki
-
-// automatyczne zgłaszanie do Czywiesza [[Wikipedysta:Kaligula/js/CzyWiesz.js]]
-importScript('Wikipedysta:Kaligula/js/CzyWiesz.js');
-
-	można to naocznie zobaczyć tutaj:
-
-https://pl.wikipedia.org/w/index.php?diff=33438384
-
-    !! linijka górna pozwoli skontaktować się z użytkownikami skryptu
-       w przypadku niektórych zmian w kodzie !!
-
-*/
-
-// DEBUG: póki co po wpisaniu w konsoli "DYKnomination.askuser('debug')" aktulane info pokażą si​ę w console.log 
-// i zgłoszenie pójdzie nie do projektu ale na stronę roboczą Wikipedysta:Kaligula/js/CzyWiesz.js/test
-
-//TO DO: pozmieniać id na DYK albo CzyWiesz
-//TO DO: Resource Loader: mw.loader.using(…)
-//TO DO: Wikiprojkety mają dziwne zgłaszanie, np. Wikiprojekt:Malarstwo chce action=edit&title=Dyskusja_wikiprojektu:Malarstwo&section=2&appendtext=
-//TO DO: pozamieniać taby na spacje, żeby się db wyświetlało na wiki
-
+// Wersja dev skryptu: https://pl.wikipedia.org/wiki/Wikipedysta:Kaligula/js/CzyWiesz.js
 
 if (wgNamespaceNumber === 0) {
 
