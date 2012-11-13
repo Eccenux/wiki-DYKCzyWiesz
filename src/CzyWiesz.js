@@ -25,11 +25,10 @@ https://pl.wikipedia.org/w/index.php?diff=33438384
 if (wgNamespaceNumber === 0) {
 
 
-
 window.DYKnomination = {};
 
 	DYKnomination.about = {
-		version    : '2.0.1',
+		version    : '2.1.0',
 		author     : 'Kaligula',
 		authorlink : 'w:pl:user:Kaligula',
 		credits    : 'Tomasz Wachowski, Matma Rex'
@@ -463,7 +462,6 @@ window.DYKnomination = {};
 		var IMG_ARR = $.merge($('#mw-content-text .infobox a.image img'),$('#mw-content-text .thumb a.image img'));
 		var IMAGES = IMG_ARR.length;
 		var REFS = {
-			ref:	false,
 			yes:	'<img alt="Crystal Clear app clean.png" src="//upload.wikimedia.org/wikipedia/commons/thumb/3/34/Crystal_Clear_app_clean.png/20px-Crystal_Clear_app_clean.png" width="20" height="20">',
 			no:		'<img alt="Crystal Clear action button cancel.png" src="//upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Crystal_Clear_action_button_cancel.png/20px-Crystal_Clear_action_button_cancel.png" width="20" height="20">'
 					+ '&nbsp;&nbsp;<strong style="color: red;">Brak źródeł dyskwalifikuje artykuł ze zgłoszenia!!</strong> <small><a class="external">(czytaj więcej…)</a></small>',
@@ -474,8 +472,9 @@ window.DYKnomination = {};
 				REFS.ar1.push( $(this).html().replace(/<span class="mw-headline-number"[^>]*>\d+<\/span> */,'') );
 			});
 			REFS.ar1 = REFS.ar1.join('#') + '#';
+			this.sourced = false;
 			for (var i=0; i < REFS.ar2.length; i++) {
-				if ( REFS.ar1.match('#' + REFS.ar2[i] + '#') ) {REFS.ref = true; break;}
+				if ( REFS.ar1.match('#' + REFS.ar2[i] + '#') ) {this.sourced = true; break;}
 			}
 		var SIGNATURE = (wgUserName ? {name: wgUserName, disabled: ' disabled'} : {name: '~' + '~' + '~', disabled: ' disabled'} );
 		var WIKIPROJECT=[];
@@ -503,7 +502,7 @@ window.DYKnomination = {};
 
 		var $ref_row = $('<tr></tr>')
 			.html('<td>Źródła: </td>'
-				+ '<td id="CzyWieszRefs">' + (REFS.ref ? REFS.yes : REFS.no) + '</td>');
+				+ '<td id="CzyWieszRefs">' + (this.sourced ? REFS.yes : REFS.no) + '</td>');
 
 		var $author_row = $('<tr></tr>')
 			.html('<td>Główny autor artykułu: </td>'
@@ -546,39 +545,39 @@ window.DYKnomination = {};
 		//main buttons
 		var buttons = {
 			"Zgłoś": function() {
-				if (REFS.ref) {
+				if (DYKnomination.sourced) {
 
 					//get the question
 					TITLE = $('#CzyWieszTitle').val().replace(/^\s*(.*?)\s*$/,'$1'); // remove spaces on beginning and end
 					QUESTION = $('#CzyWieszQuestion').val().replace(/(.*?)(--)?~{3,5}\s*$/,'$1').replace(/^\s*(.*?)\s*$/,'$1').replace(/^([Cc]zy wiesz)?[\s,\.]*/,''); // remove signature, spaces on beginning and end, beginning of question ("Czy wiesz")
 					FILE = ( $('#CzyWieszFile1').attr('checked') ? $('#CzyWieszFile2').val().replace(/^\s*(.*?)\s*$/,'$1') : '' ); // remove spaces on beginning and end
 					IMAGES = $('#CzyWieszImages').val().replace(/^\s*(.*?)\s*$/,'$1'); // remove spaces on beginning and end
-					REFS = (REFS.ref ? '+' : ' ');
+					REFS = (DYKnomination.sourced ? '+' : ' ');
 					AUTHOR = $('#CzyWieszAuthor').val().replace(/^\s*(.*?)\s*$/,'$1'); // remove spaces on beginning and end
 					SIGNATURE = $('#CzyWieszSignature').val().replace(/^\s*(.*?)\s*$/,'$1'); // remove spaces on beginning and end
 
 					//validate form
-					var invalid = {is: false, fields: []};
+					var invalid = {is: false, fields: [], alert: []};
 						if (typeof TITLE != 'string' || TITLE == '') {
 							invalid.is = true;
 							invalid.fields.push('Title');
-							alert('Podaj tytuł artykułu.')
+							invalid.alert.push('Podaj tytuł artykułu.');
 						}
 						if (typeof QUESTION != 'string' || QUESTION === '') {
 							invalid.is = true;
 							invalid.fields.push('Question');
-							alert('Wpisz pytanie.');
+							invalid.alert.push('Wpisz pytanie.');
 						}
 						else {
 							if (QUESTION.length < 10) {
 								invalid.is = true;
 								invalid.fields.push('Question');
-								alert('Zadaj poprawne pytanie.');
+								invalid.alert.push('Zadaj poprawne pytanie.');
 							}
-							else if (QUESTION.match('\\[\\['+TITLE)) {
+							else if (!QUESTION.match('\\[\\['+TITLE)) {
 								invalid.is = true;
 								invalid.fields.push('Question');
-								alert('Pytanie musi zawierać link do artykułu.');
+								invalid.alert.push('Pytanie musi zawierać link do artykułu.');
 							}
 							else{
 								if (QUESTION.match(' \'\'\'\\[\\['+TITLE+'(\\|.*?)?\\]\\][^\\s\\?\\,\\;\\:\\"\\”\\!]*\'\'\'')) { // if needed: bold the link to article
@@ -593,17 +592,17 @@ window.DYKnomination = {};
 						if (typeof IMAGES != 'string' || IMAGES === '') {
 							invalid.is = true;
 							invalid.fields.push('Images');
-							alert('Podaj liczbę grafik w artykule.');
+							invalid.alert.push('Podaj liczbę grafik w artykule.');
 						}
 						if (typeof AUTHOR != 'string' || AUTHOR === '') {
 							invalid.is = true;
 							invalid.fields.push('Author');
-							alert('Podaj autora artykułu.');
+							invalid.alert.push('Podaj autora artykułu.');
 						}
 						if (typeof SIGNATURE != 'string' || SIGNATURE === '') {
 							invalid.is = true;
 							invalid.fields.push('Signature');
-							alert('Podpisz się.');
+							invalid.alert.push('Podpisz się.');
 						}
 
 					if (invalid.is) {
@@ -612,6 +611,7 @@ window.DYKnomination = {};
 								$(this).css({border: 'none'});
 							});
 						});
+						alert(invalid.alert.join('\n'));
 					}
 					else {
 						//get the wikiprojects
@@ -631,7 +631,7 @@ window.DYKnomination = {};
 							$(this).remove();
 
 							// end dialog: "Finished!"
-							$('<div><div class="floatright"><img alt="PL Wiki CzyWiesz ikona.svg" src="//upload.wikimedia.org/wikipedia/commons/thumb/f/f4/PL_Wiki_CzyWiesz_ikona.svg/80px-PL_Wiki_CzyWiesz_ikona.svg.png" width="80" height="80" srcset="//upload.wikimedia.org/wikipedia/commons/thumb/f/f4/PL_Wiki_CzyWiesz_ikona.svg/120px-PL_Wiki_CzyWiesz_ikona.svg.png 1.5x, //upload.wikimedia.org/wikipedia/commons/thumb/f/f4/PL_Wiki_CzyWiesz_ikona.svg/160px-PL_Wiki_CzyWiesz_ikona.svg.png 2x"></div><p style="margin-top: 10px;"><span class="template-done"><img alt="Crystal Clear app clean.png" src="//upload.wikimedia.org/wikipedia/commons/thumb/3/34/Crystal_Clear_app_clean.png/20px-Crystal_Clear_app_clean.png" width="20" height="20" srcset="//upload.wikimedia.org/wikipedia/commons/thumb/3/34/Crystal_Clear_app_clean.png/30px-Crystal_Clear_app_clean.png 1.5x, //upload.wikimedia.org/wikipedia/commons/thumb/3/34/Crystal_Clear_app_clean.png/40px-Crystal_Clear_app_clean.png 2x"><span style="display:none">T</span> <b>Załatwione</b></span></p><p style="margin-left: 10px;">Dziękujemy za <a id="CzyWieszLinkAfter" href="' + location.protocol + '//pl.wikipedia.org/w/index.php?title=Wikiprojekt:Czy_wiesz/propozycje&diff=cur&oldid=0" class="external">zgłoszenie</a>,<br><a href="/wiki/Wikiprojekt:Czy_wiesz" title="Wikiprojekt:Czy wiesz">Wikiprojekt Czy wiesz</a></p></div>')
+							$('<div><div class="floatright"><img alt="PL Wiki CzyWiesz ikona.svg" src="//upload.wikimedia.org/wikipedia/commons/thumb/f/f4/PL_Wiki_CzyWiesz_ikona.svg/80px-PL_Wiki_CzyWiesz_ikona.svg.png" width="80" height="80" srcset="//upload.wikimedia.org/wikipedia/commons/thumb/f/f4/PL_Wiki_CzyWiesz_ikona.svg/120px-PL_Wiki_CzyWiesz_ikona.svg.png 1.5x, //upload.wikimedia.org/wikipedia/commons/thumb/f/f4/PL_Wiki_CzyWiesz_ikona.svg/160px-PL_Wiki_CzyWiesz_ikona.svg.png 2x"></div><p style="margin-top: 10px;"><span class="template-done"><img alt="Crystal Clear app clean.png" src="//upload.wikimedia.org/wikipedia/commons/thumb/3/34/Crystal_Clear_app_clean.png/20px-Crystal_Clear_app_clean.png" width="20" height="20" srcset="//upload.wikimedia.org/wikipedia/commons/thumb/3/34/Crystal_Clear_app_clean.png/30px-Crystal_Clear_app_clean.png 1.5x, //upload.wikimedia.org/wikipedia/commons/thumb/3/34/Crystal_Clear_app_clean.png/40px-Crystal_Clear_app_clean.png 2x"><span style="display:none">T</span> <b>Załatwione</b></span></p><p style="margin-left: 10px;">Dziękujemy za <a id="CzyWieszLinkAfter" href="' + location.protocol + '//pl.wikipedia.org/w/index.php?title=' + (debug ? 'Wikipedysta:Kaligula/js/CzyWiesz.js/test' : 'Wikiprojekt:Czy_wiesz/propozycje') + '&diff=cur&oldid=0" class="external">zgłoszenie</a>,<br><a href="/wiki/Wikiprojekt:Czy_wiesz" title="Wikiprojekt:Czy wiesz">Wikiprojekt Czy wiesz</a></p></div>')
 							.dialog({ modal: true, dialogClass: "wikiEditor-toolbar-dialog", close: function() { $(this).dialog("destroy"); $(this).remove();} });
 						}
 						else {
@@ -653,7 +653,7 @@ window.DYKnomination = {};
 		$dialog.dialog({
 		  width: 600,
 		  modal: true,
-		  title: 'Zgłaszanie artykułu do rubryki „Czy wiesz…”' + (debug ? ' &nbsp; (<small id="DYKnomination-dialog-debug">TRYB DEBUG</small>)' : ''),
+		  title: 'Zgłaszanie artykułu do rubryki „Czy wiesz…”' + (debug ? ' &nbsp; (<small id="DYKnomination-dialog-debug">TRYB DEBUG</small>)' : ''),
 		  draggable: true,
 		  dialogClass: "wikiEditor-toolbar-dialog",
 		  close: function() { $(this).dialog("destroy"); $(this).remove();},
@@ -790,7 +790,7 @@ window.DYKnomination = {};
 		
 		var edittoken;
 		var input;
-		var summary = 'nowe zgłoszenie przy użyciu [[Wikipedysta:Kaligula/js/CzyWiesz.js|tego automatycznego skryptu]]'; //tylko część, reszta jest po określeniu numeru sekcji
+		var summary = 'nowe zgłoszenie przy użyciu [[Wikipedia:Narzędzia/CzyWiesz|gadżetu CzyWiesz]]'; // partial, the rest is added when the section is determined
 		var sectiontitle_wikiproject = 'Czy wiesz – zgłoszenie';
 		
 		var server_error = false;
@@ -802,10 +802,19 @@ window.DYKnomination = {};
 		$('#DYK-loader-bar-paragraph').text('Sprawdzam stronę zgłoszeń…');
 
 		// search for section 'dd mmmm', because there may be a section like 'Białowieski megaczywiesz na koniec sierpnia (ew. pocz. września)'
-		$.ajax({url: '/w/api.php?action=mobileview&format=json&page=' + (debug ? 'Wikipedysta%3AKaligula%2Fjs%2FCzyWiesz.js%2F' : '') + 'Wikiprojekt%3ACzy%20wiesz%2Fpropozycje&prop=sections&sectionprop=level%7Cline%7Cnumber%7Canchor&noimages=',
+		$.ajax({url: '/w/api.php?action=mobileview&format=json&page=' + encodeURIComponent(debug ? 'Wikipedysta:Kaligula/js/CzyWiesz.js/test' : 'Wikiprojekt:Czy wiesz/propozycje') + '&prop=sections&sectionprop=level%7Cline%7Cnumber%7Canchor&noimages=',
 				cache: false,
 				async: false
 		}).done(function(data){
+			if (debug) {
+				console.log('get sections: komenda POST zakończona\nodpowiedź serwera:');
+				console.log(data)
+			}
+			if (data.error) {
+				server_error = data.error.info;
+				console.log(data);
+				alert('Wystąpił błąd przy sprawdzaniu sekcji na stronie zgłoszeń. Odpowiedź serwera: ' + data.error.info + '. Więcej informacji w konsoli przeglądarki.');
+			}
 			sections = data.mobileview.sections;
 			for (i=0; i<sections.length; i++){
 				if (sections[i].line) {
@@ -894,7 +903,7 @@ window.DYKnomination = {};
 		$('#DYK-loader-bar-paragraph').text('Zgłaszam propozycję…');
 		$.ajax({
 			url: '/w/api.php?action=edit&format=json&title=' 
-				+ encodeURIComponent( (debug ? 'Wikipedysta:Kaligula/js/CzyWiesz.js/' : '')	+ 'Wikiprojekt:Czy wiesz/propozycje') 
+				+ encodeURIComponent( (debug ? 'Wikipedysta:Kaligula/js/CzyWiesz.js/test' : 'Wikiprojekt:Czy wiesz/propozycje')	) 
 				+ '&section=' + section + (uptodate ? '&appendtext=' : '&prependtext=') + encodeURIComponent(input) 
 				+ '&summary=' + encodeURIComponent(summary) + '&token=' + encodeURIComponent(edittoken),
 			type: 'POST',
@@ -912,7 +921,7 @@ window.DYKnomination = {};
 		}).fail(function(data){
 			console.error('DYK: błąd POST');
 			console.error('/w/api.php?action=edit&format=json&title=' 
-				+ encodeURIComponent( (debug ? 'Wikipedysta:Kaligula/js/CzyWiesz.js/' : '')	+ 'Wikiprojekt:Czy wiesz/propozycje') 
+				+ encodeURIComponent( (debug ? 'Wikipedysta:Kaligula/js/CzyWiesz.js/test' : 'Wikiprojekt:Czy wiesz/propozycje') ) 
 				+ '&section=' + section + (uptodate ? '&appendtext=' : '&prependtext=') + encodeURIComponent(input) 
 				+ '&summary=' + encodeURIComponent(summary) + '&token=' + encodeURIComponent(edittoken))
 			console.error('odpowiedź serwera:');
@@ -970,7 +979,6 @@ $(document).ready(function() {
 	if ($('#t-ajaxquickdelete')[0]) {$('#t-ajaxquickdelete').after(menulink);}
 	else {$('#p-tb ul').append(menulink);}
 });
-
 
 
 }
