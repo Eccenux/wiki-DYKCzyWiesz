@@ -9,7 +9,7 @@ if (wgNamespaceNumber === 0) {
 window.DYKnomination = {};
 
 	DYKnomination.about = {
-		version    : '2.1.1',
+		version    : '2.1.8',
 		author     : 'Kaligula',
 		authorlink : 'w:pl:user:Kaligula',
 		credits    : 'Tomasz Wachowski, Matma Rex'
@@ -439,7 +439,6 @@ window.DYKnomination = {};
 		var debug = (typeof debug == 'string' && debug == 'debug') ? true : false;
 
 		var TITLE = wgTitle;
-		//var TITLE = wgPageName.replace(/_/g,' ');
 		var IMG_ARR = $.merge($('#mw-content-text .infobox a.image img'),$('#mw-content-text .thumb a.image img'));
 		var IMAGES = IMG_ARR.length;
 		var REFS = {
@@ -487,17 +486,18 @@ window.DYKnomination = {};
 
 		var $author_row = $('<tr></tr>')
 			.html('<td>Główny autor artykułu: </td>'
-				+ '<td><input type="text" id="CzyWieszAuthor" name="CzyWieszAuthor" style="width: 50%;margin-left: 2px;"></td>');
+				+ '<td><input type="text" id="CzyWieszAuthor" name="CzyWieszAuthor" style="width: 50%;margin-left: 2px;">'
+				+ '<small>(<a id="CzyWieszAuthorLink" class=external onclick=\"this.innerHTML=\'czekaj…\';if(!DYKnomination.maxdiffuser){DYKnomination.pagerevs();};prompt(\'Autor największej edycji w ciągu ostatnich 10 dni (skopiuj wciskając Ctrl+C):\',DYKnomination.maxdiffuser);this.innerHTML=\'podpowiedź?\';\">podpowiedź?</a>)</small></td>');
 
 		var $signature_row = $('<tr></tr>')
 			.html('<td>Twój podpis: </td>'
 				+ '<td><input type="text" id="CzyWieszSignature" name="CzyWieszSignature" value="' 
 				+ SIGNATURE.name + '" style="width: 50%;margin-left: 2px;"' + SIGNATURE.disabled + '></td>');
 
-		var $loading_bar = $('<div id="DYK-loader-bar"></div>')
+		var $loading_bar = $('<div id="CzyWieszLoaderBar"></div>')
 			.css({width: '100%', backgroundColor: 'rgb(220, 220, 220)', border: '1px solid rgb(187, 187, 187)', borderRadius: '3px'})
-			.html('<p id="DYK-loader-bar-paragraph" style="margin: 0 0 0 7px; position: absolute;">&nbsp;</p>'
-				+ '<div id="DYK-loader-bar-inner" style="width: 0; height: 20px; background-color: #ABEC46; border: none; border-radius: 3px;"></div>');
+			.html('<p id="CzyWieszLoaderBarParagraph" style="margin: 0 0 0 7px; position: absolute;">&nbsp;</p>'
+				+ '<div id="CzyWieszLoaderBarInner" style="width: 0; height: 20px; background-color: #ABEC46; border: none; border-radius: 3px;"></div>');
 
 		//wikiproject row
 		DYKnomination.wikiproject_select = $('<select class="czywiesz-wikiproject"></select>').css('vertical-align', 'middle');
@@ -556,15 +556,17 @@ window.DYKnomination = {};
 								invalid.fields.push('Question');
 								invalid.alert.push('Zadaj poprawne pytanie.');
 							}
-							else if (!( QUESTION.match('\\[\\['+TITLE) || QUESTION.match('\\[\\['+TITLE.charAt(0).toLowerCase()+TITLE.substr(1)) )) { // if is link or link starting with lowercase
+							else if (( QUESTION.replace('[['+TITLE,'') == QUESTION ) && ( QUESTION.replace('[['+TITLE.charAt(0).toLowerCase()+TITLE.substr(1),'') == QUESTION )) {
+							// if there isn't any link with title or link with title starting with lowercase
 								invalid.is = true;
 								invalid.fields.push('Question');
 								invalid.alert.push('Pytanie musi zawierać link do artykułu.');
 							}
 							else{
-								if (QUESTION.match(' \'\'\'\\[\\['+TITLE+'(\\|.*?)?\\]\\][^\\s\\?\\,\\;\\:\\"\\”\\!]*\'\'\'')) { // if needed: bold the link to article
+								/* autobold link in QUESTION doesn't work when TITLE contains (,),[,],{,},… (=RegExp special characters)
+								if (!QUESTION.match(' \'\'\'\\[\\['+TITLE+'(\\|.*?)?\\]\\][^\\s\\?\\,\\;\\:\\"\\”\\!]*\'\'\'')) { // if needed: bold the link to article
 									QUESTION.replace(RegExp(' \\[\\['+TITLE+'(\\|.*?)?\\]\\]([^\\s\\?\\,\\;\\:\\"\\”\\!]*)'),' \'\'\'[['+TITLE+'$1]]$2\'\'\'');
-								}
+								}*/
 								QUESTION = '…' + (QUESTION.match(/\?[\s]*$/) ? (QUESTION) : (QUESTION += '?')) + '\n';
 							}
 						}
@@ -635,7 +637,7 @@ window.DYKnomination = {};
 		$dialog.dialog({
 		  width: 600,
 		  modal: true,
-		  title: 'Zgłaszanie artykułu do rubryki „Czy wiesz…”' + (debug ? ' &nbsp; (<small id="DYKnomination-dialog-debug">TRYB DEBUG</small>)' : ''),
+		  title: 'Zgłaszanie artykułu do rubryki „Czy wiesz…”' + (debug ? ' &nbsp; (<small id="CzyWieszDialogDebug">TRYB DEBUG</small>)' : ''),
 		  draggable: true,
 		  dialogClass: "wikiEditor-toolbar-dialog",
 		  close: function() { $(this).dialog("destroy"); $(this).remove();},
@@ -656,7 +658,7 @@ window.DYKnomination = {};
 		if ($('#CzyWieszStyleTag').length == 0) {
 			$('<style id="CzyWieszStyleTag">' 
 			+ '.wikiEditor-toolbar-dialog .czy-wiesz-gallery-chosen { border: solid 2px red; }\n' 
-			+ '#CzyWieszGalleryToggler a, a#CzyWieszLinkAfter, #CzyWieszRefs a { color: #0645AD; text-decoration: underline; cursor: pointer; padding-right: 13px; '
+			+ '#CzyWieszGalleryToggler a, #CzyWieszLinkAfter, #CzyWieszRefs a, #CzyWieszAuthorLink { color: #0645AD; text-decoration: underline; cursor: pointer; padding-right: 13px; '
 			+ 'background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAVklEQVR4Xn3PgQkAMQhDUXfqTu7kTtkpd5RA8AInfArtQ2'
 			+ 'iRXFWT2QedAfttj2FsPIOE1eCOlEuoWWjgzYaB/IkeGOrxXhqB+uA9Bfcm0lAZuh+YIeAD+cAqSz4kCMUAAAAASUVORK5CYII=) center right no-repeat; '
 			+ 'background: url(//bits.wikimedia.org/static-1.21wmf3/skins/vector/images/external-link-ltr-icon.png) center right no-repeat!ie; }'
@@ -684,7 +686,7 @@ window.DYKnomination = {};
 		// click on (+) near wikiprojects combo box → add new combo box and enlarge the dialog window
 		$('CzyWieszWikiprojectAdd').click(function(){
 			$('#CzyWieszWikiprojectContainer').append(DYKnomination.wikiproject_select.clone());
-			$('#DYK-loader-bar').parent().css({height: '+=24'});
+			$('#CzyWieszLoaderBar').parent().css({height: '+=24'});
 		});
 
 		if (IMAGES > 0) {
@@ -743,8 +745,8 @@ window.DYKnomination = {};
 
 	DYKnomination.nominate = function (params,debug) {
 
-		//$('#DYK-loader-bar').css({display: 'block'});
-		$('#DYK-loader-bar-paragraph').text('Pobieram dane z formularza…');
+		//$('#CzyWieszLoaderBar').css({display: 'block'});
+		$('#CzyWieszLoaderBarParagraph').text('Pobieram dane z formularza…');
 
 		if (debug) {console.log(arguments)}
 
@@ -780,8 +782,8 @@ window.DYKnomination = {};
 		var a,b,i;
 
 		/* prepare place for edition */
-		$('#DYK-loader-bar-inner').css({width: 100*1/tasks + '%'});
-		$('#DYK-loader-bar-paragraph').text('Sprawdzam stronę zgłoszeń…');
+		$('#CzyWieszLoaderBarInner').css({width: 100*1/tasks + '%'});
+		$('#CzyWieszLoaderBarParagraph').text('Sprawdzam stronę zgłoszeń…');
 
 		// search for section 'dd mmmm', because there may be a section like 'Białowieski megaczywiesz na koniec sierpnia (ew. pocz. września)'
 		$.ajax({url: '/w/api.php?action=mobileview&format=json&page=' + encodeURIComponent(debug ? 'Wikipedysta:Kaligula/js/CzyWiesz.js/test' : 'Wikiprojekt:Czy wiesz/propozycje') + '&prop=sections&sectionprop=level%7Cline%7Cnumber%7Canchor&noimages=',
@@ -830,8 +832,8 @@ window.DYKnomination = {};
 		summary = '/* ' + NR + ' (' + TITLE + ')' + ' */ ' + summary;
 
 		/* making data ready */
-		$('#DYK-loader-bar-inner').css({width: 100*2/tasks + '%'});
-		$('#DYK-loader-bar-paragraph').text('Przygotowuję dane do wysłania​…');
+		$('#CzyWieszLoaderBarInner').css({width: 100*2/tasks + '%'});
+		$('#CzyWieszLoaderBarParagraph').text('Przygotowuję dane do wysłania​…');
 
 		// making content
 		
@@ -863,7 +865,7 @@ window.DYKnomination = {};
 			}).done(function(data){
 				edittoken = data.query.pages[data.query.pageids[0]].edittoken;
 				if (debug) {
-					console.log('DYK: komenda POST zakończona\nodpowiedź serwera:');
+					console.log('CzyWiesz: komenda POST zakończona\nodpowiedź serwera:');
 					console.log(data);
 				}
 				if (data.error) {
@@ -881,8 +883,8 @@ window.DYKnomination = {};
 		/* edit */
 
 		// Wikiprojekt:Czy wiesz
-		$('#DYK-loader-bar-inner').css({width: 100*3/tasks + '%'});
-		$('#DYK-loader-bar-paragraph').text('Zgłaszam propozycję…');
+		$('#CzyWieszLoaderBarInner').css({width: 100*3/tasks + '%'});
+		$('#CzyWieszLoaderBarParagraph').text('Zgłaszam propozycję…');
 		$.ajax({
 			url: '/w/api.php?action=edit&format=json&title=' 
 				+ encodeURIComponent( (debug ? 'Wikipedysta:Kaligula/js/CzyWiesz.js/test' : 'Wikiprojekt:Czy wiesz/propozycje')	) 
@@ -892,7 +894,7 @@ window.DYKnomination = {};
 			async: false
 		}).done(function(data){
 			if (debug) {
-				console.log('DYK: POST done\nserver response:');
+				console.log('CzyWiesz: POST done\nserver response:');
 				console.log(data);
 			}
 			if (data.error) {
@@ -901,7 +903,7 @@ window.DYKnomination = {};
 				alert('Wystąpił błąd przy zgłaszaniu do rubryki. Odpowiedź serwera: ' + data.error.info + '. Więcej informacji w konsoli przeglądarki.');
 			}
 		}).fail(function(data){
-			console.error('DYK: błąd POST');
+			console.error('CzyWiesz: błąd POST');
 			console.error('/w/api.php?action=edit&format=json&title=' 
 				+ encodeURIComponent( (debug ? 'Wikipedysta:Kaligula/js/CzyWiesz.js/test' : 'Wikiprojekt:Czy wiesz/propozycje') ) 
 				+ '&section=' + section + (uptodate ? '&appendtext=' : '&prependtext=') + encodeURIComponent(input) 
@@ -912,9 +914,9 @@ window.DYKnomination = {};
 		});
 		
 		// wikiprojects
-		$('#DYK-loader-bar-paragraph').text('Zgłaszam do wikiprojektu/ów…');
+		$('#CzyWieszLoaderBarParagraph').text('Zgłaszam do wikiprojektu/ów…');
 		for (i=0;i<WIKIPROJECT.length;i++) {
-			$('#DYK-loader-bar-inner').css({width: 100*(3+(i+1)/tasks) + '%'});
+			$('#CzyWieszLoaderBarInner').css({width: 100*(3+(i+1)/tasks) + '%'});
 			$.ajax({
 				url:'/w/api.php?action=edit&format=json&title=' + encodeURIComponent('Dyskusja wikiprojektu:' + WIKIPROJECT[i]) + '&section=new' 
 					+ '&sectiontitle=' + encodeURIComponent(sectiontitle_wikiproject) 
@@ -945,19 +947,71 @@ window.DYKnomination = {};
 		}
 
 		if (!server_error) {
-			$('#DYK-loader-bar-inner').css({width: '100%'});
-			$('#DYK-loader-bar-paragraph').text('Zakończono!');
+			$('#CzyWieszLoaderBarInner').css({width: '100%'});
+			$('#CzyWieszLoaderBarParagraph').text('Zakończono!');
 		}
 		else {
-			$('#DYK-loader-bar-paragraph').text('Wystąpił błąd');
+			$('#CzyWieszLoaderBarParagraph').text('Wystąpił błąd');
 		}
 
 		return server_error;
 	}
 
+	DYKnomination.pagerevs = function (TITLE) {
+
+		if (!TITLE) {TITLE = wgTitle}
+
+		var a,b,c,d,i,aj0,revs0,aj,revs,str,maxdiffsize,maxdiffuser;
+
+		d=new Date();
+		a=d.toISOString(); // '2012-08-14T17:43:33Z' OR '2012-08-14T17:43:33.324Z'
+		//b=new Date(d.setUTCDate(d.getUTCDate()-10)).toISOString();
+		b=new Date(d.setUTCDate(d.getUTCDate()-10)).toISOString().replace(/T.*$/,'T00:00:00Z'); // 10 days before and from 00:00:00
+
+		$.ajax({url: '/w/api.php?action=query&prop=revisions&format=json&rvprop=timestamp%7Cuser%7Csize&redirects=&indexpageids='
+				+ '&rvlimit=max'
+				+ '&rvstart=' + encodeURIComponent(a)
+				+ '&rvend=' + encodeURIComponent(b)
+				+ '&titles=' + encodeURIComponent(TITLE),
+				async: false})
+			.done(function(d){
+				aj0 = d.query.pages[d.query.pageids[0]].revisions;
+				revs0 = aj0.length;
+				console.log(aj0);
+			})
+		$.ajax({url: '/w/api.php?action=query&prop=revisions&format=json&rvprop=timestamp%7Cuser%7Csize&redirects=&indexpageids='
+				+ '&rvlimit=' + (revs0+1)
+				+ '&titles=' + encodeURIComponent(TITLE),
+				async: false})
+			.done(function(d){
+				aj = d.query.pages[d.query.pageids[0]].revisions;
+				revs = aj.length;
+				console.log(aj);
+			})
+
+		// sprawdzanie kto największy wkład
+		// TO DO: tylko że maxdiffsize traktuje najstarszą wymienioną edycję jako utworzenie art. i porównuje do size=0
+		str=[];
+		for (i=0;i<aj.length;i++){
+			if (aj[i+1]) {
+				str.push(aj[i].size-aj[i+1].size);
+			}
+			else {
+				if (revs0 == revs) {str.push(aj[i].size);}
+			}
+		}
+		maxdiffsize = Math.max.apply(Math,str);
+		maxdiffuser = aj[$.inArray(maxdiffsize,str)].user;
+		
+		console.log('\"[str,maxdiffsize,maxdiffuser]\":');
+		console.log([str,(maxdiffsize>0?'+'+maxdiffsize:maxdiffsize),maxdiffuser]);
+		
+		this.maxdiffuser = maxdiffuser;
+	}
+
 
 $(document).ready(function() {
-	var menulink = '<li id="t-DYKnomination"><a href="javascript:DYKnomination.askuser();">Zgłoś do „Czy Wiesz…”</a></li>';
+	var menulink = $('<li id="t-DYKnomination"><a onclick="DYKnomination.askuser();">Zgłoś do „Czy Wiesz…”</a></li>');
 	if ($('#t-ajaxquickdelete')[0]) {$('#t-ajaxquickdelete').after(menulink);}
 	else {$('#p-tb ul').append(menulink);}
 });
