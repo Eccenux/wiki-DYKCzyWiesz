@@ -3,21 +3,28 @@
 
 // Wersja dev skryptu: https://pl.wikipedia.org/wiki/Wikipedysta:Kaligula/js/CzyWiesz.js
 
+window.DYKnomination = {
+	about : {
+		version    : '2.5.2',
+		author     : 'Kaligula',
+		authorlink : '[[w:pl:user:Kaligula]]',
+		credits    : 'Tomasz Wachowski, Matma Rex'
+	}
+};
+
 if (wgNamespaceNumber === 0) {
 
 
-window.DYKnomination = {};
-
-	DYKnomination.about = {
-		version    : '2.3.3',
-		author     : 'Kaligula',
-		authorlink : 'w:pl:user:Kaligula',
-		credits    : 'Tomasz Wachowski, Matma Rex'
-	}
 
 	DYKnomination.config = {
-		summary:	'nowe zgłoszenie przy użyciu [[Wikipedia:Narzędzia/CzyWiesz|gadżetu CzyWiesz]]', // partial, the rest is added when the section is determined
-		secttitl_w: 'Czy wiesz – zgłoszenie', // section title for informing the wikiprojects
+		interp:		'.,:;!?…-–—()[]{}⟨⟩\'"„”«»/\\', // [\s] must be added directly!; ['] & [\] escaped due to js limits, [\s] means [space]
+		// ↓ summary template for nomination
+		summary:	'/* NR (TITLE) */ nowe zgłoszenie przy użyciu [[Wikipedia:Narzędzia/CzyWiesz|gadżetu CzyWiesz]]',
+		// ↓ summary template for informing wikiprojects
+		summary_w:	'/* Czy wiesz – [[TITLE]] */ nowe zgłoszenie przy użyciu [[Wikipedia:Narzędzia/CzyWiesz|gadżetu CzyWiesz]]',
+		// ↓ sectiontitle template for informing wikiprojects
+		secttitl_w: 'Czy wiesz – [[TITLE]]',
+		// ↓ style for this gadget
 		styletag:	$('<style id="CzyWieszStyleTag">' 
 						+ '.wikiEditor-toolbar-dialog .czy-wiesz-gallery-chosen { border: solid 2px red; }\n' 
 						+ '#CzyWieszWikiprojectAdd {cursor: pointer; }\n'
@@ -27,11 +34,20 @@ window.DYKnomination = {};
 							+ 'iRXFWT2QedAfttj2FsPIOE1eCOlEuoWWjgzYaB/IkeGOrxXhqB+uA9Bfcm0lAZuh+YIeAD+cAqSz4kCMUAAAAASUVORK5CYII=) center right no-repeat; '
 							+ 'background: url(//bits.wikimedia.org/static-1.21wmf3/skins/vector/images/external-link-ltr-icon.png) center right no-repeat!ie; }'
 					+ '</style>'),
+		// ↓ [[File:Crystal Clear app clean.png]] (20px)
 		yes:		'<img alt="Crystal Clear app clean.png" src="//upload.wikimedia.org/wikipedia/commons/thumb/3/34/Crystal_Clear_app_clean.png/20px-Crystal_Clear_app_clean.png" width="20" height="20">',
-		no:			'<img alt="Crystal Clear action button cancel.png" src="//upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Crystal_Clear_action_button_cancel.png/20px-Crystal_Clear_action_button_cancel.png" width="20" height="20">'
+		// ↓ [[File:Crystal Clear action button cancel.png]] (20px)
+		no:			'<img alt="Crystal Clear action button cancel.png" src="//upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Crystal_Clear_action_button_cancel.png/20px-Crystal_Clear_action_button_cancel.png" width="20" height="20">',
+		// ↓ [[File:PL Wiki CzyWiesz ikona.svg]] (80px)
+		CWicon:		'<img alt="PL Wiki CzyWiesz ikona.svg" src="//upload.wikimedia.org/wikipedia/commons/thumb/f/f4/PL_Wiki_CzyWiesz_ikona.svg/80px-PL_Wiki_CzyWiesz_ikona.svg.png" width="80" height="80" srcset="//upload.wikimedia.org/wikipedia/commons/thumb/f/f4/PL_Wiki_CzyWiesz_ikona.svg/120px-PL_Wiki_CzyWiesz_ikona.svg.png 1.5x, //upload.wikimedia.org/wikipedia/commons/thumb/f/f4/PL_Wiki_CzyWiesz_ikona.svg/160px-PL_Wiki_CzyWiesz_ikona.svg.png 2x">',
+		// ↓ = {{załatwione}}
+		tmpldone:	'<span class="template-done"><img alt="Crystal Clear app clean.png" src="//upload.wikimedia.org/wikipedia/commons/thumb/3/34/Crystal_Clear_app_clean.png/20px-Crystal_Clear_app_clean.png" width="20" height="20" srcset="//upload.wikimedia.org/wikipedia/commons/thumb/3/34/Crystal_Clear_app_clean.png/30px-Crystal_Clear_app_clean.png 1.5x, //upload.wikimedia.org/wikipedia/commons/thumb/3/34/Crystal_Clear_app_clean.png/40px-Crystal_Clear_app_clean.png 2x"><span style="display:none">T</span> <b>Załatwione</b></span>',
+		// ↓ = {{niezałatwione}}
+		tmplndone:	'<span class="template-not-done"><img alt="Crystal Clear action button cancel.png" src="//upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Crystal_Clear_action_button_cancel.png/20px-Crystal_Clear_action_button_cancel.png" width="20" height="20" srcset="//upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Crystal_Clear_action_button_cancel.png/30px-Crystal_Clear_action_button_cancel.png 1.5x, //upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Crystal_Clear_action_button_cancel.png/40px-Crystal_Clear_action_button_cancel.png 2x"><span style="display:none">N</span> <b>Niezałatwione</b></span>'
 	}
 
 	DYKnomination.wikiprojects = {
+		counter : 1,
 		list : ['Albumy muzyczne',
 			'Anarchizm',
 			'Antropologia',
@@ -450,8 +466,6 @@ window.DYKnomination = {};
 		]
 	}
 
-	DYKnomination.debug = false;
-
 /*	DYKnomination.error = function (){
 		var i;
 		var dialog = $('<ul></ul>');
@@ -468,7 +482,6 @@ window.DYKnomination = {};
 		  close: function() { $(this).dialog("destroy"); $(this).remove();}
 		});
 	}*/
-
 	DYKnomination.errors = [function (){
 		var dialog = $('<ul></ul>');
 		for (var i=1;i<DYKnomination.errors.length;i++) {
@@ -486,10 +499,18 @@ window.DYKnomination = {};
 		});
 	}];
 
-	DYKnomination.askuser = function (debug) {
+	DYKnomination.debugmode = false;
 
-		debug = (typeof debug == 'string' && debug == 'debug') ? true : false;
-			DYKnomination.debug = debug;
+	DYKnomination.debug = function () {
+		DYKnomination.debugmode = true;
+		DYKnomination.askuser();
+	}
+
+	DYKnomination.askuser = function () {
+
+		/*debug = (typeof debug == 'string' && debug == 'debug') ? true : false;
+			DYKnomination.debug = debug;*/
+		var debug = DYKnomination.debugmode;
 		if (DYKnomination.errors.length > 1) { DYKnomination.errors = [DYKnomination.errors[0]]; }
 		(debug ? console.log(DYKnomination) : '');
 
@@ -497,7 +518,7 @@ window.DYKnomination = {};
 		var IMG_ARR = $.merge($('#mw-content-text .infobox a.image img'),$('#mw-content-text .thumb a.image img'));
 		var IMAGES = IMG_ARR.length;
 		var REFS = {
-			warn:	DYKnomination.config.no + '&nbsp;&nbsp;<strong style="color: red;">Brak źródeł dyskwalifikuje artykuł ze zgłoszenia!!</strong> <small>(<a class="external">info</a>)</small>',
+			warn:	DYKnomination.config.no + '&nbsp;&nbsp;<strong style="color: red;">Brak źródeł dyskwalifikuje artykuł ze zgłoszenia!!</strong> <small>(<a class="external">info</a>)</small>',
 			ar1:	[''],
 			ar2:	['Bibliografia','Przypisy']
 		}
@@ -528,7 +549,7 @@ window.DYKnomination = {};
 		var $images_row = $('<tr></tr>')
 			.html('<td>Liczba grafik w artykule: </td>'
 				+ '<td><input type="text" id="CzyWieszImages" name="CzyWieszImages" value="' + IMAGES + '"' 
-				+ 'style="width: 8%;text-align: right;margin-left: 2px;" disabled>'
+				+ 'style="width: 8%;text-align: right;margin-left: 2px;">'
 				+ '<span id="CzyWieszGalleryToggler" style="display: none;"> → (<a class="external">wybierz grafikę z artykułu</a>)</span>');
 
 		var $ref_row = $('<tr id="CzyWieszRefs"></tr>')
@@ -573,7 +594,7 @@ window.DYKnomination = {};
 		//build the dialog
 		var $dialog = $('<table></table>').css('width','100%').append($ref_row)
 			.append($file_row).append($images_row).append($author_row).append($signature_row).append($wikiproject_row);
-		var $dialog = $('<div></div>').append($title_paragraph).append($question_paragraph).append($question_textarea_paragraph)
+		var $dialog = $('<div id="CzyWieszGadget"></div>').append($title_paragraph).append($question_paragraph).append($question_textarea_paragraph)
 			.append($dialog).append($rules_paragraph).append($loading_bar);
  
 		//main buttons
@@ -594,13 +615,16 @@ window.DYKnomination = {};
 		$dialog.dialog({
 		  width: 600,
 		  modal: true,
-		  title: 'Zgłaszanie artykułu do rubryki „Czy wiesz…”' + (debug ? ' &nbsp; (<small id="CzyWieszDialogDebug">TRYB DEBUG</small>)' : ''),
+		  title: 'Zgłaszanie artykułu do rubryki „Czy wiesz…”' + (debug ? ' &nbsp; (<small id="CzyWieszDialogDebug" style="color: red;">TRYB DEBUG</small>)' : ''),
 		  draggable: true,
 		  dialogClass: "wikiEditor-toolbar-dialog",
 		  close: function() { $(this).dialog("destroy"); $(this).remove();},
 		  buttons: buttons
 		});
 
+		// check size of article and make a tip for the possible author
+		DYKnomination.pagerevs(TITLE);
+		
 		/*var submitButton = $('.ui-dialog-buttonpane button:first');
 		$('#AjaxQuestion').keyup(function(event) {
 		  if ($(this).val().length < 4 && noEmpty) {
@@ -616,9 +640,6 @@ window.DYKnomination = {};
 			DYKnomination.config.styletag.appendTo('head');
 		}
 
-		// check size of article and make a tip for the possible author
-		DYKnomination.pagerevs(TITLE);
-		
 		// when title changed → user can input number of images (← just in case user wants to nominate another article than current)
 		$('#CzyWieszTitle').change(function(){
 			$('#CzyWieszImages').removeAttr('disabled');
@@ -683,7 +704,7 @@ window.DYKnomination = {};
 
 		// if there are no refs (or they're badly named) → append this dialog to a link in $ref_row
 		$('#CzyWieszRefs small a').click(function(){
-			$('<div><div class="floatright"><img alt="PL Wiki CzyWiesz ikona.svg" src="//upload.wikimedia.org/wikipedia/commons/thumb/f/f4/PL_Wiki_CzyWiesz_ikona.svg/80px-PL_Wiki_CzyWiesz_ikona.svg.png" width="80" height="80" srcset="//upload.wikimedia.org/wikipedia/commons/thumb/f/f4/PL_Wiki_CzyWiesz_ikona.svg/120px-PL_Wiki_CzyWiesz_ikona.svg.png 1.5x, //upload.wikimedia.org/wikipedia/commons/thumb/f/f4/PL_Wiki_CzyWiesz_ikona.svg/160px-PL_Wiki_CzyWiesz_ikona.svg.png 2x"></div><p style="margin-left: 10px;">Zgodnie z wytycznymi <a href="/wiki/Wikiprojekt:Czy_wiesz" title="Wikiprojekt:Czy wiesz">Wikiprojektu Czy wiesz</a> zgłaszane hasło powinno posiadać źródła w formie bibliografii lub przypisów. <a href="/wiki/Wikiprojekt:Czy_wiesz/pomoc#Zg.C5.82aszanie_propozycji_i_poprawa_hase.C5.82" title="Wikiprojekt:Czy wiesz/pomoc#Zgłaszanie propozycji i poprawa haseł">(Więcej…)</a><br /><small>Możliwe, że w artykule sekcje ze źródłami są błędnie nazwane – w takim wypadku popraw je.</small></p></div>')
+			$('<div><div class="floatright">' + DYKnomination.config.CWicon + '</div><p style="margin-left: 10px;">Zgodnie z wytycznymi <a href="/wiki/Wikiprojekt:Czy_wiesz" title="Wikiprojekt:Czy wiesz">Wikiprojektu Czy wiesz</a> zgłaszane hasło powinno posiadać źródła w formie bibliografii lub przypisów. <a href="/wiki/Wikiprojekt:Czy_wiesz/pomoc#Zg.C5.82aszanie_propozycji_i_poprawa_hase.C5.82" title="Wikiprojekt:Czy wiesz/pomoc#Zgłaszanie propozycji i poprawa haseł">(Więcej…)</a><br /><small>Możliwe, że w artykule sekcje ze źródłami są błędnie nazwane – w takim wypadku popraw je.</small></p></div>')
 			.dialog({ modal: true, dialogClass: "wikiEditor-toolbar-dialog", close: function() { $(this).dialog("destroy"); $(this).remove();} });
 		});
 
@@ -693,7 +714,7 @@ window.DYKnomination = {};
 			$('#CzyWieszLoaderBar').parent().css({height: '+=24'});
 		});
 
-		$('#CzyWieszQuestion').keyup();
+		//$('#CzyWieszQuestion').keyup();
 		$('#CzyWieszQuestion').focus();
 		
 	}
@@ -763,6 +784,7 @@ window.DYKnomination = {};
 					$('#CzyWieszAuthor').after(' <small id="CzyWieszAuthorTip">(<a class=external>podpowiedź?</a>)</small>');
 					$('#CzyWieszAuthorTip a').click(function(){
 						prompt('Autor największej edycji (' + maxdiffsize + ') w ciągu ostatnich 10 dni (skopiuj wciskając Ctrl+C):',maxdiffuser);
+						$('#CzyWieszAuthor').focus();
 					});
 				}
 				else {
@@ -775,7 +797,7 @@ window.DYKnomination = {};
 				DYKnomination.articlesize = {
 					size:	aj[0].size,
 					enough:	(aj[0].size > 2047),
-					warn:	DYKnomination.config.no + '&nbsp;&nbsp;<strong style="color: red;">Rozmiar ' + aj[0].size + ' b dyskwalifikuje artykuł ze zgłoszenia!!</strong> <!--small>(<a class="external">info</a>)</small-->'
+					warn:	( (aj[0].size > 2047) ? '' : (DYKnomination.config.no + '&nbsp;&nbsp;<strong style="color: red;">Rozmiar ' + aj[0].size + ' b dyskwalifikuje artykuł ze zgłoszenia!!</strong> <!--small>(<a class="external">info</a>)</small-->') )
 				};
 
 				var $size_row = $('<tr id="CzyWieszSize"></tr>')
@@ -799,13 +821,18 @@ window.DYKnomination = {};
 		});
 	}
 
-	DYKnomination.strToRegExp = function (str) {
-		return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
+	if (!String.toRegExp){
+		String.prototype.toRegExp = function () {
+			return this.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
+		}
 	}
+/*	DYKnomination.strToRegExp = function (str) {
+		return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
+	}*/
 	
 	DYKnomination.checkForm = function () {
 
-		var debug = DYKnomination.debug;
+		var debug = DYKnomination.debugmode;
 
 		//get the question
 		var TITLE = $('#CzyWieszTitle').val().replace(/^\s*(.*?)\s*$/,'$1'); // remove spaces on beginning and end
@@ -830,21 +857,28 @@ window.DYKnomination = {};
 				invalid.alert.push('Wpisz pytanie.');
 			}
 			else {
+				var tITLE = TITLE.charAt(0).toLowerCase()+TITLE.substr(1); //title in link starting with lowercase
 				if (QUESTION.length < 10) {
 					invalid.is = true;
 					invalid.fields.push('Question');
 					invalid.alert.push('Zadaj poprawne pytanie.');
 				}
-				else if (( QUESTION.match(RegExp('\\[\\['+DYKnomination.strToRegExp(TITLE)+'(\\]\\]|\\|.*?\\]\\])')) == null ) && ( QUESTION.match('\\[\\['+DYKnomination.strToRegExp(TITLE.charAt(0).toLowerCase()+TITLE.substr(1))+'(\\]\\]|\\|.*?\\]\\])') == null )) {
+				else if (!QUESTION.match(RegExp('\\[\\[('+TITLE.toRegExp()+'|'+tITLE.toRegExp()+')(\\]\\]|\\|.*?\\]\\])'))) {
 				// if there isn't any link with title or link with title starting with lowercase
 					invalid.is = true;
 					invalid.fields.push('Question');
-					invalid.alert.push('Pytanie musi zawierać link do artykułu. Pogrubiony.\n Przykład:\n   \'\'\'[['+TITLE+']]\'\'\'\n lub\n   \'\'\'[['+TITLE+'|nazwa do wyświetlenia, jeśli inna niż tytuł]]\'\'\'.');
+					invalid.alert.push('Pytanie musi zawierać link do artykułu. Pogrubiony.\n Przykład:\n   \'\'\'[['+tITLE+']]\'\'\'\n lub\n   \'\'\'[['+TITLE+'|nazwa do wyświetlenia, jeśli inna niż tytuł]]\'\'\'.');
 				}
-				else{
-					if (!QUESTION.match(RegExp('\'\'\'\\s*\\[\\['+DYKnomination.strToRegExp(TITLE)+'(\\]\\]|\\|.*?\\]\\])\\s*\'\'\''))) { // if needed: bold the link to article
-						QUESTION = QUESTION.replace(RegExp('\\[\\['+DYKnomination.strToRegExp(TITLE)+'(\\|.*?)?\\]\\]'),'\'\'\'[['+TITLE+'$1]]\'\'\'');
-					}
+				else if (!QUESTION.match(RegExp('\'\'\'\\s*\\[\\[('+TITLE.toRegExp()+'|'+tITLE.toRegExp()+')(\\]\\]|\\|.*?\\]\\])\\s*\'\'\''))) { // if needed: bold the link to article
+					invalid.is = true;
+					invalid.fields.push('Question');
+					invalid.alert.push('Pytanie musi zawierać link do artykułu. Pogrubiony.\n Przykład:\n   \'\'\'[['+tITLE+']]\'\'\'\n lub\n   \'\'\'[['+TITLE+'|nazwa do wyświetlenia, jeśli inna niż tytuł]]\'\'\'.');
+				}
+				else {
+					// doesn't work for every case (see info in the beginning)
+					/*if (!QUESTION.match(RegExp('\'\'\'\\s*\\[\\[('+TITLE.toRegExp()+'|'+tITLE.toRegExp()+')(\\]\\]|\\|.*?\\]\\])\\s*\'\'\''))) { // if needed: bold the link to article
+						QUESTION = QUESTION.replace(RegExp('\\[\\[('+TITLE.toRegExp()+'|'+tITLE.toRegExp()+')(\\]\\]|\\|.*?\\]\\])'),'\'\'\'[[$1$2\'\'\'');
+					}*/
 					QUESTION = '…' + (QUESTION.match(/\?[\s]*$/) ? (QUESTION) : (QUESTION += '?')) + '\n';
 				}
 			}
@@ -885,8 +919,7 @@ window.DYKnomination = {};
 			});
 
 			// here is the call of editing/ajax function
-			var $params = [TITLE, QUESTION, FILE, IMAGES, REFS, AUTHOR, SIGNATURE, WIKIPROJECT];
-			DYKnomination.prepare($params);
+			DYKnomination.prepare(TITLE,QUESTION,FILE,IMAGES,REFS,AUTHOR,SIGNATURE,WIKIPROJECT);
 		}
 	}
 
@@ -934,14 +967,12 @@ window.DYKnomination = {};
 
 	}
 
-	DYKnomination.prepare = function (params) {
+	DYKnomination.prepare = function (TITLE,QUESTION,FILE,IMAGES,REFS,AUTHOR,SIGNATURE,WIKIPROJECT) {
 
-		var debug = DYKnomination.debug;
+		var debug = DYKnomination.debugmode;
 
 		/* prepare place for edition */
 
-		var TITLE		= params[0];
-		var WIKIPROJECT	= params[7];
 		DYKnomination.tasks = 4 + WIKIPROJECT.length;
 
 		DYKnomination.loadbar(0);
@@ -955,8 +986,9 @@ window.DYKnomination = {};
 		var sections,section,NR; // section must be 'undefined' at the beginning!!! (look at the end of function)
 
 		// search for section 'dd mmmm', because there may be a section like 'Białowieski megaczywiesz na koniec sierpnia (ew. pocz. września)'
-		$.ajax({url: '/w/api.php?action=mobileview&format=json&page=' + encodeURIComponent(debug ? 'Wikipedysta:Kaligula/js/CzyWiesz.js/test' : 'Wikiprojekt:Czy wiesz/propozycje') + '&prop=sections&sectionprop=level%7Cline%7Cnumber%7Canchor&noimages=',
-				cache: false
+		$.ajax({
+			url: '/w/api.php?action=mobileview&format=json&page=' + encodeURIComponent(debug ? 'Wikipedysta:Kaligula/js/CzyWiesz.js/test' : 'Wikiprojekt:Czy wiesz/propozycje') + '&prop=sections&sectionprop=level%7Cline%7Cnumber%7Canchor&noimages=',
+			cache: false
 		})
 		.done(function(data){
 			if (debug) {
@@ -1008,15 +1040,14 @@ window.DYKnomination = {};
 
 				if (typeof nominated == 'undefined') {
 
-					var p = [NR,uptodate,dzisiaj,section];
-
 					/* get edittoken */
 					if (typeof mw.user.tokens.values.editToken == "string") { // the same happens on else (if no token here) then after ajax done (see below)
 						DYKnomination.edittoken = mw.user.tokens.values.editToken;
-						DYKnomination.run_nom(params,p);
+						DYKnomination.run_nom(TITLE, QUESTION, FILE, IMAGES, REFS, AUTHOR, SIGNATURE, WIKIPROJECT,NR,uptodate,dzisiaj,section);
 					}
 					else {
-						$.ajax({url:'/w/api.php?action=query&prop=info&format=json&intoken=edit&indexpageids=&titles=' + encodeURIComponent(TITLE),
+						$.ajax({
+							url:'/w/api.php?action=query&prop=info&format=json&intoken=edit&indexpageids=&titles=' + encodeURIComponent(TITLE),
 							cache: false
 						})
 						.done(function(data){
@@ -1033,11 +1064,7 @@ window.DYKnomination = {};
 							else {
 								(debug ? console.log(DYKnomination.edittoken) : {});
 								DYKnomination.edittoken = data.query.pages[data.query.pageids[0]].edittoken;
-								var p = [NR,uptodate,dzisiaj,section];
-								for (i=0;i<p.length;i++){
-									params.push(p[i]);
-								}
-								DYKnomination.run_nom(params,p);
+								DYKnomination.run_nom(TITLE, QUESTION, FILE, IMAGES, REFS, AUTHOR, SIGNATURE, WIKIPROJECT,NR,uptodate,dzisiaj,section);
 							}
 						})
 						.fail(function(data){
@@ -1060,43 +1087,16 @@ window.DYKnomination = {};
 
 	}
 
-	DYKnomination.run_nom = function (params,p) {
-		for (i=0;i<p.length;i++){
-			params.push(p[i]);
-		}
-		DYKnomination.nominate(params);
-	}
+	DYKnomination.run_nom = function (TITLE,QUESTION,FILE,IMAGES,REFS,AUTHOR,SIGNATURE,WIKIPROJECT,NR,uptodate,dzisiaj,section) {
 
-	DYKnomination.nominate = function (params) {
-
-		var debug = DYKnomination.debug;
-
-		DYKnomination.loadbar(2);
-
-		if (debug) {console.log(arguments)}
-
-		var TITLE		= params[0];
-		var QUESTION	= params[1];
-		var FILE		= params[2];
-		var IMAGES		= params[3];
-		var REFS		= params[4];
-		var AUTHOR		= params[5];
-		var SIGNATURE	= params[6];
-		var WIKIPROJECT	= params[7];
-		var NR			= params[8];
-		var uptodate	= params[9];
-		var dzisiaj		= params[10];
-		var section		= params[11];
-
+		var debug = DYKnomination.debugmode;
 		var summary,input;
-		
-		var a,i;
 
 		// NR ready, make summary
-		summary = '/* ' + NR + ' (' + TITLE + ')' + ' */ ' + DYKnomination.config.summary;
+		summary = DYKnomination.config.summary.replace('NR (TITLE)',NR+' ('+TITLE+')');
 
 		/* making data ready */
-		DYKnomination.loadbar(2);
+		DYKnomination.loadbar(1);
 
 		// making content
 		
@@ -1116,6 +1116,19 @@ window.DYKnomination = {};
 		}
 		
 		(debug ? console.log(input) : {});
+
+		DYKnomination.nominate(TITLE,WIKIPROJECT,section,uptodate,input,summary);
+	}
+
+	DYKnomination.nominate = function (TITLE,WIKIPROJECT,section,uptodate,input,summary) {
+
+		var debug = DYKnomination.debugmode;
+
+		DYKnomination.loadbar(2);
+
+		if (debug) {console.log(arguments)}
+
+		var a,i;
 	 
 		/* edit */
 
@@ -1140,52 +1153,17 @@ window.DYKnomination = {};
 				console.error('Błąd zgłaszania do rubryki: ' + data.error.info + '.');
 				console.error(data);
 			}
-			else if (WIKIPROJECT.length == 0) {
+			else if ( debug || (WIKIPROJECT.length == 0) ) {
 				DYKnomination.success();
 			}
 			else {
-				// wikiprojects
-				var secttitl_w = DYKnomination.config.secttitl_w;
-				var a = 1;
+				// chosen wikiprojects and not debugmode
+				DYKnomination.wikiprojects.counter = 1;
+				var summary_w = DYKnomination.config.summary_w.replace('[[TITLE]]','[['+TITLE+']]');
+				var secttitl_w = DYKnomination.config.secttitl_w.replace('TITLE',TITLE);
 
 				for (i=0;i<WIKIPROJECT.length;i++) {
-					$.ajax({
-						url:'/w/api.php?action=edit&format=json&title=' + encodeURIComponent('Dyskusja wikiprojektu:' + WIKIPROJECT[i]) + '&section=new' 
-							+ '&sectiontitle=' + encodeURIComponent(secttitl_w) 
-							+ '&text=' + encodeURIComponent('{' + '{subst:Czy wiesz - wikiprojekt|' + TITLE + '}}~' + '~' + '~' + '~') 
-							+ '&summary=' + encodeURIComponent(summary) + '&token=' + encodeURIComponent(DYKnomination.edittoken),
-						type:'POST'
-					})
-					.done(function(data){
-						if (debug) {
-							console.log('wikiproject['+i+']: komenda POST zakończona\nodpowiedź serwera:');
-							console.log(data);
-						}
-						if (data.error) {
-							DYKnomination.errors.push('Błąd zgłaszania do '+(i+1)+'-go wikiprojektu: ' + data.error.info + '.');
-							DYKnomination.errors[0]();
-							console.error('Błąd zgłaszania do '+(i+1)+'-go wikiprojektu: ' + data.error.info + '.');
-							console.error(data);
-						}
-						else {
-							DYKnomination.loadbar(3+a); // if 1st wikiproject informed then loadbar gets '4'
-							a++;						// then 'a' increases so the next wikiproject will pass '5' (and increase 'a', and so on…)
-						}
-
-						if (a>WIKIPROJECT.length) {
-							DYKnomination.success();
-						}
-					})
-					.fail(function(data){
-						DYKnomination.errors.push('Błąd zgłaszania do '+(i+1)+'-go wikiprojektu: $.ajax.fail().');
-						DYKnomination.errors[0]();
-						console.error('Błąd zgłaszania do '+(i+1)+'-go wikiprojektu: $.ajax.fail().');
-						console.error('URI: /w/api.php?action=edit&format=json&title=' + encodeURIComponent('Dyskusja wikiprojektu:' + WIKIPROJECT[i]) + '&section=new' 
-							+ '&sectiontitle=' + encodeURIComponent(secttitl_w) 
-							+ '&text=' + encodeURIComponent('{' + '{subst:Czy wiesz - wikiprojekt|' + TITLE + '}}~' + '~' + '~' + '~') 
-							+ '&token=' + encodeURIComponent(DYKnomination.edittoken));
-						console.error(data);
-					});
+					DYKnomination.inform_w(i,TITLE,secttitl_w,WIKIPROJECT,summary_w);
 				}
 			}
 		})
@@ -1202,18 +1180,66 @@ window.DYKnomination = {};
 		
 	}
 
+	DYKnomination.inform_w = function (i,TITLE,secttitl_w,WIKIPROJECT,summary_w) {
+
+		/* inform chosen wikiprojects */
+
+		var debug = DYKnomination.debugmode;
+
+		$.ajax({
+			url:'/w/api.php?action=edit&format=json&title=' + encodeURIComponent('Dyskusja wikiprojektu:' + WIKIPROJECT[i]) + '&section=new' 
+				+ '&sectiontitle=' + encodeURIComponent(secttitl_w) 
+				+ '&text=' + encodeURIComponent('{' + '{subst:Czy wiesz - wikiprojekt|' + TITLE + '}}~' + '~' + '~' + '~') 
+				+ '&summary=' + encodeURIComponent(summary_w) + '&token=' + encodeURIComponent(DYKnomination.edittoken),
+			type:'POST'
+		})
+		.done(function(data){
+			if (debug) {
+				console.log('wikiprojekt['+i+']: komenda POST zakończona\nodpowiedź serwera:');
+				console.log(data);
+			}
+			if (data.error) {
+				DYKnomination.errors.push('Błąd zgłaszania do '+(i+1)+'-go wikiprojektu: ' + data.error.info + '.');
+				DYKnomination.errors[0]();
+				console.error('Błąd zgłaszania do '+(i+1)+'-go wikiprojektu: ' + data.error.info + '.');
+				console.error(data);
+			}
+			else {
+				DYKnomination.loadbar(3+DYKnomination.wikiprojects.counter);	// if 1st wikiproject informed then loadbar gets '4'
+				DYKnomination.wikiprojects.counter++;							// then counter increases so the next wikiproject will pass '5' (and increase counter, and so on…)
+			}
+
+			if (DYKnomination.wikiprojects.counter>WIKIPROJECT.length) {
+				DYKnomination.success();
+			}
+		})
+		.fail(function(data){
+			DYKnomination.errors.push('Błąd zgłaszania do '+(i+1)+'-go wikiprojektu: $.ajax.fail().');
+			DYKnomination.errors[0]();
+			console.error('Błąd zgłaszania do '+(i+1)+'-go wikiprojektu: $.ajax.fail().');
+			console.error('URI: /w/api.php?action=edit&format=json&title=' + encodeURIComponent('Dyskusja wikiprojektu:' + WIKIPROJECT[i]) + '&section=new' 
+				+ '&sectiontitle=' + encodeURIComponent(secttitl_w) 
+				+ '&text=' + encodeURIComponent('{' + '{subst:Czy wiesz - wikiprojekt|' + TITLE + '}}~' + '~' + '~' + '~') 
+				+ '&token=' + encodeURIComponent(DYKnomination.edittoken));
+			console.error(data);
+		});
+	}
+
 	DYKnomination.success = function () {
-		var debug = DYKnomination.debug;
+		var debug = DYKnomination.debugmode;
 
 		if (DYKnomination.errors.length == 1) {
 			DYKnomination.loadbar('done');
 
-			$(this).dialog("destroy");
-			$(this).remove();
+			/*$('#CzyWieszGadget').dialog("destroy");
+			$('#CzyWieszGadget').remove();*/
 
 			// end dialog: "Finished!"
-			$('<div><div class="floatright"><img alt="PL Wiki CzyWiesz ikona.svg" src="//upload.wikimedia.org/wikipedia/commons/thumb/f/f4/PL_Wiki_CzyWiesz_ikona.svg/80px-PL_Wiki_CzyWiesz_ikona.svg.png" width="80" height="80" srcset="//upload.wikimedia.org/wikipedia/commons/thumb/f/f4/PL_Wiki_CzyWiesz_ikona.svg/120px-PL_Wiki_CzyWiesz_ikona.svg.png 1.5x, //upload.wikimedia.org/wikipedia/commons/thumb/f/f4/PL_Wiki_CzyWiesz_ikona.svg/160px-PL_Wiki_CzyWiesz_ikona.svg.png 2x"></div><p style="margin-top: 10px;"><span class="template-done"><img alt="Crystal Clear app clean.png" src="//upload.wikimedia.org/wikipedia/commons/thumb/3/34/Crystal_Clear_app_clean.png/20px-Crystal_Clear_app_clean.png" width="20" height="20" srcset="//upload.wikimedia.org/wikipedia/commons/thumb/3/34/Crystal_Clear_app_clean.png/30px-Crystal_Clear_app_clean.png 1.5x, //upload.wikimedia.org/wikipedia/commons/thumb/3/34/Crystal_Clear_app_clean.png/40px-Crystal_Clear_app_clean.png 2x"><span style="display:none">T</span> <b>Załatwione</b></span></p><p style="margin-left: 10px;">Dziękujemy za <a id="CzyWieszLinkAfter" href="//pl.wikipedia.org/w/index.php?title=' + (debug ? 'Wikipedysta:Kaligula/js/CzyWiesz.js/test' : 'Wikiprojekt:Czy_wiesz/propozycje') + '&diff=cur&oldid=0" class="external">zgłoszenie</a>,<br><a href="/wiki/Wikiprojekt:Czy_wiesz" title="Wikiprojekt:Czy wiesz">Wikiprojekt Czy wiesz</a></p></div>')
-			.dialog({ modal: true, dialogClass: "wikiEditor-toolbar-dialog", close: function() { $(this).dialog("destroy"); $(this).remove();} });
+			$('<div><div class="floatright">' + DYKnomination.config.CWicon + '</div><p style="margin-top: 10px;">' + DYKnomination.config.tmpldone + '</p>'
+				+ '<p style="margin-left: 10px;">Dziękujemy za <a id="CzyWieszLinkAfter" href="//pl.wikipedia.org/w/index.php?title=' 
+				+ (debug ? 'Wikipedysta:Kaligula/js/CzyWiesz.js/test' : 'Wikiprojekt:Czy_wiesz/propozycje') + '&diff=cur&oldid=0" class="external">zgłoszenie</a>,<br />'
+				+ '<a href="/wiki/Wikiprojekt:Czy_wiesz" title="Wikiprojekt:Czy wiesz">Wikiprojekt Czy wiesz</a></p></div>')
+			.dialog({ modal: true, dialogClass: "wikiEditor-toolbar-dialog", close: function() { $(this).dialog("destroy"); $(this).remove(); $('#CzyWieszGadget').dialog("destroy"); $('#CzyWieszGadget').remove();} });
 		}
 		/*else {
 			DYKnomination.loadbar('error');
@@ -1221,7 +1247,9 @@ window.DYKnomination = {};
 			console.log(DYKnomination.errors);
 
 			// end dialog: "Error!"
-			$('<div><div class="floatright"><img alt="PL Wiki CzyWiesz ikona.svg" src="//upload.wikimedia.org/wikipedia/commons/thumb/f/f4/PL_Wiki_CzyWiesz_ikona.svg/80px-PL_Wiki_CzyWiesz_ikona.svg.png" width="80" height="80" srcset="//upload.wikimedia.org/wikipedia/commons/thumb/f/f4/PL_Wiki_CzyWiesz_ikona.svg/120px-PL_Wiki_CzyWiesz_ikona.svg.png 1.5x, //upload.wikimedia.org/wikipedia/commons/thumb/f/f4/PL_Wiki_CzyWiesz_ikona.svg/160px-PL_Wiki_CzyWiesz_ikona.svg.png 2x"></div><p style="margin-top: 10px;"><span class="template-not-done"><img alt="Crystal Clear action button cancel.png" src="//upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Crystal_Clear_action_button_cancel.png/20px-Crystal_Clear_action_button_cancel.png" width="20" height="20" srcset="//upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Crystal_Clear_action_button_cancel.png/30px-Crystal_Clear_action_button_cancel.png 1.5x, //upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Crystal_Clear_action_button_cancel.png/40px-Crystal_Clear_action_button_cancel.png 2x"><span style="display:none">N</span> <b>Niezałatwione</b></span></p><p style="margin-left: 10px;">Wystąpił błąd. Więcej informacji w konsoli przeglądarki.<br />Przepraszamy,<br /><a href="/wiki/Wikiprojekt:Czy_wiesz" title="Wikiprojekt:Czy wiesz">Wikiprojekt Czy wiesz</a></p></div>')
+			$('<div><div class="floatright">' + DYKnomination.config.CWicon + '</div><p style="margin-top: 10px;">' + DYKnomination.config.tmplndone + '</p>'
+				+ '<p style="margin-left: 10px;">Wystąpił błąd. Więcej informacji w konsoli przeglądarki.<br />Przepraszamy,<br />'
+				+ '<a href="/wiki/Wikiprojekt:Czy_wiesz" title="Wikiprojekt:Czy wiesz">Wikiprojekt Czy wiesz</a></p></div>')
 			.dialog({ modal: true, dialogClass: "wikiEditor-toolbar-dialog", close: function() { $(this).dialog("destroy"); $(this).remove();} });
 		}*/ // this is unnecessary as there's already a window for each error
 	}
@@ -1234,4 +1262,8 @@ $(document).ready(function() {
 });
 
 
+
+}
+else {
+	DYKnomination.error = 'The page is not an article. You cannot nominate this page.';
 }
