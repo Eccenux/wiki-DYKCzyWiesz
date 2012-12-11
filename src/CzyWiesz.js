@@ -1027,7 +1027,7 @@ if (wgNamespaceNumber === 0) {
 						}
 					}
 					else if ( sections[i].level && (sections[i].level == 3) && sections[i].line ) {
-						if ( sections[i].line.match(/^\d+ \((.*?)\)/)[1] == TITLE ) {
+						if ( sections[i].line.match(/^\d+ \(?(.*?)\)?/)[1] == TITLE ) {
 							var nominated = true;
 							DYKnomination.errors.push('Podany artykuł prawdopodobnie już jest zgłoszony do rubryki „Czy wiesz…”. <br />'
 													+ '<a href=\"/wiki/'+(debug?'Wikipedysta:Kaligula/js/CzyWiesz.js/test':'Wikiprojekt:Czy wiesz/propozycje')+'#' + sections[i].anchor + '\" class="external" target=_blank>Sprawdź</a>.');
