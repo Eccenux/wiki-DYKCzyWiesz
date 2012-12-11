@@ -5,7 +5,7 @@
 
 window.DYKnomination = {
 	about : {
-		version    : '2.5.2',
+		version    : '2.5.3',
 		author     : 'Kaligula',
 		authorlink : '[[w:pl:user:Kaligula]]',
 		credits    : 'Tomasz Wachowski, Matma Rex'
@@ -1007,7 +1007,7 @@ if (wgNamespaceNumber === 0) {
 					if ( sections[i].level && (sections[i].level == 2) && sections[i].line && (typeof section == 'undefined') ) { // iterate level 2 headings until 'section' is defined
 						var a = sections[i].line.match(/^\d+/);
 						var b = sections[i].line.split(' ');
-						if (a && ($.inArray(b[1],miesiacArr))) {
+						if (a && ($.inArray(b[1],miesiacArr)>-1)) {
 							//( (a[0] == dzien) && (b[1] == miesiac) ) ? (uptodate = true) : (uptodate = false); // checks if first section with date is from today (uptodate)
 							uptodate = (sections[i].line == dzisiaj); // checks if first section with date is from today (uptodate)
 							section = i;
@@ -1026,7 +1026,7 @@ if (wgNamespaceNumber === 0) {
 							// break; ← would be fine but we cannot break the loop because in the same loop we check level 3 headings on the whole page to see if the article is already nominated (see below)
 						}
 					}
-					else if ( sections[i].level && (sections[i].level == 3) && sections[i].line ) {
+					else if ( sections[i].level && (sections[i].level == 3) && sections[i].line && sections[i].line.match(/^\d+ \((.*?)\)/)) {
 						if ( sections[i].line.match(/^\d+ \(?(.*?)\)?/)[1] == TITLE ) {
 							var nominated = true;
 							DYKnomination.errors.push('Podany artykuł prawdopodobnie już jest zgłoszony do rubryki „Czy wiesz…”. <br />'
