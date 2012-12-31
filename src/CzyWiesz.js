@@ -5,7 +5,7 @@
 
 window.DYKnomination = {
 	about : {
-		version    : '2.5.3',
+		version    : '3.0',
 		author     : 'Kaligula',
 		authorlink : '[[w:pl:user:Kaligula]]',
 		credits    : 'Tomasz Wachowski, Matma Rex'
@@ -18,8 +18,13 @@ if (wgNamespaceNumber === 0) {
 
 	DYKnomination.config = {
 		interp:		'.,:;!?…-–—()[]{}⟨⟩\'"„”«»/\\', // [\s] must be added directly!; ['] & [\] escaped due to js limits, [\s] means [space]
+		miesiacArr:	['stycznia', 'lutego', 'marca', 'kwietnia', 'maja', 'czerwca', 'lipca', 'sierpnia', 'września', 'października', 'listopada', 'grudnia'],
 		// ↓ summary template for nomination
 		summary:	'/* NR (TITLE) */ nowe zgłoszenie przy użyciu [[Wikipedia:Narzędzia/CzyWiesz|gadżetu CzyWiesz]]',
+		// ↓ summary template for informing author
+		summary_a:	'/* Czy wiesz – [[TITLE]] */ nowe zgłoszenie przy użyciu [[Wikipedia:Narzędzia/CzyWiesz|gadżetu CzyWiesz]]',
+		// ↓ sectiontitle template for informing author
+		secttitl_a: 'Czy wiesz – [[TITLE]]',
 		// ↓ summary template for informing wikiprojects
 		summary_w:	'/* Czy wiesz – [[TITLE]] */ nowe zgłoszenie przy użyciu [[Wikipedia:Narzędzia/CzyWiesz|gadżetu CzyWiesz]]',
 		// ↓ sectiontitle template for informing wikiprojects
@@ -34,15 +39,15 @@ if (wgNamespaceNumber === 0) {
 							+ 'iRXFWT2QedAfttj2FsPIOE1eCOlEuoWWjgzYaB/IkeGOrxXhqB+uA9Bfcm0lAZuh+YIeAD+cAqSz4kCMUAAAAASUVORK5CYII=) center right no-repeat; '
 							+ 'background: url(//bits.wikimedia.org/static-1.21wmf3/skins/vector/images/external-link-ltr-icon.png) center right no-repeat!ie; }'
 					+ '</style>'),
-		// ↓ [[File:Crystal Clear app clean.png]] (20px)
+		// ↓ [[File:Crystal Clear app clean.png]] (20px) [2012-11-20]
 		yes:		'<img alt="Crystal Clear app clean.png" src="//upload.wikimedia.org/wikipedia/commons/thumb/3/34/Crystal_Clear_app_clean.png/20px-Crystal_Clear_app_clean.png" width="20" height="20">',
-		// ↓ [[File:Crystal Clear action button cancel.png]] (20px)
+		// ↓ [[File:Crystal Clear action button cancel.png]] (20px) [2012-11-20]
 		no:			'<img alt="Crystal Clear action button cancel.png" src="//upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Crystal_Clear_action_button_cancel.png/20px-Crystal_Clear_action_button_cancel.png" width="20" height="20">',
-		// ↓ [[File:PL Wiki CzyWiesz ikona.svg]] (80px)
+		// ↓ [[File:PL Wiki CzyWiesz ikona.svg]] (80px) [2012-11-20]
 		CWicon:		'<img alt="PL Wiki CzyWiesz ikona.svg" src="//upload.wikimedia.org/wikipedia/commons/thumb/f/f4/PL_Wiki_CzyWiesz_ikona.svg/80px-PL_Wiki_CzyWiesz_ikona.svg.png" width="80" height="80" srcset="//upload.wikimedia.org/wikipedia/commons/thumb/f/f4/PL_Wiki_CzyWiesz_ikona.svg/120px-PL_Wiki_CzyWiesz_ikona.svg.png 1.5x, //upload.wikimedia.org/wikipedia/commons/thumb/f/f4/PL_Wiki_CzyWiesz_ikona.svg/160px-PL_Wiki_CzyWiesz_ikona.svg.png 2x">',
-		// ↓ = {{załatwione}}
+		// ↓ = {{załatwione}} [2012-11-20]
 		tmpldone:	'<span class="template-done"><img alt="Crystal Clear app clean.png" src="//upload.wikimedia.org/wikipedia/commons/thumb/3/34/Crystal_Clear_app_clean.png/20px-Crystal_Clear_app_clean.png" width="20" height="20" srcset="//upload.wikimedia.org/wikipedia/commons/thumb/3/34/Crystal_Clear_app_clean.png/30px-Crystal_Clear_app_clean.png 1.5x, //upload.wikimedia.org/wikipedia/commons/thumb/3/34/Crystal_Clear_app_clean.png/40px-Crystal_Clear_app_clean.png 2x"><span style="display:none">T</span> <b>Załatwione</b></span>',
-		// ↓ = {{niezałatwione}}
+		// ↓ = {{niezałatwione}} [2012-11-20]
 		tmplndone:	'<span class="template-not-done"><img alt="Crystal Clear action button cancel.png" src="//upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Crystal_Clear_action_button_cancel.png/20px-Crystal_Clear_action_button_cancel.png" width="20" height="20" srcset="//upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Crystal_Clear_action_button_cancel.png/30px-Crystal_Clear_action_button_cancel.png 1.5x, //upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Crystal_Clear_action_button_cancel.png/40px-Crystal_Clear_action_button_cancel.png 2x"><span style="display:none">N</span> <b>Niezałatwione</b></span>'
 	}
 
@@ -168,7 +173,6 @@ if (wgNamespaceNumber === 0) {
 			'Psychologia',
 			'Racibórz',
 			'Radio',
-			'Radio',
 			'Religioznawstwo',
 			'Rock progresywny',
 			'Rosja',
@@ -212,256 +216,57 @@ if (wgNamespaceNumber === 0) {
 			'Żegluga',
 			'Żużel',
 			'Życie codzienne'],
+// DNU: <!-- Nowe zgłoszenia CzyWiesza wstawiaj poniżej tej linii. Nie zmieniaj i nie usuwaj tej linii -->
 		list2 : [
 			{
-				label : 'Anarchizm',
-				page : 'Dyskusja Wikiprojektu:Anarchizm',
-				type : 'talk'
-			},
-			{
-				label : 'Astronomia',
-				page : 'Wikiprojekt:Astronomia',
-				type : 'section'
+				label : 'Biathlon',
+				page  : 'Wikiprojekt:Biathlon',
+				type  : 'section'
 			},
 			{
 				label : 'Biblia',
-				page : 'Wikiprojekt:Biblia',
-				type : 'section'
+				page  : 'Wikiprojekt:Biblia',
+				type  : 'section'
 			},
 			{
-				label : 'Botanika',
-				page : 'Wikiprojekt:Botanika',
-				type : 'section'
-			},
-			{
-				label : 'Chemia',
-				page : 'Wikiprojekt:Chemia',
-				type : 'section'
-			},
-			{
-				label : 'Chiny',
-				page : 'Wikiprojekt:Chiny',
-				type : 'section'
-			},
-			{
-				label : 'Chrześcijaństwo',
-				page : 'Wikiprojekt:Chrześcijaństwo',
-				type : 'section'
-			},
-			{
-				label : 'Dinozaury',
-				page : 'Wikiprojekt:Dinozaury',
-				type : 'section'
-			},
-			{
-				label : 'Euro 2012',
-				page : 'Dyskusja Wikiprojektu:Euro 2012',
-				type : 'talk'
-			},
-			{
-				label : 'Filmy',
-				page : 'Wikiprojekt:Filmy',
-				type : 'section'
-			},
-			{
-				label : 'Fizyka',
-				page : 'Wikiprojekt:Fizyka',
-				type : 'section'
-			},
-			{
-				label : 'Formuła 1',
-				page : 'Dyskusja Wikiprojektu:Formuła 1',
-				type : 'talk'
-			},
-			{
-				label : 'Genetyka i biologia molekularna',
-				page : 'Wikiprojekt:Genetyka i biologia molekularna',
-				type : 'section'
-			},
-			{
-				label : 'Geografia',
-				page : 'Wikiprojekt:Geografia',
-				type : 'section'
-			},
-			{
-				label : 'Gry komputerowe',
-				page : 'Dyskusja Wikiprojektu:Gry komputerowe',
-				type : 'talk'
-			},
-			{
-				label : 'Góry Polski',
-				page : 'Wikiprojekt:Góry Polski',
-				type : 'section'
-			},
-			{
-				label : 'Hinduizm',
-				page : 'Wikiprojekt:Hinduizm',
-				type : 'section'
-			},
-			{
-				label : 'Igrzyska olimpijskie',
-				page : 'Dyskusja Wikiprojektu:Igrzyska olimpijskie',
-				type : 'talk'
-			},
-			{
-				label : 'Ilustrowanie',
-				page : 'Wikiprojekt:Ilustrowanie',
-				type : 'section'
-			},
-			{
-				label : 'Infoboksy',
-				page : 'Wikiprojekt:Infoboksy',
-				type : 'section'
-			},
-			{
-				label : 'Informatyka',
-				page : 'Dyskusja Wikiprojektu:Informatyka',
-				type : 'talk'
-			},
-			{
-				label : 'Kategoryzacja',
-				page : 'Dyskusja Wikiprojektu:Kategoryzacja',
-				type : 'talk'
-			},
-			{
-				label : 'Kolej',
-				page : 'Wikiprojekt:Kolej',
-				type : 'section'
-			},
-			{
-				label : 'Koszykówka',
-				page : 'Dyskusja Wikiprojektu:Koszykówka',
-				type : 'talk'
-			},
-			{
-				label : 'Kraków',
-				page : 'Dyskusja Wikiprojektu:Kraków',
-				type : 'talk'
-			},
-			{
-				label : 'LGBT',
-				page : 'Wikiprojekt:LGBT',
-				type : 'section'
+				label : 'Biologia',
+				page  : 'Wikiprojekt:Biologia/Czy wiesz',
+				type  : 'subpage'
 			},
 			{
 				label : 'Literatura',
-				page : 'Dyskusja Wikiprojektu:Literatura',
-				type : 'section'
+				page  : 'Dyskusja Wikiprojektu:Literatura',
+				type  : 'section'
 			},
 			{
-				label : 'Literaturoznawstwo',
-				page : 'Wikiprojekt:Literaturoznawstwo',
-				type : 'section'
+				label : 'Malarstwo',
+				page  : 'Wikiprojekt:Malarstwo',
+				type  : 'section'
 			},
 			{
-				label : 'Łódź',
-				page : 'Wikiprojekt:Łódź',
-				type : 'section'
-			},
-			{
-				label : 'Matematyka',
-				page : 'Dyskusja Wikiprojektu:Matematyka',
-				type : 'talk'
-			},
-			{
-				label : 'Mikrobiologia',
-				page : 'Wikiprojekt:Mikrobiologia',
-				type : 'section'
-			},
-			{
-				label : 'Militaria',
-				page : 'Wikiprojekt:Militaria',
-				type : 'section'
-			},
-			{
-				label : 'Muzyka i muzykologia',
-				page : 'Dyskusja Wikiprojektu:Muzyka i muzykologia',
-				type : 'talk'
-			},
-			{
-				label : 'Nauki medyczne',
-				page : 'Wikiprojekt:Nauki medyczne',
-				type : 'section'
-			},
-			{
-				label : 'Nowy Sącz',
-				page : 'Wikiprojekt:Nowy Sącz',
-				type : 'section'
-			},
-			{
-				label : 'Olsztyn',
-				page : 'Wikiprojekt:Olsztyn',
-				type : 'section'
-			},
-			{
-				label : 'Paleontologia',
-				page : 'Wikiprojekt:Paleontologia',
-				type : 'section'
-			},
-			{
-				label : 'Pallotyni',
-				page : 'Wikiprojekt:Pallotyni',
-				type : 'section'
-			},
-			{
-				label : 'Piłka nożna',
-				page : 'Dyskusja Wikiprojektu:Piłka nożna',
-				type : 'talk'
-			},
-			{
-				label : 'Piłka siatkowa',
-				page : 'Wikiprojekt:Piłka siatkowa',
-				type : 'section'
-			},
-			{
-				label : 'Polityka',
-				page : 'Wikiprojekt:Polityka',
-				type : 'section'
-			},
-			{
-				label : 'Prawo',
-				page : 'Wikiprojekt:Prawo',
-				type : 'section'
-			},
-			{
-				label : 'Racibórz',
-				page : 'Dyskusja Wikiprojektu:Racibórz',
-				type : 'talk'
-			},
-			{
-				label : 'Sport',
-				page : 'Wikiprojekt:Sport',
-				type : 'section'
+				label : 'Nauru',
+				page  : 'Wikiprojekt:Nauru',
+				type  : 'section'
 			},
 			{
 				label : 'Sporty zimowe',
-				page : 'Wikiprojekt:Sporty zimowe',
-				type : 'section'
-			},
-			{
-				label : 'Synagogi w Polsce',
-				page : 'Wikiprojekt:Synagogi w Polsce',
-				type : 'section'
+				page  : 'Wikiprojekt:Sporty zimowe',
+				type  : 'section'
 			},
 			{
 				label : 'Tenis ziemny',
-				page : 'Wikiprojekt:Tenis ziemny',
-				type : 'section'
+				page  : 'Wikiprojekt:Tenis ziemny',
+				type  : 'section'
 			},
 			{
 				label : 'Unia Europejska',
-				page : 'Wikiprojekt:Unia Europejska',
-				type : 'section'
+				page  : 'Wikiprojekt:Unia Europejska',
+				type  : 'section'
 			},
 			{
 				label : 'Warszawa',
-				page : 'Wikiprojekt:Warszawa',
-				type : 'talk'
-			},
-			{
-				label : 'Zoologia',
-				page : 'Wikiprojekt:Zoologia',
-				type : 'section'
+				page  : 'Wikiprojekt:Warszawa/Czy wiesz',
+				type  : 'subpage'
 			}
 		]
 	}
@@ -518,7 +323,7 @@ if (wgNamespaceNumber === 0) {
 		var IMG_ARR = $.merge($('#mw-content-text .infobox a.image img'),$('#mw-content-text .thumb a.image img'));
 		var IMAGES = IMG_ARR.length;
 		var REFS = {
-			warn:	DYKnomination.config.no + '&nbsp;&nbsp;<strong style="color: red;">Brak źródeł dyskwalifikuje artykuł ze zgłoszenia!!</strong> <small>(<a class="external">info</a>)</small>',
+			warn:	DYKnomination.config.no + '&nbsp;&nbsp;<strong style="color: red;">Brak źródeł dyskwalifikuje artykuł ze zgłoszenia!!</strong> <small>(<a class="external">info</a>)</small>',
 			ar1:	[''],
 			ar2:	['Bibliografia','Przypisy']
 		}
@@ -561,7 +366,8 @@ if (wgNamespaceNumber === 0) {
 
 		var $author_row = $('<tr></tr>')
 			.html('<td>Główny autor artykułu: </td>'
-				+ '<td><input type="text" id="CzyWieszAuthor" name="CzyWieszAuthor" style="width: 50%;margin-left: 2px;"></td>');
+				+ '<td><input type="text" id="CzyWieszAuthor" name="CzyWieszAuthor" style="width: 50%;margin-left: 2px;">'
+				+ '<input type="checkbox" id="CzyWieszAuthorInf" name="CzyWieszAuthorInf">poinformuj autora</td>');
 
 		var $signature_row = $('<tr></tr>')
 			.html('<td>Twój podpis: </td>'
@@ -615,7 +421,7 @@ if (wgNamespaceNumber === 0) {
 		$dialog.dialog({
 		  width: 600,
 		  modal: true,
-		  title: 'Zgłaszanie artykułu do rubryki „Czy wiesz…”' + (debug ? ' &nbsp; (<small id="CzyWieszDialogDebug" style="color: red;">TRYB DEBUG</small>)' : ''),
+		  title: 'Zgłaszanie artykułu do rubryki „Czy wiesz…”' + (debug ? ' &nbsp; (<small id="CzyWieszDialogDebug" style="color: red;">TRYB DEBUG</small>)' : ''),
 		  draggable: true,
 		  dialogClass: "wikiEditor-toolbar-dialog",
 		  close: function() { $(this).dialog("destroy"); $(this).remove();},
@@ -841,6 +647,7 @@ if (wgNamespaceNumber === 0) {
 		var IMAGES = $('#CzyWieszImages').val().replace(/^\s*(.*?)\s*$/,'$1'); // remove spaces on beginning and end
 		var REFS = (DYKnomination.sourced ? '+' : ' ');
 		var AUTHOR = $('#CzyWieszAuthor').val().replace(/^\s*(.*?)\s*$/,'$1'); // remove spaces on beginning and end
+		var AUTHOR_INF = ( $('#CzyWieszAuthorInf').attr('checked') ? true : false );
 		var SIGNATURE = $('#CzyWieszSignature').val().replace(/^\s*(.*?)\s*$/,'$1'); // remove spaces on beginning and end
 		var WIKIPROJECT = [];
 
@@ -879,7 +686,7 @@ if (wgNamespaceNumber === 0) {
 					/*if (!QUESTION.match(RegExp('\'\'\'\\s*\\[\\[('+TITLE.toRegExp()+'|'+tITLE.toRegExp()+')(\\]\\]|\\|.*?\\]\\])\\s*\'\'\''))) { // if needed: bold the link to article
 						QUESTION = QUESTION.replace(RegExp('\\[\\[('+TITLE.toRegExp()+'|'+tITLE.toRegExp()+')(\\]\\]|\\|.*?\\]\\])'),'\'\'\'[[$1$2\'\'\'');
 					}*/
-					QUESTION = '…' + (QUESTION.match(/\?[\s]*$/) ? (QUESTION) : (QUESTION += '?')) + '\n';
+					QUESTION = (QUESTION.match(/^(…|\.\.\.)/) ? QUESTION.replace(/^\.\.\./,'…') : '…'+QUESTION) + (QUESTION.match(/\?[\s]*$/) ? '' : '?') + '\n';
 				}
 			}
 			if (typeof FILE == 'string' && FILE != '') {
@@ -908,6 +715,7 @@ if (wgNamespaceNumber === 0) {
 				});
 			});
 			alert(invalid.alert.join('\n'));
+			$('#CzyWiesz'+invalid.fields[0]).focus();
 		}
 		else {
 			//get the wikiprojects
@@ -919,7 +727,7 @@ if (wgNamespaceNumber === 0) {
 			});
 
 			// here is the call of editing/ajax function
-			DYKnomination.prepare(TITLE,QUESTION,FILE,IMAGES,REFS,AUTHOR,SIGNATURE,WIKIPROJECT);
+			DYKnomination.prepare(TITLE,QUESTION,FILE,IMAGES,REFS,AUTHOR,SIGNATURE,AUTHOR_INF,WIKIPROJECT);
 		}
 	}
 
@@ -943,7 +751,7 @@ if (wgNamespaceNumber === 0) {
 				txt = 'Zgłaszam propozycję…';
 				break;
 			case 4:
-				txt = 'Zgłaszam do wikiprojektu/ów…';
+				txt = 'Informuję o zgłoszeniu…';
 				break;
 			case 'done':
 				txt = 'Zakończono!';
@@ -967,18 +775,18 @@ if (wgNamespaceNumber === 0) {
 
 	}
 
-	DYKnomination.prepare = function (TITLE,QUESTION,FILE,IMAGES,REFS,AUTHOR,SIGNATURE,WIKIPROJECT) {
+	DYKnomination.prepare = function (TITLE,QUESTION,FILE,IMAGES,REFS,AUTHOR,SIGNATURE,AUTHOR_INF,WIKIPROJECT) {
 
 		var debug = DYKnomination.debugmode;
 
 		/* prepare place for edition */
 
-		DYKnomination.tasks = 4 + WIKIPROJECT.length;
+		DYKnomination.tasks = 4 + WIKIPROJECT.length + (AUTHOR_INF?1:0);
 
 		DYKnomination.loadbar(0);
 
 		var data = new Date();
-			var miesiacArr = ['stycznia', 'lutego', 'marca', 'kwietnia', 'maja', 'czerwca', 'lipca', 'sierpnia', 'września', 'października', 'listopada', 'grudnia'];
+			var miesiacArr = DYKnomination.config.miesiacArr;
 			var dzisiaj = data.getDate() + ' ' + miesiacArr[data.getMonth()];
 			(debug ? console.log('dzisiaj: ' + dzisiaj) : {});
 		var uptodate = false;
@@ -1026,8 +834,8 @@ if (wgNamespaceNumber === 0) {
 							// break; ← would be fine but we cannot break the loop because in the same loop we check level 3 headings on the whole page to see if the article is already nominated (see below)
 						}
 					}
-					else if ( sections[i].level && (sections[i].level == 3) && sections[i].line && sections[i].line.match(/^\d+ \((.*?)\)/)) {
-						if ( sections[i].line.match(/^\d+ \(?(.*?)\)?/)[1] == TITLE ) {
+					else if ( sections[i].level && (sections[i].level == 3) && sections[i].line && sections[i].line.match(/^\d+ \((.*?)\)/) ) {
+						if ( sections[i].line.match(/^\d+ \((.*?)\)/)[1] == TITLE ) {
 							var nominated = true;
 							DYKnomination.errors.push('Podany artykuł prawdopodobnie już jest zgłoszony do rubryki „Czy wiesz…”. <br />'
 													+ '<a href=\"/wiki/'+(debug?'Wikipedysta:Kaligula/js/CzyWiesz.js/test':'Wikiprojekt:Czy wiesz/propozycje')+'#' + sections[i].anchor + '\" class="external" target=_blank>Sprawdź</a>.');
@@ -1043,7 +851,7 @@ if (wgNamespaceNumber === 0) {
 					/* get edittoken */
 					if (typeof mw.user.tokens.values.editToken == "string") { // the same happens on else (if no token here) then after ajax done (see below)
 						DYKnomination.edittoken = mw.user.tokens.values.editToken;
-						DYKnomination.run_nom(TITLE, QUESTION, FILE, IMAGES, REFS, AUTHOR, SIGNATURE, WIKIPROJECT,NR,uptodate,dzisiaj,section);
+						DYKnomination.run_nom(TITLE,QUESTION,FILE,IMAGES,REFS,AUTHOR,SIGNATURE,AUTHOR_INF,WIKIPROJECT,NR,uptodate,dzisiaj,section);
 					}
 					else {
 						$.ajax({
@@ -1064,7 +872,7 @@ if (wgNamespaceNumber === 0) {
 							else {
 								(debug ? console.log(DYKnomination.edittoken) : {});
 								DYKnomination.edittoken = data.query.pages[data.query.pageids[0]].edittoken;
-								DYKnomination.run_nom(TITLE, QUESTION, FILE, IMAGES, REFS, AUTHOR, SIGNATURE, WIKIPROJECT,NR,uptodate,dzisiaj,section);
+								DYKnomination.run_nom(TITLE,QUESTION,FILE,IMAGES,REFS,AUTHOR,SIGNATURE,AUTHOR_INF,WIKIPROJECT,NR,uptodate,dzisiaj,section);
 							}
 						})
 						.fail(function(data){
@@ -1087,7 +895,7 @@ if (wgNamespaceNumber === 0) {
 
 	}
 
-	DYKnomination.run_nom = function (TITLE,QUESTION,FILE,IMAGES,REFS,AUTHOR,SIGNATURE,WIKIPROJECT,NR,uptodate,dzisiaj,section) {
+	DYKnomination.run_nom = function (TITLE,QUESTION,FILE,IMAGES,REFS,AUTHOR,SIGNATURE,AUTHOR_INF,WIKIPROJECT,NR,uptodate,dzisiaj,section) {
 
 		var debug = DYKnomination.debugmode;
 		var summary,input;
@@ -1117,18 +925,16 @@ if (wgNamespaceNumber === 0) {
 		
 		(debug ? console.log(input) : {});
 
-		DYKnomination.nominate(TITLE,WIKIPROJECT,section,uptodate,input,summary);
+		DYKnomination.nominate(TITLE,AUTHOR,AUTHOR_INF,WIKIPROJECT,section,uptodate,input,summary);
 	}
 
-	DYKnomination.nominate = function (TITLE,WIKIPROJECT,section,uptodate,input,summary) {
+	DYKnomination.nominate = function (TITLE,AUTHOR,AUTHOR_INF,WIKIPROJECT,section,uptodate,input,summary) {
 
 		var debug = DYKnomination.debugmode;
 
 		DYKnomination.loadbar(2);
 
-		if (debug) {console.log(arguments)}
-
-		var a,i;
+		if (debug) {console.log(arguments)};
 	 
 		/* edit */
 
@@ -1153,17 +959,12 @@ if (wgNamespaceNumber === 0) {
 				console.error('Błąd zgłaszania do rubryki: ' + data.error.info + '.');
 				console.error(data);
 			}
-			else if ( debug || (WIKIPROJECT.length == 0) ) {
-				DYKnomination.success();
-			}
 			else {
-				// chosen wikiprojects and not debugmode
-				DYKnomination.wikiprojects.counter = 1;
-				var summary_w = DYKnomination.config.summary_w.replace('[[TITLE]]','[['+TITLE+']]');
-				var secttitl_w = DYKnomination.config.secttitl_w.replace('TITLE',TITLE);
-
-				for (i=0;i<WIKIPROJECT.length;i++) {
-					DYKnomination.inform_w(i,TITLE,secttitl_w,WIKIPROJECT,summary_w);
+				if (AUTHOR_INF) {
+					DYKnomination.inform_a(TITLE,AUTHOR,AUTHOR_INF,WIKIPROJECT);
+				}
+				else {
+					DYKnomination.inform_w(TITLE,AUTHOR_INF,WIKIPROJECT);
 				}
 			}
 		})
@@ -1180,49 +981,169 @@ if (wgNamespaceNumber === 0) {
 		
 	}
 
-	DYKnomination.inform_w = function (i,TITLE,secttitl_w,WIKIPROJECT,summary_w) {
+	DYKnomination.inform_a = function (TITLE,AUTHOR,AUTHOR_INF,WIKIPROJECT) {
 
-		/* inform chosen wikiprojects */
+		/* inform author */
 
 		var debug = DYKnomination.debugmode;
 
+		var secttitl_a = DYKnomination.config.secttitl_a.replace('TITLE',TITLE);
+		var summary_a = DYKnomination.config.summary_a.replace('TITLE',TITLE);
+		var data = new Date();
+			var dzien = data.getDate();
+			var miesiacArr = DYKnomination.config.miesiacArr;
+			var miesiac = miesiacArr[data.getMonth()];
+			var rok = data.getFullYear();
 		$.ajax({
-			url:'/w/api.php?action=edit&format=json&title=' + encodeURIComponent('Dyskusja wikiprojektu:' + WIKIPROJECT[i]) + '&section=new' 
-				+ '&sectiontitle=' + encodeURIComponent(secttitl_w) 
-				+ '&text=' + encodeURIComponent('{' + '{subst:Czy wiesz - wikiprojekt|' + TITLE + '}}~' + '~' + '~' + '~') 
-				+ '&summary=' + encodeURIComponent(summary_w) + '&token=' + encodeURIComponent(DYKnomination.edittoken),
+			url:'/w/api.php?action=edit&format=json&title=' + encodeURIComponent('Dyskusja wikipedysty:' + AUTHOR) + '&section=new' 
+				+ '&sectiontitle=' + encodeURIComponent(secttitl_a) 
+/*				+ '&text=' + encodeURIComponent('{' + '{subst:Czy wiesz - autor|tytuł strony=[['+TITLE+']]|dzień='+dzien+'|miesiąc='+miesiac+'|rok='+rok+'|więcej stron=}}~' + '~' + '~' + '~') 
+*/				+ '&text=' + encodeURIComponent('{' + '{subst:Czy wiesz - autor0|tytuł strony=[['+TITLE+']]|dzień='+dzien+'|miesiąc='+miesiac+'|rok='+rok+'|więcej stron=}}~' + '~' + '~' + '~') 
+				+ '&summary=' + encodeURIComponent(summary_a) + '&token=' + encodeURIComponent(DYKnomination.edittoken),
 			type:'POST'
 		})
 		.done(function(data){
 			if (debug) {
-				console.log('wikiprojekt['+i+']: komenda POST zakończona\nodpowiedź serwera:');
+				console.log('autor_inf: komenda POST zakończona\nodpowiedź serwera:');
 				console.log(data);
 			}
 			if (data.error) {
-				DYKnomination.errors.push('Błąd zgłaszania do '+(i+1)+'-go wikiprojektu: ' + data.error.info + '.');
+				DYKnomination.errors.push('Błąd informowania autora: ' + data.error.info + '.');
 				DYKnomination.errors[0]();
-				console.error('Błąd zgłaszania do '+(i+1)+'-go wikiprojektu: ' + data.error.info + '.');
+				console.error('Błąd informowania autora: ' + data.error.info + '.');
 				console.error(data);
 			}
 			else {
-				DYKnomination.loadbar(3+DYKnomination.wikiprojects.counter);	// if 1st wikiproject informed then loadbar gets '4'
-				DYKnomination.wikiprojects.counter++;							// then counter increases so the next wikiproject will pass '5' (and increase counter, and so on…)
-			}
-
-			if (DYKnomination.wikiprojects.counter>WIKIPROJECT.length) {
-				DYKnomination.success();
+				DYKnomination.inform_w(TITLE,AUTHOR_INF,WIKIPROJECT);
 			}
 		})
 		.fail(function(data){
-			DYKnomination.errors.push('Błąd zgłaszania do '+(i+1)+'-go wikiprojektu: $.ajax.fail().');
+			DYKnomination.errors.push('Błąd informowania autora: $.ajax.fail().');
 			DYKnomination.errors[0]();
-			console.error('Błąd zgłaszania do '+(i+1)+'-go wikiprojektu: $.ajax.fail().');
-			console.error('URI: /w/api.php?action=edit&format=json&title=' + encodeURIComponent('Dyskusja wikiprojektu:' + WIKIPROJECT[i]) + '&section=new' 
-				+ '&sectiontitle=' + encodeURIComponent(secttitl_w) 
-				+ '&text=' + encodeURIComponent('{' + '{subst:Czy wiesz - wikiprojekt|' + TITLE + '}}~' + '~' + '~' + '~') 
-				+ '&token=' + encodeURIComponent(DYKnomination.edittoken));
+			console.error('Błąd informowania autora: $.ajax.fail().');
+			console.error('URI: /w/api.php?action=edit&format=json&title=' + encodeURIComponent('Dyskusja wikipedysty:' + AUTHOR) + '&section=new' 
+				+ '&sectiontitle=' + encodeURIComponent(secttitl_a) 
+				+ '&text=' + encodeURIComponent('{' + '{subst:Czy wiesz - autor|tytuł strony=[['+TITLE+']]|data={{sub' + 'st:LOCALDAY}} {{sub' + 'st:LOCALMONTHNAMEGEN}} {{sub' + 'st:CURRENTYEAR}}|więcej stron=}}~' + '~' + '~' + '~') 
+				+ '&summary=' + encodeURIComponent(summary_a) + '&token=' + encodeURIComponent(DYKnomination.edittoken));
 			console.error(data);
 		});
+	}
+
+	DYKnomination.inform_w = function (TITLE,AUTHOR_INF,WIKIPROJECT) {
+
+		var debug = DYKnomination.debugmode;
+		var i,summary_w,secttitl_w;
+
+		/* inform chosen wikiprojects */
+
+		if ( debug || (WIKIPROJECT.length == 0) ) {
+			DYKnomination.success();
+		}
+		else {
+			// chosen wikiprojects and not debugmode
+			DYKnomination.wikiprojects.counter = 1; //declared again in case user wants to nominate another article without reloading
+			summary_w = DYKnomination.config.summary_w.replace('TITLE',TITLE);
+			secttitl_w = DYKnomination.config.secttitl_w.replace('TITLE',TITLE);
+
+			for (i=0;i<WIKIPROJECT.length;i++) {
+				var wnr = -1;
+				//check if wikiproject wants to be informed other way than 'section=new'
+				//(wnr=) -1 means 'no', any other number means 'yes' and is a number of the wikiproject in DYKnomination.wikiprojects.list2
+/*				$(DYKnomination.wikiprojects.list2).each(function(n){
+					if (this.label == WIKIPROJECT[i]) {wnr=n};
+				});
+*/
+				var obj;
+				if (wnr < 0) {
+				//if report type is 'section=new' (wnr=-1) then add new section
+					obj = {
+						url : '/w/api.php?action=edit&format=json&title=' + encodeURIComponent('Dyskusja wikiprojektu:' + WIKIPROJECT[i])
+							+ '&section=new&sectiontitle=' + encodeURIComponent(secttitl_w)
+							+ '&text=' + encodeURIComponent('{' + '{subst:Czy wiesz - wikiprojekt|' + TITLE + '}}~' + '~' + '~' + '~')
+							+ '&summary=' + encodeURIComponent(summary_w) + '&token=' + encodeURIComponent(DYKnomination.edittoken),
+						type : 'POST'
+					}
+				}
+				else {
+				//if report type is not 'section=new' (wnr>=0) then get page source [to edit]
+					obj = {
+						url : '/w/index.php?action=raw&title=' + encodeURIComponent(DYKnomination.wikiprojects.list2[wnr].page),
+						cache : false
+					}
+					summary_w = ( DYKnomination.wikiprojects.list2[wnr].type=='section' ? '/* Czy wiesz */ ' : '' ) + 'nowe zgłoszenie: [[' + TITLE + ']]';
+					//if 'subpage' then we don't need summary, because whole subpage is for reporting
+				}
+
+				$.ajax(obj)
+				.done(function(data){
+					if (debug) {
+						console.log('wikiprojekt['+i+']: komenda POST' + (wnr<0?'':'(cz. 1.)') + ' zakończona\nodpowiedź serwera:');
+						console.log(data);
+					}
+					if (data.error) {
+						DYKnomination.errors.push('Błąd informowania '+(i+1)+'-go wikiprojektu' + (wnr<0?'':'(cz. 1.)') + ': ' + data.error.info + '.');
+						DYKnomination.errors[0]();
+						console.error('Błąd informowania '+(i+1)+'-go wikiprojektu' + (wnr<0?'':'(cz. 1.)') + ': ' + data.error.info + '.');
+						console.error(data);
+					}
+					else {
+						if (wnr < 0) {
+						//if report type is 'section=new' (wnr=-1) then this wikiproject is done
+							DYKnomination.loadbar(3+(AUTHOR_INF?1:0)+DYKnomination.wikiprojects.counter);	// if 1st wikiproject informed then loadbar gets '4'
+							DYKnomination.wikiprojects.counter++;											// then counter increases so the next wikiproject will pass '5' (and increase counter, and so on…)
+							if (DYKnomination.wikiprojects.counter>WIKIPROJECT.length) {
+								DYKnomination.success();
+							}
+						}
+						else {
+						//if report type is not 'section=new' (wnr>=0) then now we need to save the page
+							data = data.replace('<!-- Nowe zgłoszenia CzyWiesza wstawiaj poniżej tej linii. Nie zmieniaj i nie usuwaj tej linii -->',
+								'<!-- Nowe zgłoszenia CzyWiesza wstawiaj poniżej tej linii. Nie zmieniaj i nie usuwaj tej linii -->\n'
+								+ '{' + '{subst:Czy wiesz - wikiprojekt|' + TITLE + '}}')
+							$.ajax({
+								url : '/w/api.php?action=edit&format=json&title=' + encodeURIComponent(DYKnomination.wikiprojects.list2[wnr].page)
+									+ '&text=' + encodeURIComponent(data)
+									+ '&summary=' + encodeURIComponent(summary_w) + '&token=' + encodeURIComponent(DYKnomination.edittoken),
+								type : 'POST'
+							})
+							.done(function(data2){
+								if (debug) {
+									console.log('wikiprojekt['+i+']: komenda POST' + (wnr<0?'':'(cz. 2.)') + ' zakończona\nodpowiedź serwera:');
+									console.log(data2);
+								}
+								if (data2.error) {
+									DYKnomination.errors.push('Błąd informowania '+(i+1)+'-go wikiprojektu' + (wnr<0?'':'(cz. 2.)') + ': ' + data2.error.info + '.');
+									DYKnomination.errors[0]();
+									console.error('Błąd informowania '+(i+1)+'-go wikiprojektu' + (wnr<0?'':'(cz. 2.)') + ': ' + data2.error.info + '.');
+									console.error(data2);
+								}
+								else {
+									DYKnomination.loadbar(3+(AUTHOR_INF?1:0)+DYKnomination.wikiprojects.counter);	// if 1st wikiproject informed then loadbar gets '4'
+									DYKnomination.wikiprojects.counter++;											// then counter increases so the next wikiproject will pass '5' (and increase counter, and so on…)
+									if (DYKnomination.wikiprojects.counter>WIKIPROJECT.length) {
+										DYKnomination.success();
+									}
+								}
+							})
+							.fail(function(data2){
+								DYKnomination.errors.push('Błąd informowania '+(i+1)+'-go wikiprojektu' + (wnr<0?'':'(cz. 2.)') + ': $.ajax.fail().');
+								DYKnomination.errors[0]();
+								console.error('Błąd informowania '+(i+1)+'-go wikiprojektu' + (wnr<0?'':'(cz. 2.)') + ': $.ajax.fail().');
+								console.error('URI: ' + obj.url);
+								console.error(data2);
+							});
+						}
+					}
+				})
+				.fail(function(data){
+					DYKnomination.errors.push('Błąd informowania '+(i+1)+'-go wikiprojektu' + (wnr<0?'':'(cz. 1.)') + ': $.ajax.fail().');
+					DYKnomination.errors[0]();
+					console.error('Błąd informowania '+(i+1)+'-go wikiprojektu' + (wnr<0?'':'(cz. 1.)') + ': $.ajax.fail().');
+					console.error('URI: ' + obj.url);
+					console.error(data);
+				});
+			}
+		}
 	}
 
 	DYKnomination.success = function () {
