@@ -6,7 +6,7 @@
 
 window.DYKnomination = {
 	about : {
-		version    : '4.0.1',
+		version    : '4.0.3',
 		author     : 'Kaligula',
 		authorlink : '[[w:pl:user:Kaligula]]',
 		credits    : 'Tomasz Wachowski, Matma Rex'
@@ -866,7 +866,7 @@ if (wgNamespaceNumber === 0) {
 					/* get edittoken */
 					if (typeof mw.user.tokens.values.editToken == "string") { // the same happens on else (if no token here) then after ajax done (see below)
 						DYKnomination.edittoken = mw.user.tokens.values.editToken;
-						DYKnomination.run_nom(QUESTION,FILE,IMAGES,REFS,AUTHOR,SIGNATURE,AUTHOR_INF,WIKIPROJECT,NR,updatesection,dzisiaj,section);
+						DYKnomination.run_nom(QUESTION,FILE,IMAGES,REFS,AUTHOR,DATE,SIGNATURE,AUTHOR_INF,WIKIPROJECT,NR,updatesection,dzisiaj,section);
 					}
 					else {
 						$.ajax({
@@ -887,7 +887,7 @@ if (wgNamespaceNumber === 0) {
 							else {
 								(debug ? console.log(DYKnomination.edittoken) : {});
 								DYKnomination.edittoken = data.query.pages[data.query.pageids[0]].edittoken;
-								DYKnomination.run_nom(QUESTION,FILE,IMAGES,REFS,AUTHOR,SIGNATURE,AUTHOR_INF,WIKIPROJECT,NR,updatesection,dzisiaj,section);
+								DYKnomination.run_nom(QUESTION,FILE,IMAGES,REFS,AUTHOR,DATE,SIGNATURE,AUTHOR_INF,WIKIPROJECT,NR,updatesection,dzisiaj,section);
 							}
 						})
 						.fail(function(data){
@@ -910,7 +910,7 @@ if (wgNamespaceNumber === 0) {
 
 	}
 
-	DYKnomination.run_nom = function (QUESTION,FILE,IMAGES,REFS,AUTHOR,SIGNATURE,AUTHOR_INF,WIKIPROJECT,NR,updatesection,dzisiaj,section) {
+	DYKnomination.run_nom = function (QUESTION,FILE,IMAGES,REFS,AUTHOR,DATE,SIGNATURE,AUTHOR_INF,WIKIPROJECT,NR,updatesection,dzisiaj,section) {
 
 		var debug = DYKnomination.debugmode;
 		var summary,input;
@@ -943,10 +943,10 @@ if (wgNamespaceNumber === 0) {
 		
 		(debug ? console.log(input) : {});
 
-		DYKnomination.nominate(AUTHOR,AUTHOR_INF,WIKIPROJECT,section,updatesection,input,summary);
+		DYKnomination.nominate(AUTHOR,DATE,AUTHOR_INF,WIKIPROJECT,section,updatesection,input,summary);
 	}
 
-	DYKnomination.nominate = function (AUTHOR,AUTHOR_INF,WIKIPROJECT,section,updatesection,input,summary) {
+	DYKnomination.nominate = function (AUTHOR,DATE,AUTHOR_INF,WIKIPROJECT,section,updatesection,input,summary) {
 
 		var debug = DYKnomination.debugmode;
 
@@ -954,7 +954,7 @@ if (wgNamespaceNumber === 0) {
 
 		if (debug) {
 			console.log('arguments:');
-			console.log('AUTHOR,AUTHOR_INF,WIKIPROJECT,section,updatesection,input,summary');
+			console.log('AUTHOR,DATE,AUTHOR_INF,WIKIPROJECT,section,updatesection,input,summary');
 			console.log(arguments);
 		};
 	 
@@ -983,7 +983,7 @@ if (wgNamespaceNumber === 0) {
 			}
 			else {
 				if (AUTHOR_INF) {
-					DYKnomination.inform_a(AUTHOR,AUTHOR_INF,WIKIPROJECT);
+					DYKnomination.inform_a(AUTHOR,DATE,AUTHOR_INF,WIKIPROJECT);
 				}
 				else {
 					DYKnomination.inform_w(AUTHOR_INF,WIKIPROJECT);
@@ -1003,7 +1003,7 @@ if (wgNamespaceNumber === 0) {
 		
 	}
 
-	DYKnomination.inform_a = function (AUTHOR,AUTHOR_INF,WIKIPROJECT) {
+	DYKnomination.inform_a = function (AUTHOR,DATE,AUTHOR_INF,WIKIPROJECT) {
 
 		/* inform author */
 
@@ -1014,15 +1014,14 @@ if (wgNamespaceNumber === 0) {
 			// not debugmode
 			var secttitl_a = DYKnomination.config.secttitl_a.replace('TITLE',wgTitle);
 			var summary_a = DYKnomination.config.summary_a.replace('TITLE',wgTitle);
-			var data = new Date();
-				var dzien = data.getDate();
+				var dzien = DATE[2];
 				var miesiacArr = DYKnomination.config.miesiacArr;
-				var miesiac = miesiacArr[data.getMonth()];
-				var rok = data.getFullYear();
+				var miesiac = miesiacArr[(+(DATE[1])-1)];
+				var rok = DATE[0];
 			$.ajax({
 				url:'/w/api.php?action=edit&format=json&title=' + encodeURIComponent('Dyskusja wikipedysty:' + AUTHOR) + '&section=new' 
 					+ '&sectiontitle=' + encodeURIComponent(secttitl_a) 
-					+ '&text=' + encodeURIComponent('{' + '{subst:Czy wiesz - autor0|tytuł strony=[['+wgTitle+']]|dzień='+dzien+'|miesiąc='+miesiac+'|rok='+rok+'|więcej stron=}}~~' + '~~') 
+					+ '&text=' + encodeURIComponent('{' + '{subst:Czy wiesz - autor0|tytuł strony='+wgTitle+'|dzień='+dzien+'|miesiąc='+miesiac+'|rok='+rok+'}}~~' + '~~') 
 					+ '&summary=' + encodeURIComponent(summary_a) + '&token=' + encodeURIComponent(DYKnomination.edittoken),
 				type:'POST'
 			})
@@ -1047,7 +1046,7 @@ if (wgNamespaceNumber === 0) {
 				console.error('Błąd informowania autora: $.ajax.fail().');
 				console.error('URI: /w/api.php?action=edit&format=json&title=' + encodeURIComponent('Dyskusja wikipedysty:' + AUTHOR) + '&section=new' 
 					+ '&sectiontitle=' + encodeURIComponent(secttitl_a) 
-					+ '&text=' + encodeURIComponent('{' + '{subst:Czy wiesz - autor|tytuł strony=[['+wgTitle+']]|data={' + '{subst:LOCALDAY}} {' + '{subst:LOCALMONTHNAMEGEN}} {' + '{subst:CURRENTYEAR}}|więcej stron=}}~~' + '~~') 
+					+ '&text=' + encodeURIComponent('{' + '{subst:Czy wiesz - autor0|tytuł strony='+wgTitle+'|dzień='+dzien+'|miesiąc='+miesiac+'|rok='+rok+'}}~~' + '~~') 
 					+ '&summary=' + encodeURIComponent(summary_a) + '&token=' + encodeURIComponent(DYKnomination.edittoken));
 				console.error(data);
 			});
