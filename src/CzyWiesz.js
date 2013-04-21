@@ -6,9 +6,10 @@
 
 window.DYKnomination = {
 	about : {
-		version    : '4.0.3',
+		version    : '4.4.0',
 		author     : 'Kaligula',
 		authorlink : '[[w:pl:user:Kaligula]]',
+		homepage   : '[[w:pl:Wikipedia:Narzędzia/CzyWiesz]]',
 		credits    : 'Tomasz Wachowski, Matma Rex'
 	}
 };
@@ -21,13 +22,13 @@ if (wgNamespaceNumber === 0) {
 		interp:		'.,:;!?…-–—()[]{}⟨⟩\'"„”«»/\\', // [\s] must be added directly!; ['] & [\] escaped due to js limits, [\s] means [space]
 		miesiacArr:	['stycznia', 'lutego', 'marca', 'kwietnia', 'maja', 'czerwca', 'lipca', 'sierpnia', 'września', 'października', 'listopada', 'grudnia'],
 		// ↓ summary template for nomination
-		summary:	'/* NR (TITLE) */ nowe zgłoszenie przy użyciu [[Wikipedia:Narzędzia/CzyWiesz|gadżetu CzyWiesz]]',
+		summary:	'/* NR (TITLE) */ nowe zgłoszenie za pomocą [[Wikipedia:Narzędzia/CzyWiesz|gadżetu CzyWiesz]]',
 		// ↓ summary template for informing author
-		summary_a:	'/* Czy wiesz – [[TITLE]] */ nowe zgłoszenie przy użyciu [[Wikipedia:Narzędzia/CzyWiesz|gadżetu CzyWiesz]]',
+		summary_a:	'/* Czy wiesz – [[TITLE]] */ nowe zgłoszenie za pomocą [[Wikipedia:Narzędzia/CzyWiesz|gadżetu CzyWiesz]]',
 		// ↓ sectiontitle template for informing author
 		secttitl_a: 'Czy wiesz – [[TITLE]]',
 		// ↓ summary template for informing wikiprojects
-		summary_w:	'/* Czy wiesz – [[TITLE]] */ nowe zgłoszenie przy użyciu [[Wikipedia:Narzędzia/CzyWiesz|gadżetu CzyWiesz]]',
+		summary_w:	'/* Czy wiesz – [[TITLE]] */ nowe zgłoszenie za pomocą [[Wikipedia:Narzędzia/CzyWiesz|gadżetu CzyWiesz]]',
 		// ↓ sectiontitle template for informing wikiprojects
 		secttitl_w: 'Czy wiesz – [[TITLE]]',
 		// ↓ style for this gadget
@@ -60,8 +61,8 @@ if (wgNamespaceNumber === 0) {
 			'Architektura',
 			'Astronautyka',
 			'Astronomia',
+			'Baseball',
 			'Białystok',
-			'Biathlon',
 			'Biblia',
 			'Bieżące wydarzenia',
 			'Biografie',
@@ -73,8 +74,8 @@ if (wgNamespaceNumber === 0) {
 			'Chiny',
 			'Chrześcijaństwo',
 			'Cmentarze żydowskie w Polsce',
-			'Częstochowa',
 			'Czechy',
+			'Częstochowa',
 			'Dinozaury',
 			'Dolny Śląsk',
 			'Drogi i autostrady',
@@ -92,12 +93,12 @@ if (wgNamespaceNumber === 0) {
 			'Formuła 1',
 			'Francja',
 			'Futbol amerykański',
-			'Górny Śląsk',
-			'Góry Polski',
 			'Gdańsk',
 			'Gender Studies',
 			'Genetyka i biologia molekularna',
 			'Geografia',
+			'Górny Śląsk',
+			'Góry Polski',
 			'Gry komputerowe',
 			'Gwiezdne wrota',
 			'Harcerstwo',
@@ -107,6 +108,7 @@ if (wgNamespaceNumber === 0) {
 			'Hip-Hop',
 			'Historia',
 			'Igrzyska olimpijskie',
+			'Igrzyska Wspólnoty Narodów',
 			'Imiona',
 			'Informatyka',
 			'Irlandia',
@@ -146,22 +148,24 @@ if (wgNamespaceNumber === 0) {
 			'Motoryzacja',
 			'Muzyka i muzykologia',
 			'Muzyka poważna',
+			'Mykologia',
 			'National Basketball Association',
 			'Nauki medyczne',
 			'Nauru',
 			'Nazwiska',
 			'Niemcy',
 			'Nowy Sącz',
+			'Numizmatyka',
+			'Ochrona przyrody',
 			'Olsztyn',
 			'Opis polskich wsi i gmin',
-			'Państwa świata',
 			'Paleontologia',
 			'Pallotyni',
-			'Parki narodowe, krajobrazowe i rezerwaty przyrody',
+			'Państwa świata',
 			'Petanque',
+			'Piastowie',
 			'Piłka nożna',
 			'Piłka siatkowa',
-			'Piastowie',
 			'Podlaskie',
 			'Pokémon',
 			'Polityka',
@@ -171,16 +175,18 @@ if (wgNamespaceNumber === 0) {
 			'Poznań',
 			'Prawo',
 			'Programy telewizyjne',
+			'Przeworsk',
 			'Psychologia',
 			'Racibórz',
 			'Radio',
 			'Religioznawstwo',
 			'Rock progresywny',
 			'Rosja',
-			'Słowacja',
+			'Saska Kępa',
 			'Seksuologia',
 			'Seriale telewizyjne',
 			'Skoki narciarskie',
+			'Słowacja',
 			'Snooker',
 			'Socjologia',
 			'Spółdzielczość',
@@ -304,7 +310,7 @@ if (wgNamespaceNumber === 0) {
 		var IMG_ARR = $.merge($('#mw-content-text .infobox a.image img'),$('#mw-content-text .thumb a.image img'));
 		var IMAGES = IMG_ARR.length;
 		var REFS = {
-			warn:	DYKnomination.config.no + '&nbsp;&nbsp;<strong style="color: red;">Brak źródeł dyskwalifikuje artykuł ze zgłoszenia!!</strong> <small>(<a class="external">info</a>)</small>',
+			warn:	DYKnomination.config.no + '&nbsp;&nbsp;<strong style="color: red;">Brak źródeł dyskwalifikuje artykuł ze zgłoszenia!!</strong> <small>(<a class="external">info</a>)</small>',
 			ar1:	[''],
 			ar2:	['Bibliografia','Przypisy']
 		}
@@ -324,19 +330,8 @@ if (wgNamespaceNumber === 0) {
 			.html('Tytuł artykułu: &nbsp;&nbsp;<input type="text" id="CzyWieszTitle" name="CzyWieszTitle" value="' + wgTitle + '" style="width: 476px;" disabled>');
 
 		var $question_paragraph = $('<p><strong>Zaproponuj pytanie:</strong></p>');
-
 		var $question_textarea_paragraph = $('<p></p>')
 			.html('<textarea id="CzyWieszQuestion" style="width: 570px;" rows="2" value="" autofocus></textarea>');
-
-		var $file_row = $('<tr></tr>')
-			.html('<td style="width: 28%;"><input type="checkbox" id="CzyWieszFile1" name="CzyWieszFile1" style="vertical-align: middle;"> Zaproponuj grafikę: </td>' // style="width: 36%;
-				+ '<td><tt>[[Plik:</tt><input type="text" id="CzyWieszFile2" name="CzyWieszFile2" style="width: 52%; vertical-align: middle;" disabled><tt>|100px|right]]</tt></td>');
-
-		var $images_row = $('<tr></tr>')
-			.html('<td>Liczba grafik w artykule: </td>'
-				+ '<td><input type="text" id="CzyWieszImages" name="CzyWieszImages" value="' + IMAGES + '"' 
-				+ 'style="width: 8%;text-align: right;margin-left: 2px;">'
-				+ '<span id="CzyWieszGalleryToggler" style="display: none;"> &nbsp; (<a class="external">wybierz grafikę z artykułu</a>)</span>');
 
 		var $ref_row = $('<tr id="CzyWieszRefs"></tr>')
 			.html('<td>Źródła: </td>'
@@ -345,11 +340,26 @@ if (wgNamespaceNumber === 0) {
 				$ref_row.css({display: 'none'});
 			}
 
+		var $images_row = $('<tr></tr>')
+			.html('<td>Liczba grafik w artykule: </td>'
+				+ '<td><input type="text" id="CzyWieszImages" name="CzyWieszImages" value="' + IMAGES + '"' 
+				+ 'style="width: 8%;text-align: right;margin-left: 2px;">'
+				+ '<span id="CzyWieszGalleryToggler" style="display: none;"> &nbsp;<small>(<a class="external">zaproponuj grafikę z artykułu</a>)</small></span>');
+
+		var $file_row = $('<tr></tr>')
+			.html('<td style="width: 28%;"><input type="checkbox" id="CzyWieszFile1" name="CzyWieszFile1" style="vertical-align: middle;"> Zaproponuj grafikę: </td>' // style="width: 36%;
+				+ '<td><tt>[[Plik:</tt><input type="text" id="CzyWieszFile2" name="CzyWieszFile2" style="width: 52%; vertical-align: middle;" disabled><tt>|100px|right]]</tt></td>');
+
 		var $author_row = $('<tr></tr>')
 			.html('<td>Główny autor artykułu: </td>'
 				+ '<td><input type="text" id="CzyWieszAuthor" name="CzyWieszAuthor" style="width: 50%;margin-left: 2px;vertical-align: middle;">'
 				+ '&nbsp;&nbsp;<input type="checkbox" id="CzyWieszAuthorInf" name="CzyWieszAuthorInf" style="vertical-align: middle;">poinformuj go</td>');
 
+/* DODATKOWI AUTORZY ARTYKUŁU (info na górze kodu)
+		var $author2_row = $('<tr></tr>')
+			.html('<td>Inni autorzy: </td>'
+				+ '<td><input type="text" id="CzyWieszAuthor2" name="CzyWieszAuthor2" style="width: 50%;margin-left: 2px;vertical-align: middle;">');
+*/
 		var $date_row = $('<tr></tr>')
 			.html('<td>Data utw./rozbud. artykułu: </td>'
 				+ '<td><input type="text" id="CzyWieszDate" name="CzyWieszDate" style="width: 50%;margin-left: 2px;vertical-align: middle;">');
@@ -358,11 +368,6 @@ if (wgNamespaceNumber === 0) {
 			.html('<td>Twój podpis: </td>'
 				+ '<td><input type="text" id="CzyWieszSignature" name="CzyWieszSignature" value="' 
 				+ SIGNATURE.name + '" style="width: 50%;margin-left: 2px;"' + SIGNATURE.disabled + '></td>');
-
-		var $loading_bar = $('<div id="CzyWieszLoaderBar"></div>')
-			.css({width: '100%', backgroundColor: 'rgb(220, 220, 220)', border: '1px solid rgb(187, 187, 187)', borderRadius: '3px'})
-			.html('<p id="CzyWieszLoaderBarParagraph" style="margin: 0 0 0 7px; position: absolute;">&nbsp;</p>'
-				+ '<div id="CzyWieszLoaderBarInner" style="width: 0; height: 20px; background-color: #ABEC46; border: none; border-radius: 3px;"></div>');
 
 		//wikiproject row
 		DYKnomination.wikiproject_select = $('<select class="czywiesz-wikiproject"></select>').css('vertical-align', 'middle');
@@ -376,17 +381,26 @@ if (wgNamespaceNumber === 0) {
 			.append('<a id="CzyWieszWikiprojectAdd">(+)</a>');
 		$wikiproject_row = $('<tr></tr>').append('<td>Powiadom wikiprojekt(y): </td>').append($wikiproject_row);
  
+		var $comment_paragraph = $('<p><input type="checkbox" id="CzyWieszCommentCheckbox" name="CzyWieszCommentCheckbox" style="vertical-align: middle;">Potrzebujesz zamieścić dodatkowy komentarz?</p>');
+		var $comment_textarea_paragraph = $('<p id="CzyWieszCommentContainer" style="display: none;"></p>')
+			.html('<textarea id="CzyWieszComment" style="width: 570px;" rows="2" value=""></textarea>');
+
 		//rules paragraph
 		var $rules_paragraph = $('<p id="CzyWieszRules"></p>')
 			.html('<small>Zgłaszaj hasła nie później niż 10 dni od powstania lub rozbudowania hasła, '
 				+ 'posiadające źródła najlepiej w formie przypisów i zawierające co najmniej 2kb samej treści.</small>')
 			.css({border: '1px solid #F0F080', backgroundColor: '#FFFFE0', paddingLeft: '5px'});
  
+		var $loading_bar = $('<div id="CzyWieszLoaderBar"></div>')
+			.css({width: '100%', backgroundColor: 'rgb(220, 220, 220)', border: '1px solid rgb(187, 187, 187)', borderRadius: '3px'})
+			.html('<p id="CzyWieszLoaderBarParagraph" style="margin: 0 0 0 7px; position: absolute;">&nbsp;</p>'
+				+ '<div id="CzyWieszLoaderBarInner" style="width: 0; height: 20px; background-color: #ABEC46; border: none; border-radius: 3px;"></div>');
+
 		//build the dialog
 		var $dialog = $('<table></table>').css('width','100%').append($ref_row)
-			.append($file_row).append($images_row).append($author_row).append($date_row).append($signature_row).append($wikiproject_row);
+			.append($images_row).append($file_row).append($author_row).append($date_row).append($signature_row).append($wikiproject_row);
 		var $dialog = $('<div id="CzyWieszGadget"></div>').append($title_paragraph).append($question_paragraph).append($question_textarea_paragraph)
-			.append($dialog).append($rules_paragraph).append($loading_bar);
+			.append($dialog).append($comment_paragraph).append($comment_textarea_paragraph).append($rules_paragraph).append($loading_bar);
  
 		//main buttons
 		var buttons = {
@@ -406,7 +420,7 @@ if (wgNamespaceNumber === 0) {
 		$dialog.dialog({
 		  width: 600,
 		  modal: true,
-		  title: 'Zgłaszanie artykułu do rubryki „Czy wiesz…”' + (debug ? ' &nbsp; (<small id="CzyWieszDialogDebug" style="color: red;">TRYB DEBUG</small>)' : ''),
+		  title: 'Zgłaszanie artykułu do rubryki „Czy wiesz…”' + (debug ? ' &nbsp; (<small id="CzyWieszDialogDebug" style="color: red;">TRYB DEBUG</small>)' : ''),
 		  draggable: true,
 		  dialogClass: "wikiEditor-toolbar-dialog",
 		  close: function() { $(this).dialog("destroy"); $(this).remove();},
@@ -502,6 +516,10 @@ if (wgNamespaceNumber === 0) {
 		$('#CzyWieszWikiprojectAdd').click(function(){
 			$('#CzyWieszWikiprojectContainer').append(DYKnomination.wikiproject_select.clone());
 			$('#CzyWieszLoaderBar').parent().css({height: '+=24'});
+		});
+
+		$('#CzyWieszCommentCheckbox').change(function(){
+			$('#CzyWieszCommentContainer').toggle();
 		});
 
 		//$('#CzyWieszQuestion').keyup();
@@ -640,6 +658,7 @@ if (wgNamespaceNumber === 0) {
 		var DATE = $('#CzyWieszDate').val().replace(/^\s*(.*?)\s*$/,'$1'); // remove spaces on beginning and end
 		var SIGNATURE = $('#CzyWieszSignature').val().replace(/^\s*(.*?)\s*$/,'$1'); // remove spaces on beginning and end
 		var WIKIPROJECT = [];
+		var COMMENT = ( $('#CzyWieszCommentCheckbox').attr('checked') ? $('#CzyWieszComment').val().replace(/^\s*(.*?)\s*$/,'$1') : false );
 
 		//validate form
 		var invalid = {is: false, fields: [], alert: []};
@@ -655,23 +674,15 @@ if (wgNamespaceNumber === 0) {
 					invalid.fields.push('Question');
 					invalid.alert.push('Zadaj poprawne pytanie.');
 				}
-				else if (!QUESTION.match(RegExp('\\[\\[('+wgTitle.toRegExp()+'|'+tITLE.toRegExp()+')(\\]\\]|\\|.*?\\]\\])'))) {
-				// if there isn't any link with title or link with title starting with lowercase
-					invalid.is = true;
-					invalid.fields.push('Question');
-					invalid.alert.push('Pytanie musi zawierać link do artykułu. Pogrubiony.\n Przykład:\n   \'\'\'[['+tITLE+']]\'\'\'\n lub\n   \'\'\'[['+wgTitle+'|nazwa do wyświetlenia, jeśli inna niż tytuł]]\'\'\'.');
-				}
-				else if (!QUESTION.match(RegExp('\'\'\'\\s*\\[\\[('+wgTitle.toRegExp()+'|'+tITLE.toRegExp()+')(\\]\\]|\\|.*?\\]\\])\\s*\'\'\''))) { // if needed: bold the link to article
+				else if (!QUESTION.match(RegExp('\'\'\'\\s*\\[\\[('+wgTitle.toRegExp()+'|'+tITLE.toRegExp()+')(\\]\\]|\\|.*?\\]\\])\\s*\'\'\''))) {
+				// if there isn't any bold (a) link with title or (b) link with title starting with lowercase
 					invalid.is = true;
 					invalid.fields.push('Question');
 					invalid.alert.push('Pytanie musi zawierać link do artykułu. Pogrubiony.\n Przykład:\n   \'\'\'[['+tITLE+']]\'\'\'\n lub\n   \'\'\'[['+wgTitle+'|nazwa do wyświetlenia, jeśli inna niż tytuł]]\'\'\'.');
 				}
 				else {
-					// doesn't work for every case (see info in the beginning)
-					/*if (!QUESTION.match(RegExp('\'\'\'\\s*\\[\\[('+wgTitle.toRegExp()+'|'+tITLE.toRegExp()+')(\\]\\]|\\|.*?\\]\\])\\s*\'\'\''))) { // if needed: bold the link to article
-						QUESTION = QUESTION.replace(RegExp('\\[\\[('+wgTitle.toRegExp()+'|'+tITLE.toRegExp()+')(\\]\\]|\\|.*?\\]\\])'),'\'\'\'[[$1$2\'\'\'');
-					}*/
-					QUESTION = (QUESTION.match(/^(…|\.\.\.)/) ? QUESTION.replace(/^\.\.\./,'…') : '…'+QUESTION) + (QUESTION.match(/\?[\s]*$/) ? '' : '?') + '\n';
+					QUESTION = (QUESTION.match(/^(…|\.\.\.)/) ? '' : '…') + QUESTION.replace(/\.\.\./g,'…') + (QUESTION.match(/\?[\s]*$/) ? '' : '?');
+					QUESTION = QUESTION.replace(/\n+/g,'\n\n') + '\n';
 				}
 			}
 			if (typeof FILE == 'string' && FILE != '') {
@@ -697,6 +708,11 @@ if (wgNamespaceNumber === 0) {
 				invalid.fields.push('Signature');
 				invalid.alert.push('Podpisz się.');
 			}
+			if ( (typeof COMMENT!='string'&&typeof COMMENT!='boolean') || (typeof COMMENT=='string' && (COMMENT===''||COMMENT.match(/^[^A-ZĘÓĄŚŁŻŹĆŃa-zęóąśłżźćń]+$/)) ) || (typeof COMMENT=='string'&&COMMENT==true) ) {
+				invalid.is = true;
+				invalid.fields.push('Comment');
+				invalid.alert.push('Jeśli musisz podać jakiś komentarz to podaj jakiś sensowny, jeśli nie – wyłącz to pole. Nie wstawiaj w tym polu samego podpisu (lecz po komentarzu podpisz się).');
+			}
 
 		if (invalid.is) {
 			$(invalid.fields).each(function(){
@@ -717,7 +733,7 @@ if (wgNamespaceNumber === 0) {
 			});
 
 			// here is the call of editing/ajax function
-			DYKnomination.prepare(QUESTION,FILE,IMAGES,REFS,AUTHOR,DATE,SIGNATURE,AUTHOR_INF,WIKIPROJECT);
+			DYKnomination.prepare(QUESTION,FILE,IMAGES,REFS,AUTHOR,DATE,SIGNATURE,COMMENT,AUTHOR_INF,WIKIPROJECT);
 		}
 	}
 
@@ -764,7 +780,7 @@ if (wgNamespaceNumber === 0) {
 
 	}
 
-	DYKnomination.prepare = function (QUESTION,FILE,IMAGES,REFS,AUTHOR,DATE,SIGNATURE,AUTHOR_INF,WIKIPROJECT) {
+	DYKnomination.prepare = function (QUESTION,FILE,IMAGES,REFS,AUTHOR,DATE,SIGNATURE,COMMENT,AUTHOR_INF,WIKIPROJECT) {
 
 		var debug = DYKnomination.debugmode;
 
@@ -776,11 +792,11 @@ if (wgNamespaceNumber === 0) {
 
 			var miesiacArr = DYKnomination.config.miesiacArr;
 			DATE = DATE.match(/\d+/g);
-			var dzisiaj = DATE[2] + ' ' + miesiacArr[(+(DATE[1])-1)]; //reading localmonthnamegen, but DATE[1]is a string since we could've added leading zero before
-			(debug ? console.log('dzisiaj: ' + dzisiaj) : {});
+			var dzisiaj = DATE[2].replace(/^0/,'') + ' ' + miesiacArr[(+(DATE[1])-1)]; //reading localmonthnamegen, but DATE[1]is a string since we could've added leading zero before
+			(debug ? console.log('dzisiaj: ' + dzisiaj) : '');
 		var updatesection = false;
 
-		var sections,section,NR; // section must be 'undefined' at the beginning!!! (look at the end of function)
+		var sections,section,NR,updatesection; // section must be 'undefined' at the beginning!!! (look at the end of function)
 
 		// search for section 'dd mmmm', because there may be a section like 'Białowieski megaczywiesz na koniec sierpnia (ew. pocz. września)'
 		$.ajax({
@@ -789,7 +805,7 @@ if (wgNamespaceNumber === 0) {
 		})
 		.done(function(data){
 			if (debug) {
-				console.log('get sections: komenda POST zakończona');
+				console.log('get sections: komenda GET zakończona');
 				console.log('URI: /w/api.php?action=mobileview&format=json&page=' + encodeURIComponent(debug ? 'Wikipedysta:Kaligula/js/CzyWiesz.js/test' : 'Wikiprojekt:Czy wiesz/propozycje') + '&prop=sections&sectionprop=level%7Cline%7Cnumber%7Canchor&noimages=');
 				console.log('get sections: odpowiedź serwera:');
 				console.log(data);
@@ -805,10 +821,11 @@ if (wgNamespaceNumber === 0) {
 				var m0 = +(DATE[1]) - 1; //it was a string since we could've added leading zero
 				var d0 = +(DATE[2]); //it was a string since we could've added leading zero
 				var mt = 99; //shorthand for 'Month - Temporary variable' - in January the previous months have bigger nr than one of the sections so if the nomination has a date that is earlier than the first date in this year then the script will go through all sections and save the nomination as last one
-				(debug ? console.log('m0:',m0,', d0:',d0) : '');
-				var section = 0;
-				var updatesection = -1;
-				var NR = 1;
+				(debug ? console.log('current month [m0]:',m0,', current day [d0]:',d0) : '');
+				section = 0;
+				updatesection = -1;
+				NR = 1;
+				var nominated = false;
 
 				$(sections).each(function(){
 					if ( this.level && (this.level == 2) && this.line && (updatesection < 0) ) { //sekcja nagłówkowa (nie zgłoszenia) i ma nazwę i wciąż nie określono msc wstawienia
@@ -847,11 +864,11 @@ if (wgNamespaceNumber === 0) {
 							}
 							mt = m;
 						}
-						(debug ? console.log('m:',m,', d:',d,'NR:',NR,', section:',section,', updatesection:',updatesection) : '');
+						(debug ? console.log('section:',section,', month [m]:',m,', day [d]:',d,'new section number would be here [NR]:',NR,', updatesection:',updatesection) : '');
 					}
 					if ( this.level && (this.level == 3) && this.line && this.line.match(/^\d+ \((.*?)\)/) ) { //sekcja zgłoszenia (nie nagłówek) i ma nazwę z nr na początku
 						if ( this.line.match(/^\d+ \((.*?)\)/)[1] == wgTitle ) {
-							var nominated = true;
+							nominated = true;
 							DYKnomination.errors.push('Podany artykuł prawdopodobnie już jest zgłoszony do rubryki „Czy wiesz…”. <br />'
 								+ '<a href=\"/wiki/'+(debug?'Wikipedysta:Kaligula/js/CzyWiesz.js/test':'Wikiprojekt:Czy wiesz/propozycje')+'#' + this.anchor + '\" class="external" target=_blank>Sprawdź</a>.');
 							DYKnomination.errors[0]();
@@ -861,42 +878,37 @@ if (wgNamespaceNumber === 0) {
 					}
 				});
 
-				if (typeof nominated == 'undefined') {
+				if (nominated === false) {
 
 					/* get edittoken */
-					if (typeof mw.user.tokens.values.editToken == "string") { // the same happens on else (if no token here) then after ajax done (see below)
-						DYKnomination.edittoken = mw.user.tokens.values.editToken;
-						DYKnomination.run_nom(QUESTION,FILE,IMAGES,REFS,AUTHOR,DATE,SIGNATURE,AUTHOR_INF,WIKIPROJECT,NR,updatesection,dzisiaj,section);
-					}
-					else {
-						$.ajax({
-							url:'/w/api.php?action=query&prop=info&format=json&intoken=edit&indexpageids=&titles=' + encodeURIComponent(wgTitle),
-							cache: false
-						})
-						.done(function(data){
-							if (debug) {
-								console.log('CzyWiesz: komenda POST zakończona\nodpowiedź serwera:');
-								console.log(data);
-							}
-							if (data.error) {
-								DYKnomination.errors.push('Błąd pobierania tokena: ' + data.error.info + '.');
-								DYKnomination.errors[0]();
-								console.error('Błąd pobierania tokena: ' + data.error.info + '.');
-								console.error(data);
-							}
-							else {
-								(debug ? console.log(DYKnomination.edittoken) : {});
-								DYKnomination.edittoken = data.query.pages[data.query.pageids[0]].edittoken;
-								DYKnomination.run_nom(QUESTION,FILE,IMAGES,REFS,AUTHOR,DATE,SIGNATURE,AUTHOR_INF,WIKIPROJECT,NR,updatesection,dzisiaj,section);
-							}
-						})
-						.fail(function(data){
-							DYKnomination.errors.push('Błąd pobierania tokena: $.ajax.fail().');
+					$.ajax({
+						url:'/w/api.php?action=query&prop=info&format=json&intoken=edit&indexpageids=&titles=' + encodeURIComponent(wgTitle),
+						cache: false
+					})
+					.done(function(data){
+						if (debug) {
+							console.log('CzyWiesz edittoken: komenda GET zakończona\nodpowiedź serwera:');
+							console.log(data);
+						}
+						if (data.error) {
+							DYKnomination.errors.push('Błąd pobierania tokena: ' + data.error.info + '.');
 							DYKnomination.errors[0]();
-							console.error('Błąd pobierania tokena: $.ajax.fail().');
+							console.error('Błąd pobierania tokena: ' + data.error.info + '.');
 							console.error(data);
-						});
-					}
+						}
+						else {
+							(debug ? console.log('DYKnomination.edittoken :',DYKnomination.edittoken) : '');
+							(debug ? console.log('data.query.pages[data.query.pageids[0]].edittoken :',data.query.pages[data.query.pageids[0]].edittoken) : '');
+							DYKnomination.edittoken = data.query.pages[data.query.pageids[0]].edittoken;
+							DYKnomination.run_nom(QUESTION,FILE,IMAGES,REFS,AUTHOR,DATE,SIGNATURE,COMMENT,AUTHOR_INF,WIKIPROJECT,NR,updatesection,dzisiaj,section);
+						}
+					})
+					.fail(function(data){
+						DYKnomination.errors.push('Błąd pobierania tokena: $.ajax.fail().');
+						DYKnomination.errors[0]();
+						console.error('Błąd pobierania tokena: $.ajax.fail().');
+						console.error(data);
+					});
 				}
 			}
 		})
@@ -910,7 +922,7 @@ if (wgNamespaceNumber === 0) {
 
 	}
 
-	DYKnomination.run_nom = function (QUESTION,FILE,IMAGES,REFS,AUTHOR,DATE,SIGNATURE,AUTHOR_INF,WIKIPROJECT,NR,updatesection,dzisiaj,section) {
+	DYKnomination.run_nom = function (QUESTION,FILE,IMAGES,REFS,AUTHOR,DATE,SIGNATURE,COMMENT,AUTHOR_INF,WIKIPROJECT,NR,updatesection,dzisiaj,section) {
 
 		var debug = DYKnomination.debugmode;
 		var summary,input;
@@ -924,9 +936,11 @@ if (wgNamespaceNumber === 0) {
 		// making content
 		
 		input = '=== ' + NR + ' (' + wgTitle + ') ===\n'
-			+ FILE
-			+ QUESTION
-			+ '{{Wikiprojekt:Czy wiesz/weryfikacja|' + wgTitle + '|' + REFS + '|' + IMAGES + '|?|' + AUTHOR + '|' + SIGNATURE + '|?|?|?}}';
+			+ '<!-- artykuł zgłoszony za pomocą gadżetu CzyWiesz -->\n'
+			+ FILE         //FILE is already with \n at the end
+			+ QUESTION     //QUESTION is already with \n at the end
+			+ '{' + '{Wikiprojekt:Czy wiesz/weryfikacja|' + wgTitle + '|' + REFS + '|' + IMAGES + '|?|' + AUTHOR + '|' + SIGNATURE + '|?|?|?}}'
+			+ (COMMENT ? '\n'+COMMENT : '');
 
 		// text ready
 		// ↓ new section or not? if updatesection =
@@ -941,7 +955,8 @@ if (wgNamespaceNumber === 0) {
 			input = '\n\n== ' + dzisiaj +' ==\n' + input + '\n\n';
 		}
 		
-		(debug ? console.log(input) : {});
+		(debug ? console.log('input:') : '');
+		(debug ? console.log(input) : '');
 
 		DYKnomination.nominate(AUTHOR,DATE,AUTHOR_INF,WIKIPROJECT,section,updatesection,input,summary);
 	}
@@ -954,7 +969,7 @@ if (wgNamespaceNumber === 0) {
 
 		if (debug) {
 			console.log('arguments:');
-			console.log('AUTHOR,DATE,AUTHOR_INF,WIKIPROJECT,section,updatesection,input,summary');
+			console.log('(AUTHOR,DATE,AUTHOR_INF,WIKIPROJECT,section,updatesection,input,summary)');
 			console.log(arguments);
 		};
 	 
@@ -964,15 +979,22 @@ if (wgNamespaceNumber === 0) {
 		DYKnomination.loadbar(3);
 		
 		$.ajax({
-			url: '/w/api.php?action=edit&format=json&title=' 
-				+ encodeURIComponent( (debug ? 'Wikipedysta:Kaligula/js/CzyWiesz.js/test' : 'Wikiprojekt:Czy wiesz/propozycje')	) 
-				+ '&section=' + section + '&appendtext=' + encodeURIComponent(input) 
-				+ '&summary=' + encodeURIComponent(summary) + '&token=' + encodeURIComponent(DYKnomination.edittoken),
-			type: 'POST'
+			url : '/w/api.php',
+			type: 'POST',
+			data : {
+				action : 'edit',
+				format : 'json',
+				title : (debug ? 'Wikipedysta:Kaligula/js/CzyWiesz.js/test' : 'Wikiprojekt:Czy wiesz/propozycje'),
+				section : section,
+				appendtext : input,
+				summary : summary,
+				watchlist : 'nochange',
+				token : DYKnomination.edittoken
+			}
 		})
 		.done(function(data){
 			if (debug) {
-				console.log('CzyWiesz: POST done\nserver response:');
+				console.log('CzyWiesz nominate: POST done\nserver response:');
 				console.log(data);
 			}
 			if (data.error) {
@@ -1004,6 +1026,8 @@ if (wgNamespaceNumber === 0) {
 	}
 
 	DYKnomination.inform_a = function (AUTHOR,DATE,AUTHOR_INF,WIKIPROJECT) {
+ 
+		var debug = DYKnomination.debugmode;
 
 		/* inform author */
 
@@ -1014,16 +1038,20 @@ if (wgNamespaceNumber === 0) {
 			// not debugmode
 			var secttitl_a = DYKnomination.config.secttitl_a.replace('TITLE',wgTitle);
 			var summary_a = DYKnomination.config.summary_a.replace('TITLE',wgTitle);
-				var dzien = DATE[2];
-				var miesiacArr = DYKnomination.config.miesiacArr;
-				var miesiac = miesiacArr[(+(DATE[1])-1)];
-				var rok = DATE[0];
 			$.ajax({
-				url:'/w/api.php?action=edit&format=json&title=' + encodeURIComponent('Dyskusja wikipedysty:' + AUTHOR) + '&section=new' 
-					+ '&sectiontitle=' + encodeURIComponent(secttitl_a) 
-					+ '&text=' + encodeURIComponent('{' + '{subst:Czy wiesz - autor0|tytuł strony='+wgTitle+'|dzień='+dzien+'|miesiąc='+miesiac+'|rok='+rok+'}}~~' + '~~') 
-					+ '&summary=' + encodeURIComponent(summary_a) + '&token=' + encodeURIComponent(DYKnomination.edittoken),
-				type:'POST'
+				url : '/w/api.php',
+				type : 'POST',
+				data : {
+					action : 'edit',
+					format : 'json',
+					title : 'Dyskusja wikipedysty:' + AUTHOR,
+					section : 'new',
+					sectiontitle : secttitl_a,
+					text : '{' + '{subst:Czy wiesz - autor0|tytuł strony='+wgTitle+'}} ~~' + '~~',
+					summary : summary_a,
+					watchlist : 'nochange',
+					token : DYKnomination.edittoken
+				}
 			})
 			.done(function(data){
 				if (debug) {
@@ -1046,7 +1074,7 @@ if (wgNamespaceNumber === 0) {
 				console.error('Błąd informowania autora: $.ajax.fail().');
 				console.error('URI: /w/api.php?action=edit&format=json&title=' + encodeURIComponent('Dyskusja wikipedysty:' + AUTHOR) + '&section=new' 
 					+ '&sectiontitle=' + encodeURIComponent(secttitl_a) 
-					+ '&text=' + encodeURIComponent('{' + '{subst:Czy wiesz - autor0|tytuł strony='+wgTitle+'|dzień='+dzien+'|miesiąc='+miesiac+'|rok='+rok+'}}~~' + '~~') 
+					+ '&text=' + encodeURIComponent('{' + '{subst:Czy wiesz - autor0|tytuł strony='+wgTitle+'}}~~' + '~~') 
 					+ '&summary=' + encodeURIComponent(summary_a) + '&token=' + encodeURIComponent(DYKnomination.edittoken));
 				console.error(data);
 			});
@@ -1054,6 +1082,7 @@ if (wgNamespaceNumber === 0) {
 	}
 
 	DYKnomination.inform_w = function (AUTHOR_INF,WIKIPROJECT) {
+	//AUTHOR_INF is needed for DYKnomination.loadbar(), for knowing how many tasks there are now
 
 		var debug = DYKnomination.debugmode;
 		var i,summary_w,secttitl_w;
@@ -1081,11 +1110,19 @@ if (wgNamespaceNumber === 0) {
 				if (wnr < 0) {
 				//if report type is 'section=new' (wnr=-1) then add new section
 					obj = {
-						url : '/w/api.php?action=edit&format=json&title=' + encodeURIComponent('Dyskusja wikiprojektu:' + WIKIPROJECT[i])
-							+ '&section=new&sectiontitle=' + encodeURIComponent(secttitl_w)
-							+ '&text=' + encodeURIComponent('{' + '{subst:Czy wiesz - wikiprojekt|' + wgTitle + '}}~~' + '~~')
-							+ '&summary=' + encodeURIComponent(summary_w) + '&token=' + encodeURIComponent(DYKnomination.edittoken),
-						type : 'POST'
+						url : '/w/api.php',
+						type : 'POST',
+						data : {
+							action : 'edit',
+							format : 'json',
+							title : 'Dyskusja wikiprojektu:' + WIKIPROJECT[i],
+							section : 'new',
+							sectiontitle : secttitl_w,
+							text : '{' + '{subst:Czy wiesz - wikiprojekt|' + wgTitle + '}} ~~' + '~~',
+							summary : summary_w,
+							watchlist : 'nochange',
+							token : encodeURIComponent(DYKnomination.edittoken)
+						}
 					}
 				}
 				else {
@@ -1125,10 +1162,17 @@ if (wgNamespaceNumber === 0) {
 								'<!-- Nowe zgłoszenia CzyWiesza wstawiaj poniżej tej linii. Nie zmieniaj i nie usuwaj tej linii -->\n'
 								+ '{' + '{subst:Czy wiesz - wikiprojekt|' + wgTitle + '}}')
 							$.ajax({
-								url : '/w/api.php?action=edit&format=json&title=' + encodeURIComponent(DYKnomination.wikiprojects.list2[wnr].page)
-									+ '&text=' + encodeURIComponent(data)
-									+ '&summary=' + encodeURIComponent(summary_w) + '&token=' + encodeURIComponent(DYKnomination.edittoken),
-								type : 'POST'
+								url : '/w/api.php',
+								type : 'POST',
+								data: {
+									action: 'edit',
+									format: 'json',
+									title:  DYKnomination.wikiprojects.list2[wnr].page,
+									text:   data,
+									summary: summary_w,
+									watchlist: 'nochange',
+									token:  DYKnomination.edittoken
+								}
 							})
 							.done(function(data2){
 								if (debug) {
@@ -1173,13 +1217,13 @@ if (wgNamespaceNumber === 0) {
 	DYKnomination.success = function () {
 		var debug = DYKnomination.debugmode;
 
-		if (DYKnomination.errors.length == 1) {
+		if (DYKnomination.errors.length == 1) { //first element in errors is a nested function
 			DYKnomination.loadbar('done');
 
 			// end dialog: "Finished!"
 			$('<div><div class="floatright">' + DYKnomination.config.CWicon + '</div><p style="margin-top: 10px;">' + DYKnomination.config.tmpldone + '</p>'
 				+ '<p style="margin-left: 10px;">Dziękujemy za <a id="CzyWieszLinkAfter" href="//pl.wikipedia.org/wiki/' 
-				+ (debug ? 'Wikipedysta:Kaligula/js/CzyWiesz.js/test#' : 'Wikiprojekt:Czy_wiesz/propozycje#') + wgTitle + '" class="external">zgłoszenie</a>,<br />'
+				+ (debug ? 'Wikipedysta:Kaligula/js/CzyWiesz.js/test#' : 'Wikiprojekt:Czy_wiesz/propozycje#') + wgTitle.replace(/ /g,'_') + '" class="external">zgłoszenie</a>,<br />'
 				+ '<a href="/wiki/Wikiprojekt:Czy_wiesz" title="Wikiprojekt:Czy wiesz">Wikiprojekt Czy wiesz</a></p></div>')
 			.dialog({ modal: true, dialogClass: "wikiEditor-toolbar-dialog", close: function() { $(this).dialog("destroy"); $(this).remove(); $('#CzyWieszGadget').dialog("destroy"); $('#CzyWieszGadget').remove();} });
 		}
@@ -1187,7 +1231,7 @@ if (wgNamespaceNumber === 0) {
 
 
 $(document).ready(function() {
-	var menulink = $('<li id="t-DYKnomination"><a onclick="DYKnomination.askuser();">Zgłoś do „Czy Wiesz…”</a></li>').css({cursor: 'pointer'});
+	var menulink = $('<li id="t-DYKnomination"><a onclick="DYKnomination.askuser();">Zgłoś do „Czy wiesz…”</a></li>').css({cursor: 'pointer'});
 	if ($('#t-ajaxquickdelete')[0]) {$('#t-ajaxquickdelete').after(menulink);}
 	else {$('#p-tb ul').append(menulink);}
 });
