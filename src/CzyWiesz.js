@@ -1118,7 +1118,7 @@ if (wgNamespaceNumber === 0) {
 							title : 'Dyskusja wikiprojektu:' + WIKIPROJECT[i],
 							section : 'new',
 							sectiontitle : secttitl_w,
-							text : '{' + '{subst:Czy wiesz - wikiprojekt|' + wgTitle + '}} ~~' + '~~',
+							text : '{' + '{Czy wiesz - wikiprojekt|' + wgTitle + '}} ~~' + '~~',
 							summary : summary_w,
 							watchlist : 'nochange',
 							token : encodeURIComponent(DYKnomination.edittoken)
@@ -1160,7 +1160,7 @@ if (wgNamespaceNumber === 0) {
 						//if report type is not 'section=new' (wnr>=0) then now we need to save the page
 							data = data.replace('<!-- Nowe zgłoszenia CzyWiesza wstawiaj poniżej tej linii. Nie zmieniaj i nie usuwaj tej linii -->',
 								'<!-- Nowe zgłoszenia CzyWiesza wstawiaj poniżej tej linii. Nie zmieniaj i nie usuwaj tej linii -->\n'
-								+ '{' + '{subst:Czy wiesz - wikiprojekt|' + wgTitle + '}}')
+								+ '{' + '{Czy wiesz - wikiprojekt|' + wgTitle + '}}')
 							$.ajax({
 								url : '/w/api.php',
 								type : 'POST',
