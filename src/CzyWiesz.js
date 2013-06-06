@@ -273,6 +273,21 @@ if (wgNamespaceNumber === 0) {
 				label : 'Warszawa',
 				page  : 'Wikiprojekt:Warszawa/Czy wiesz',
 				type  : 'subpage'
+			},
+			{
+				label : 'Kompozytorzy',
+				page  : 'Wikiprojekt:Kompozytorzy',
+				type  : 'section'
+			},
+			{
+				label : 'Chóralistyka',
+				page  : 'Wikiprojekt:Chóralistyka',
+				type  : 'section'
+			},
+			{
+				label : 'Kolej',
+				page  : 'Wikiprojekt:Kolej',
+				type  : 'section'
 			}
 		]
 	}
