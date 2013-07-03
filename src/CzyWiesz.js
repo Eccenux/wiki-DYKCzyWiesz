@@ -117,10 +117,8 @@ if (wgNamespaceNumber === 0) {
 			'Japonia',
 			'Kluby sportowe',
 			'Kolarstwo',
-			'Kolej',
 			'Kompozytorzy',
 			'Komputerowe gry fabularne',
-			'Komunikacja miejska',
 			'Konflikty współczesne',
 			'Korea',
 			'Koszykówka',
@@ -137,7 +135,6 @@ if (wgNamespaceNumber === 0) {
 			'Malarstwo',
 			'Matematyka',
 			'Meblarstwo',
-			'Metro',
 			'Mikrobiologia',
 			'Militaria',
 			'Minerały',
@@ -205,6 +202,7 @@ if (wgNamespaceNumber === 0) {
 			'Telefony komórkowe',
 			'Tenis ziemny',
 			'Transport',
+                        'Transport szynowy',
 			'Turystyka',
 			'Tybet',
 			'U-Boot',
@@ -285,8 +283,8 @@ if (wgNamespaceNumber === 0) {
 				type  : 'section'
 			},
 			{
-				label : 'Kolej',
-				page  : 'Wikiprojekt:Kolej',
+				label : 'Kolej, tramwaje, metro',
+				page  : 'WikiprojektTransport szynowy',
 				type  : 'section'
 			}
 		]
