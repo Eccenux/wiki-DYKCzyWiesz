@@ -483,7 +483,7 @@ if (wgNamespaceNumber === 0) {
 		//rules paragraph
 		var $rules_paragraph = $('<p id="CzyWieszRules"></p>')
 			.html('<small>Zgłaszaj hasła nie później niż 10 dni od powstania lub rozbudowania hasła, '
-				+ 'posiadające źródła najlepiej w formie przypisów i zawierające co najmniej 2kb samej treści.</small>')
+				+ 'posiadające źródła najlepiej w formie przypisów i zawierające co najmniej 2 kB samej treści.</small>')
 			.css({border: '1px solid #F0F080', backgroundColor: '#FFFFE0', paddingLeft: '5px'});
  
 		var $loading_bar = $('<div id="CzyWieszLoaderBar"></div>')
