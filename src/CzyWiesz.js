@@ -3,13 +3,13 @@
 // pójdzie nie na stronę [[Wikiprojekt:Czy wiesz/propozycje]] ale na testową
 // [[Wikipedysta:Kaligula/js/CzyWiesz.js/test]], a informowanie autora
 // i wikiprojektów – na odpowiednich stronach "…/autor" i "…/wikiprojekt"
- 
+
 // Wersja dev skryptu:
 //  https://pl.wikipedia.org/wiki/Wikipedysta:Kaligula/js/CzyWiesz.js
- 
+
 window.DYKnomination = {
 	about : {
-		version    : '5.1.1',
+		version    : '5.2.1',
 		author     : 'Kaligula',
 		authorlink : '[[w:pl:user:Kaligula]]',
 		homepage   : '[[w:pl:Wikipedia:Narzędzia/CzyWiesz]]',
@@ -385,6 +385,11 @@ if (wgNamespaceNumber === 0) {
 		});
 	}];
 
+	DYKnomination.log = function (permission){
+		//omit (i-1) first argument which is a permission
+		if( permission && typeof(console) !== 'undefined' ) for(i=1;i<arguments.length;console.log(arguments[i]),i++);
+	}
+
 	DYKnomination.debugmode = false;
 
 	DYKnomination.debug = function () {
@@ -397,7 +402,7 @@ if (wgNamespaceNumber === 0) {
 		var D = DYKnomination;
 		var debug = D.debugmode;
 		if (D.errors.length > 1) { D.errors = [D.errors[0]]; }
-		(debug ? console.log(D) : '');
+		D.log(debug,D);
 
 		var IMG_ARR = $.merge($('#mw-content-text .infobox a.image img'),$('#mw-content-text .thumb a.image img'));
 		var IMAGES = IMG_ARR.length;
@@ -654,19 +659,13 @@ if (wgNamespaceNumber === 0) {
 			.done(function(d){
 				aj = d.query.pages[d.query.pageids[0]].revisions;
 				revs = aj.length;
-				if (debug) {
-					console.log('edits in last 10 days:');
-					console.log(aj);
-				}
+				D.log(debug,'edits in last 10 days:',aj);
 
 				if (revs0 > 0) {
 				// there are edits in last 10 days
 					aj0 = d0.query.pages[d0.query.pageids[0]].revisions;
 					//revs0 = aj0.length;
-					if (debug) {
-						console.log('edits in last 10 days, plus one more:');
-						console.log(aj0);
-					}
+					D.log(debug,'edits in last 10 days, plus one more:',aj0);
 
 					// check the author of the biggest edit in last 10 days
 					str=[];
@@ -684,10 +683,9 @@ if (wgNamespaceNumber === 0) {
 					maxdiffrev = $.inArray(maxdiffsize,str); //if the same size is more than once it brings the most recent revision!
 					maxdiffuser = aj[maxdiffrev].user;
 					maxdiffdate = aj[maxdiffrev].timestamp.split('T')[0];
-					(maxdiffsize > 0) ? (maxdiffsize = '+' + maxdiffsize) : ''
+					(maxdiffsize > 0) ? (maxdiffsize = '+' + maxdiffsize) : '';
 
-					(debug ? console.log('\"[str,maxdiffrev,maxdiffsize,maxdiffuser]\":') : '');
-					(debug ? console.log([str,maxdiffrev,maxdiffsize,maxdiffuser]) : '');
+					D.log(debug,'\"[str,maxdiffrev,maxdiffsize,maxdiffuser]\":',[str,maxdiffrev,maxdiffsize,maxdiffuser]);
 
 /* OLD VER |START|
 					// add a tip about possible author…
@@ -715,7 +713,7 @@ if (wgNamespaceNumber === 0) {
 				else {
 				// there are no edits in last 10 days
 					//revs0 = 0;
-					(debug ? console.log(d.query.pages[d.query.pageids[0]]) : '');
+					D.log(debug,d.query.pages[d.query.pageids[0]]);
 					alert('W ciągu ostatnich 10 dni nie dokonano żadnej edycji. Jeszcze raz rozważ zgłaszanie tego artykułu, gdyż może to być niezgodne z regulaminem.');
 				}
 		
@@ -935,7 +933,7 @@ if (wgNamespaceNumber === 0) {
 		var tmpToken = mw.user.tokens.values.editToken;
 		if (!force && typeof tmpToken == 'string' && tmpToken.length == 34) {
 			D.edittoken = tmpToken;
-			(debug ? console.log('DYKnomination.edittoken :',D.edittoken) : '');
+			D.log(debug,'DYKnomination.edittoken :',D.edittoken);
 			//runs callback function with all given parameters except two first ones
 			window.DYKnomination[callback].apply(null, Array.prototype.slice.call(arguments, 2));
 		}
@@ -946,10 +944,7 @@ if (wgNamespaceNumber === 0) {
 				cache: false
 			})
 			.done(function(data){
-				if (debug) {
-					console.log('CzyWiesz edittoken: komenda GET zakończona\nodpowiedź serwera:');
-					console.log(data);
-				}
+				D.log(debug,'CzyWiesz edittoken: komenda GET zakończona\nodpowiedź serwera:',data);
 				if (data.error) {
 					D.errors.push('Błąd pobierania tokena: ' + data.error.info + '.');
 					D.errors[0]();
@@ -957,10 +952,9 @@ if (wgNamespaceNumber === 0) {
 					console.error(data);
 				}
 				else {
-					(debug ? console.log('DYKnomination.edittoken :',D.edittoken) : '');
-					(debug ? console.log('data.tokens.edittoken :',data.tokens.edittoken) : '');
+					D.log(debug,'DYKnomination.edittoken :',D.edittoken,'data.tokens.edittoken :',data.tokens.edittoken);
 					D.edittoken = data.tokens.edittoken;
-					(debug ? console.log('DYKnomination.edittoken :',D.edittoken) : '');
+					D.log(debug,'DYKnomination.edittoken :',D.edittoken);
 					//runs callback function with all given parameters except two first ones
 					window.DYKnomination[callback].apply(null, Array.prototype.slice.call(arguments, 2));
 				}
@@ -989,7 +983,7 @@ if (wgNamespaceNumber === 0) {
 			var miesiacArr = D.config.miesiacArr;
 			DATE = Dv.date.match(/\d+/g);
 			var dzisiaj = DATE[2].replace(/^0/,'') + ' ' + miesiacArr[(+(DATE[1])-1)]; //reading localmonthnamegen, but DATE[1]is a string since we could've added leading zero before
-			(debug ? console.log('dzisiaj: ' + dzisiaj) : '');
+			D.log(debug,'dzisiaj: ' + dzisiaj);
 		var updatesection = false;
 
 		var sections,section,NR,updatesection; // section must be 'undefined' at the beginning!!! (look at the end of function)
@@ -1000,12 +994,12 @@ if (wgNamespaceNumber === 0) {
 			cache: false
 		})
 		.done(function(data){
-			if (debug) {
-				console.log('get sections: komenda GET zakończona');
-				console.log('URI: /w/api.php?action=mobileview&format=json&page=' + encodeURIComponent(debug ? 'Wikipedysta:Kaligula/js/CzyWiesz.js/test' : 'Wikiprojekt:Czy wiesz/propozycje') + '&prop=sections&sectionprop=level%7Cline%7Cnumber%7Canchor&noimages=');
-				console.log('get sections: odpowiedź serwera:');
-				console.log(data);
-			}
+			D.log(debug,
+				'get sections: komenda GET zakończona',
+				'URI: /w/api.php?action=mobileview&format=json&page=' + encodeURIComponent(debug ? 'Wikipedysta:Kaligula/js/CzyWiesz.js/test' : 'Wikiprojekt:Czy wiesz/propozycje') + '&prop=sections&sectionprop=level%7Cline%7Cnumber%7Canchor&noimages=',
+				'get sections: odpowiedź serwera:',
+				data
+			);
 			if (data.error) {
 				D.errors.push('Błąd sprawdzania sekcji na stronie zgłoszeń: ' + data.error.info + '.');
 				D.errors[0]();
@@ -1014,11 +1008,11 @@ if (wgNamespaceNumber === 0) {
 			}
 			else {
 				sections = data.mobileview.sections;
-				(debug ? console.log(sections) : '');
+				D.log(debug,sections);
 				var m0 = +(DATE[1]) - 1; //it was a string since we could've added leading zero
 				var d0 = +(DATE[2]); //it was a string since we could've added leading zero
 				var mt = 99; //shorthand for 'Month - Temporary variable' - in January the previous months have bigger nr than one of the sections so if the nomination has a date that is earlier than the first date in this year then the script will go through all sections and save the nomination as last one
-				(debug ? console.log('current month [m0]:',m0,', current day [d0]:',d0) : '');
+				D.log(debug,'current month [m0]:',m0,', current day [d0]:',d0);
 				section = 0;
 				updatesection = -1;
 				NR = 1;
@@ -1061,7 +1055,7 @@ if (wgNamespaceNumber === 0) {
 							}
 							mt = m;
 						}
-						(debug ? console.log('section:',section,', month [m]:',m,', day [d]:',d,'new section number would be here [NR]:',NR,', updatesection:',updatesection) : '');
+						D.log(debug,'section:',section,', month [m]:',m,', day [d]:',d,'new section number would be here [NR]:',NR,', updatesection:',updatesection);
 					}
 					if ( this.level && (this.level == 3) && this.line && this.line.match(/^\d+ \((.*?)\)/) ) { //sekcja zgłoszenia (nie nagłówek) i ma nazwę z nr na początku
 						if ( this.line.match(/^\d+ \((.*?)\)/)[1] == wgTitle ) {
@@ -1132,8 +1126,7 @@ if (wgNamespaceNumber === 0) {
 			input = '\n\n== ' + Dv.dzisiaj +' ==\n' + input + '\n\n';
 		}
 		
-		(debug ? console.log('input:') : '');
-		(debug ? console.log(input) : '');
+		D.log(debug,'input:',input);
 
 		Dv.input = input;
 		Dv.summary = summary;
@@ -1168,10 +1161,7 @@ if (wgNamespaceNumber === 0) {
 			}
 		})
 		.done(function(data){
-			if (debug) {
-				console.log('CzyWiesz nominate: POST done\nserver response:');
-				console.log(data);
-			}
+			D.log(debug,'CzyWiesz nominate: POST done\nserver response:',data);
 			if (data.error) {
 				D.errors.push('Błąd zgłaszania do rubryki: ' + data.error.info + '.');
 				D.errors[0]();
@@ -1230,10 +1220,7 @@ if (wgNamespaceNumber === 0) {
 				}
 			})
 			.done(function(data){
-				if (debug) {
-					console.log('autor_inf: komenda POST zakończona\nodpowiedź serwera:');
-					console.log(data);
-				}
+				D.log(debug,'autor_inf: komenda POST zakończona\nodpowiedź serwera:',data);
 				if (data.error) {
 					D.errors.push('Błąd informowania autora: ' + data.error.info + '.');
 					D.errors[0]();
@@ -1260,42 +1247,55 @@ if (wgNamespaceNumber === 0) {
 	}
 
 	DYKnomination.inform_w = function () {
-
+ 
 		var D = DYKnomination;
 		var Dv = D.values;
 		var debug = D.debugmode;
-		var i,summary_w,secttitl_w;
-
-		// for debugging purposes (because of this -> later czy_talk will be true)
-		if (debug) D.wikiprojects.list2.push(
-			{
-				label : 'Wikipedysta:Kaligula/js/CzyWiesz.js/wikiprojekt',
-				page  : 'Wikipedysta:Kaligula/js/CzyWiesz.js/wikiprojekt',
-				type  : 'talk'
-			}
-		);
+		var summary_w,secttitl_w;
 
 		/* inform chosen wikiprojects */
-
+ 
 		if ( Dv.wikiproject.length == 0 ) {
 			D.success();
 		}
 		else {
 			// chosen wikiprojects
-			D.wikiprojects.counter = 1; //declared again in case user wants to try again nominating article without reloading (e.g. after an error)
+			D.wikiprojects.counter = 1; //declared again in case user wants to try nominating again the article without reloading (e.g. after an error)
 			summary_w = D.config.summary_w.replace('TITLE',wgTitle);
 			secttitl_w = D.config.secttitl_w.replace('TITLE',wgTitle);
-
+ 
 			for (var i=0;i<Dv.wikiproject.length;i++) {
+				var curWikiproject = Dv.wikiproject[i];
+
 				var wnr = -1;
 				//check if wikiproject wants to be informed other way than 'section=new'
 				//(wnr=) -1 means 'no', any other number means 'yes' and is a number of the wikiproject in D.wikiprojects.list2
 				$(D.wikiprojects.list2).each(function(n){
-					if (this.label == Dv.wikiproject[i]) wnr=n;
+					if (this.label == curWikiproject) wnr=n;
 				});
+				D.log(debug,'D.wikiprojects.list2',D.wikiprojects.list2);
 
 				var czy_talk;
-				czy_talk = (wnr >= 0) && (D.wikiprojects.list2[wnr].type=='talk');
+				var pageToEdit;
+				if (debug) {
+					pageToEdit = 'Wikipedysta:Kaligula/js/CzyWiesz.js/wikiprojekt';
+					D.wikiprojects.list2.push({
+						label : 'Wikipedysta:Kaligula/js/CzyWiesz.js/wikiprojekt',
+						page  : 'Wikipedysta:Kaligula/js/CzyWiesz.js/wikiprojekt',
+						type  : 'talk'
+					}); 
+					czy_talk = true;
+				} else if (wnr<0) {
+					pageToEdit = 'Wikiprojekt:'+curWikiproject;
+				} else if (D.wikiprojects.list2[wnr].type=='talk') {
+					pageToEdit = 'Dyskusja wikiprojektu:' + curWikiproject;
+					czy_talk = true;
+				} else {
+					pageToEdit = D.wikiprojects.list2[wnr].page;
+				}
+
+				D.log(debug,'czy_talk:',czy_talk,'D.wikiprojects.list2[wnr]:',D.wikiprojects.list2[wnr],'curWikiproject:',curWikiproject,'pageToEdit:',pageToEdit);
+
 				var obj;
 				if (czy_talk) {
 				//if report type is 'section=new' then add new section
@@ -1306,7 +1306,7 @@ if (wgNamespaceNumber === 0) {
 						data : {
 							action : 'edit',
 							format : 'json',
-							title : (debug ? 'Wikipedysta:Kaligula/js/CzyWiesz.js/wikiprojekt' : 'Dyskusja wikiprojektu:' + Dv.wikiproject[i]),
+							title : pageToEdit,
 							section : 'new',
 							sectiontitle : secttitl_w,
 							text : '{' + '{Czy wiesz - wikiprojekt|' + wgTitle + '}} ~~' + '~~',
@@ -1315,30 +1315,24 @@ if (wgNamespaceNumber === 0) {
 							token : D.edittoken
 						}
 					}
-				}
-				else {
+				} else {
 				//if report type is not 'section=new' then get page source [to edit]
 					obj = {
-						url : '/w/index.php?action=raw&title='
-							+ encodeURIComponent(wnr<0 ? 'Wikiprojekt:'+Dv.wikiproject[i] : D.wikiprojects.list2[wnr].page),
+						url : '/w/index.php?action=raw&title=' + encodeURIComponent(pageToEdit),
 						cache : false
 					}
 					summary_w = '/* Czy wiesz */ nowe zgłoszenie: [[' + wgTitle + ']]';
 				}
-
-				(debug ? console.log('obj:') : '');
-				(debug ? console.log(obj) : '');
-
+ 
+				D.log(debug,'obj:',obj);
+ 
 				$.ajax(obj)
 				.done(function(data){
-					if (debug) {
-						console.log('wikiprojekt['+i+']: komenda POST' + (czy_talk?'':'(cz. 1.)') + ' zakończona\nodpowiedź serwera:');
-						console.log(data);
-					}
+					D.log(debug,pageToEdit+': komenda POST' + (czy_talk?'':'(cz. 1.)') + ' zakończona\nodpowiedź serwera:',data);
 					if (data.error) {
-						D.errors.push('Błąd informowania '+(i+1)+'-go wikiprojektu' + (czy_talk?'':'(cz. 1.)') + ': ' + data.error.info + '.');
+						D.errors.push('Błąd informowania '+ pageToEdit + (czy_talk?'':'(cz. 1.)') + ': ' + data.error.info + '.');
 						D.errors[0]();
-						console.error('Błąd informowania '+(i+1)+'-go wikiprojektu' + (czy_talk?'':'(cz. 1.)') + ': ' + data.error.info + '.');
+						console.error('Błąd informowania '+ pageToEdit + (czy_talk?'':'(cz. 1.)') + ': ' + data.error.info + '.');
 						console.error(data);
 					}
 					else {
@@ -1346,26 +1340,26 @@ if (wgNamespaceNumber === 0) {
 						//if report type is 'section=new' then this wikiproject is done
 							D.loadbar();
 							D.wikiprojects.counter++;
-							if (D.wikiprojects.counter>Dv.wikiproject.length) {
-								D.success();
-							}
+							if (D.wikiprojects.counter>Dv.wikiproject.length) D.success();
 						}
 						else {
 						//if report type is not 'section=new' then now we need to save the page
 							if (!data.match('<!-- Nowe zgłoszenia CzyWiesza wstawiaj poniżej tej linii. Nie zmieniaj i nie usuwaj tej linii -->')) {
 								data = data.replace('[[Kategoria:','== Czy wiesz ==\n<!-- Nowe zgłoszenia CzyWiesza wstawiaj poniżej tej linii. Nie zmieniaj i nie usuwaj tej linii -->\n\n[[Kategoria:');
 							}
-
 							data = data.replace('<!-- Nowe zgłoszenia CzyWiesza wstawiaj poniżej tej linii. Nie zmieniaj i nie usuwaj tej linii -->',
 								'<!-- Nowe zgłoszenia CzyWiesza wstawiaj poniżej tej linii. Nie zmieniaj i nie usuwaj tej linii -->\n'
-								+ '{' + '{Czy wiesz - wikiprojekt|' + wgTitle + '}}')
+								+ '{' + '{Czy wiesz - wikiprojekt|' + wgTitle + '}}');
+
+							D.log(debug,'czy_talk (2):',czy_talk,'D.wikiprojects.list2[wnr] (2):',D.wikiprojects.list2[wnr],'curWikiproject (2):',curWikiproject,'pageToEdit (2):',pageToEdit);
+
 							$.ajax({
 								url : '/w/api.php',
 								type : 'POST',
 								data: {
 									action: 'edit',
 									format: 'json',
-									title:  (wnr<0 ? 'Wikiprojekt:'+Dv.wikiproject[i] : D.wikiprojects.list2[wnr].page),
+									title:  pageToEdit,
 									text:   data,
 									summary: summary_w,
 									watchlist: 'nochange',
@@ -1373,28 +1367,23 @@ if (wgNamespaceNumber === 0) {
 								}
 							})
 							.done(function(data2){
-								if (debug) {
-									console.log('wikiprojekt['+i+']: komenda POST' + (czy_talk?'':'(cz. 2.)') + ' zakończona\nodpowiedź serwera:');
-									console.log(data2);
-								}
+								D.log(debug,pageToEdit+': komenda POST' + (czy_talk?'':'(cz. 2.)') + ' zakończona\nodpowiedź serwera:',data2);
 								if (data2.error) {
-									D.errors.push('Błąd informowania '+(i+1)+'-go wikiprojektu' + (czy_talk?'':'(cz. 2.)') + ': ' + data2.error.info + '.');
+									D.errors.push('Błąd informowania '+ pageToEdit + (czy_talk?'':'(cz. 2.)') + ': ' + data2.error.info + '.');
 									D.errors[0]();
-									console.error('Błąd informowania '+(i+1)+'-go wikiprojektu' + (czy_talk?'':'(cz. 2.)') + ': ' + data2.error.info + '.');
+									console.error('Błąd informowania '+ pageToEdit + (czy_talk?'':'(cz. 2.)') + ': ' + data2.error.info + '.');
 									console.error(data2);
 								}
 								else {
 									D.loadbar();
 									D.wikiprojects.counter++;
-									if (D.wikiprojects.counter>Dv.wikiproject.length) {
-										D.success();
-									}
+									if (D.wikiprojects.counter>Dv.wikiproject.length) D.success();
 								}
 							})
 							.fail(function(data2){
-								D.errors.push('Błąd informowania '+(i+1)+'-go wikiprojektu' + (czy_talk?'':'(cz. 2.)') + ': $.ajax.fail().');
+								D.errors.push('Błąd informowania '+ pageToEdit + (czy_talk?'':'(cz. 2.)') + ': $.ajax.fail().');
 								D.errors[0]();
-								console.error('Błąd informowania '+(i+1)+'-go wikiprojektu' + (czy_talk?'':'(cz. 2.)') + ': $.ajax.fail().');
+								console.error('Błąd informowania '+ pageToEdit + (czy_talk?'':'(cz. 2.)') + ': $.ajax.fail().');
 								console.error('URI: ' + obj.url);
 								console.error(data2);
 							});
@@ -1402,9 +1391,9 @@ if (wgNamespaceNumber === 0) {
 					}
 				})
 				.fail(function(data){
-					D.errors.push('Błąd informowania '+(i+1)+'-go wikiprojektu' + (czy_talk?'':'(cz. 1.)') + ': $.ajax.fail().');
+					D.errors.push('Błąd informowania '+ pageToEdit + (czy_talk?'':'(cz. 1.)') + ': $.ajax.fail().');
 					D.errors[0]();
-					console.error('Błąd informowania '+(i+1)+'-go wikiprojektu' + (czy_talk?'':'(cz. 1.)') + ': $.ajax.fail().');
+					console.error('Błąd informowania '+ pageToEdit + (czy_talk?'':'(cz. 1.)') + ': $.ajax.fail().');
 					console.error('URI: ' + obj.url);
 					console.error(data);
 				});
