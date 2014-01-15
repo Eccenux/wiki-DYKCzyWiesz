@@ -9,7 +9,7 @@
 
 window.DYKnomination = {
 	about : {
-		version    : '5.2.1',
+		version    : '5.3.1',
 		author     : 'Kaligula',
 		authorlink : '[[w:pl:user:Kaligula]]',
 		homepage   : '[[w:pl:Wikipedia:Narzędzia/CzyWiesz]]',
@@ -26,13 +26,15 @@ if (wgNamespaceNumber === 0) {
 		miesiacArr:	['stycznia', 'lutego', 'marca', 'kwietnia', 'maja', 'czerwca', 'lipca', 'sierpnia', 'września', 'października', 'listopada', 'grudnia'],
 		// ↓ summary template for nomination
 		summary:	'/* NR (TITLE) */ nowe zgłoszenie za pomocą [[Wikipedia:Narzędzia/CzyWiesz|gadżetu CzyWiesz]]',
-		// ↓ summary template for informing author
+		// ↓ summary for template in the article
+		summary_r:	'Artykuł ten został zgłoszony do umieszczenia na [[Wikipedia:Strona główna|stronie głównej]] w rubryce „[[Szablon:Czy wiesz|Czy wiesz]]” za pomocą [[Wikipedia:Narzędzia/CzyWiesz|gadżetu CzyWiesz]]',
+		// ↓ summary for template on author's talk page
 		summary_a:	'/* Czy wiesz – [[TITLE]] */ nowe zgłoszenie za pomocą [[Wikipedia:Narzędzia/CzyWiesz|gadżetu CzyWiesz]]',
-		// ↓ sectiontitle template for informing author
+		// ↓ sectiontitle for template on author's talk page
 		secttitl_a: 'Czy wiesz – [[TITLE]]',
-		// ↓ summary template for informing wikiprojects
+		// ↓ summary for template in wikiprojects' pages/talk pages
 		summary_w:	'/* Czy wiesz – [[TITLE]] */ nowe zgłoszenie za pomocą [[Wikipedia:Narzędzia/CzyWiesz|gadżetu CzyWiesz]]',
-		// ↓ sectiontitle template for informing wikiprojects
+		// ↓ sectiontitle for template in wikiprojects' pages/talk pages
 		secttitl_w: 'Czy wiesz – [[TITLE]]',
 		// ↓ style for this gadget
 		styletag:	$('<style id="CzyWieszStyleTag">' 
@@ -56,6 +58,10 @@ if (wgNamespaceNumber === 0) {
 		tmplndone:	'<span class="template-not-done"><img alt="Crystal Clear action button cancel.png" src="//upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Crystal_Clear_action_button_cancel.png/20px-Crystal_Clear_action_button_cancel.png" width="20" height="20" srcset="//upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Crystal_Clear_action_button_cancel.png/30px-Crystal_Clear_action_button_cancel.png 1.5x, //upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Crystal_Clear_action_button_cancel.png/40px-Crystal_Clear_action_button_cancel.png 2x"><span style="display:none">N</span> <b>Niezałatwione</b></span>'
 	}
 
+	/**
+	 * List of wikiprojects
+	 * updated 19:48, 12 wrz 2013 from https://pl.wikipedia.org/w/index.php?title=Wikipedia:Wikiprojekt&oldid=37479771
+	 */
 	DYKnomination.wikiprojects = {
 		counter : 1,
 		list : ['Albumy muzyczne',
@@ -75,7 +81,6 @@ if (wgNamespaceNumber === 0) {
 			'Bydgoszcz',
 			'Chemia',
 			'Chiny',
-			'Chóralistyka',
 			'Chrześcijaństwo',
 			'Cmentarze żydowskie w Polsce',
 			'Czechy',
@@ -112,6 +117,7 @@ if (wgNamespaceNumber === 0) {
 			'Hinduizm',
 			'Hip-Hop',
 			'Historia',
+			'Holandia',
 			'Igrzyska olimpijskie',
 			'Igrzyska Wspólnoty Narodów',
 			'Imiona',
@@ -123,7 +129,6 @@ if (wgNamespaceNumber === 0) {
 			'Kluby sportowe',
 			'Kolarstwo',
 			'Kompozytorzy',
-			'Komputerowe gry fabularne',
 			'Konflikty współczesne',
 			'Korea',
 			'Koszykówka',
@@ -184,17 +189,17 @@ if (wgNamespaceNumber === 0) {
 			'Religioznawstwo',
 			'Rock progresywny',
 			'Rosja',
-			'Saska Kępa',
+			'Saska Kępa w Wikipedii',
 			'Seksuologia',
 			'Seriale telewizyjne',
 			'Skoki narciarskie',
 			'Słowacja',
 			'Snooker',
 			'Socjologia',
-			'Spółdzielczość',
 			'Sport',
 			'Sporty motorowe',
 			'Sporty zimowe',
+			'Spółdzielczość',
 			'Stany Zjednoczone',
 			'Starożytność',
 			'Stosunki polsko-ukraińskie',
@@ -312,11 +317,6 @@ if (wgNamespaceNumber === 0) {
 			{
 				label : 'LGBT',
 				page  : 'Dyskusja wikiprojektu:LGBT',
-				type  : 'talk',
-			},
-			{
-				label : 'Metro',
-				page  : 'Dyskusja wikiprojektu:Metro',
 				type  : 'talk',
 			},
 			{
@@ -635,11 +635,14 @@ if (wgNamespaceNumber === 0) {
 	DYKnomination.pagerevs = function () {
 
 		var D = DYKnomination;
-		var a,b,c,d0,d,i,aj0,revs0,aj,revs,str,maxdiffsize,maxdiffuser;
+		var a,b,c,d0,d,i,aj0,revs0,aj,revs,str,maxdiffsize,maxdiffrev,maxdiffuser,maxdiffdate,g;
 
 		d = new Date();
 		a = d.toISOString(); // '2012-08-14T17:43:33Z' OR '2012-08-14T17:43:33.324Z'
-		b = new Date(d.setUTCDate(d.getUTCDate()-10)).toISOString().replace(/T.*$/,'T00:00:00Z'); // 10 days before and from 00:00:00 on that day
+			//date after toISOString() is in UTC = without TimezoneOffset
+		d.setDate(d.getDate()-10); // 10 days before and from 00:00:00 on that day
+		d.setHours(0); d.setMinutes(0); d.setSeconds(0); d.setMilliseconds(0);
+		b = d.toISOString();
 
 		$.ajax('/w/api.php?action=query&prop=revisions&format=json&rvprop=timestamp%7Cuser%7Csize&redirects=&indexpageids='
 				+ '&rvlimit=max'
@@ -681,9 +684,14 @@ if (wgNamespaceNumber === 0) {
 
 					maxdiffsize = Math.max.apply(Math,str);
 					maxdiffrev = $.inArray(maxdiffsize,str); //if the same size is more than once it brings the most recent revision!
-					maxdiffuser = aj[maxdiffrev].user;
-					maxdiffdate = aj[maxdiffrev].timestamp.split('T')[0];
 					(maxdiffsize > 0) ? (maxdiffsize = '+' + maxdiffsize) : '';
+					maxdiffuser = aj[maxdiffrev].user;
+					//maxdiffdate; get this in format YYYY-MM-DD but in local time (with TimezoneOffset)
+					//this way is quicker than converting (g.getFullYear() +'-'+ g.getMonth() +'-'+ g.getDate()) from YYYY-M-D into YYYY-MM-DD
+					//toISOString converts time to UTC for display so if we remove TimezoneOffset then the result after toISOString is good
+						g = new Date(Date.parse( aj[maxdiffrev].timestamp ));
+						g.setMinutes(g.getMinutes()-g.getTimezoneOffset());
+						maxdiffdate = g.toISOString().split('T')[0];
 
 					D.log(debug,'\"[str,maxdiffrev,maxdiffsize,maxdiffuser]\":',[str,maxdiffrev,maxdiffsize,maxdiffuser]);
 
@@ -1169,12 +1177,7 @@ if (wgNamespaceNumber === 0) {
 				console.error(data);
 			}
 			else {
-				if (Dv.authorInf) {
-					D.inform_a();
-				}
-				else {
-					D.inform_w();
-				}
+				D.inform_r();
 			}
 		})
 		.fail(function(data){
@@ -1190,11 +1193,67 @@ if (wgNamespaceNumber === 0) {
 		
 	}
 
+	DYKnomination.inform_r = function () {
+ 
+		var D = DYKnomination;
+		var Dv = D.values;
+		var debug = D.debugmode;
+
+		/* inform readers (=insert template to nominated article) */
+
+		if ( debug ) {
+			D.inform_a();
+		}
+		else {
+			$.ajax({
+				url : '/w/api.php',
+				type : 'POST',
+				data : {
+					action : 'edit',
+					format : 'json',
+					title : wgTitle,
+					prependtext : '{' + '{Szablon:Czy wiesz do artykułu|' + Dv.nr + '}' + '}\n',
+					summary : D.config.summary_r,
+					watchlist : 'nochange',
+					token : D.edittoken
+				}
+			})
+			.done(function(data){
+				D.log(debug,'inform_r: komenda POST zakończona\nodpowiedź serwera:',data);
+				if (data.error) {
+					D.errors.push('Błąd informowania w artykule: ' + data.error.info + '.');
+					D.errors[0]();
+					console.error('Błąd informowania w artykule: ' + data.error.info + '.');
+					console.error(data);
+				}
+				else {
+					if (Dv.authorInf) {
+						D.inform_a();
+					}
+					else {
+						D.inform_w();
+					}
+				}
+			})
+			.fail(function(data){
+				D.errors.push('Błąd informowania w artykule: $.ajax.fail().');
+				D.errors[0]();
+				console.error('Błąd informowania w artykule: $.ajax.fail().');
+				console.error('URI: /w/api.php?action=edit&format=json&title='
+					+ encodeURIComponent(wgTitle)
+					+ '&prependtext=' + encodeURIComponent('{' + '{Szablon:Czy wiesz do artykułu|' + Dv.nr + '}' + '}\n') 
+					+ '&summary=' + encodeURIComponent(D.config.summary_r) + '&watchlist=nochange&token=' + encodeURIComponent(D.edittoken));
+				console.error(data);
+			});
+		}
+	}
+
 	DYKnomination.inform_a = function () {
  
 		var D = DYKnomination;
 		var Dv = D.values;
 		var debug = D.debugmode;
+		var secttitl_a,summary_a;
 
 		/* inform author */
 
@@ -1202,8 +1261,8 @@ if (wgNamespaceNumber === 0) {
 			D.inform_w();
 		}
 		else {
-			var secttitl_a = D.config.secttitl_a.replace('TITLE',wgTitle);
-			var summary_a = D.config.summary_a.replace('TITLE',wgTitle);
+			secttitl_a = D.config.secttitl_a.replace('TITLE',wgTitle);
+			summary_a = D.config.summary_a.replace('TITLE',wgTitle);
 			$.ajax({
 				url : '/w/api.php',
 				type : 'POST',
@@ -1411,7 +1470,7 @@ if (wgNamespaceNumber === 0) {
 			// end dialog: "Finished!"
 			$('<div><div class="floatright">' + D.config.CWicon + '</div><p style="margin-top: 10px;">' + D.config.tmpldone + '</p>'
 				+ '<p style="margin-left: 10px;">Dziękujemy za <a id="CzyWieszLinkAfter" href="//pl.wikipedia.org/wiki/' 
-				+ (debug ? 'Wikipedysta:Kaligula/js/CzyWiesz.js/test#' : 'Wikiprojekt:Czy_wiesz/propozycje#') + wgTitle.replace(/ /g,'_') + '" class="external">zgłoszenie</a>,<br />'
+				+ (debug ? 'Wikipedysta:Kaligula/js/CzyWiesz.js/test#' : 'Wikiprojekt:Czy_wiesz/propozycje#') + encodeURIComponent(wgTitle.replace(/ /g,'_')).replace(/%/g,'.').replace(/\()/g,'.28').replace(/\)/g,'.29') + '" class="external">zgłoszenie</a>,<br />'
 				+ '<a href="/wiki/Wikiprojekt:Czy_wiesz" title="Wikiprojekt:Czy wiesz">Wikiprojekt Czy wiesz</a></p></div>')
 			.dialog({ modal: true, dialogClass: "wikiEditor-toolbar-dialog", close: function() { $(this).dialog("destroy"); $(this).remove(); $('#CzyWieszGadget').dialog("destroy"); $('#CzyWieszGadget').remove();} });
 		}
