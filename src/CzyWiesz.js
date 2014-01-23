@@ -9,7 +9,7 @@
 
 window.DYKnomination = {
 	about : {
-		version    : '5.3.1',
+		version    : '5.3.1.1',
 		author     : 'Kaligula',
 		authorlink : '[[w:pl:user:Kaligula]]',
 		homepage   : '[[w:pl:Wikipedia:Narzędzia/CzyWiesz]]',
@@ -1470,7 +1470,7 @@ if (wgNamespaceNumber === 0) {
 			// end dialog: "Finished!"
 			$('<div><div class="floatright">' + D.config.CWicon + '</div><p style="margin-top: 10px;">' + D.config.tmpldone + '</p>'
 				+ '<p style="margin-left: 10px;">Dziękujemy za <a id="CzyWieszLinkAfter" href="//pl.wikipedia.org/wiki/' 
-				+ (debug ? 'Wikipedysta:Kaligula/js/CzyWiesz.js/test#' : 'Wikiprojekt:Czy_wiesz/propozycje#') + encodeURIComponent(wgTitle.replace(/ /g,'_')).replace(/%/g,'.').replace(/\()/g,'.28').replace(/\)/g,'.29') + '" class="external">zgłoszenie</a>,<br />'
+				+ (debug ? 'Wikipedysta:Kaligula/js/CzyWiesz.js/test#' : 'Wikiprojekt:Czy_wiesz/propozycje#') + encodeURIComponent(wgTitle.replace(/ /g,'_')).replace(/%/g,'.').replace(/\(/g,'.28').replace(/\)/g,'.29') + '" class="external">zgłoszenie</a>,<br />'
 				+ '<a href="/wiki/Wikiprojekt:Czy_wiesz" title="Wikiprojekt:Czy wiesz">Wikiprojekt Czy wiesz</a></p></div>')
 			.dialog({ modal: true, dialogClass: "wikiEditor-toolbar-dialog", close: function() { $(this).dialog("destroy"); $(this).remove(); $('#CzyWieszGadget').dialog("destroy"); $('#CzyWieszGadget').remove();} });
 		}
