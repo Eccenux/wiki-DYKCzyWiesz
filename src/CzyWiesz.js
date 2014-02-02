@@ -126,6 +126,7 @@ if (wgNamespaceNumber === 0) {
 			'Islam',
 			'Izrael',
 			'Japonia',
+			'Kalifornia',
 			'Kluby sportowe',
 			'Kolarstwo',
 			'Kompozytorzy',
