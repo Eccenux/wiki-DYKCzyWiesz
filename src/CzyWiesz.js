@@ -1,5 +1,5 @@
 // DEBUG: po wpisaniu w konsoli "DYKnomination.debug()" skrypt uruchomi się
-// w trybie debug, tzn. aktulane info pokażą się w konsoli JS a zgłoszenie
+// w trybie debug, tzn. aktualne info pokażą się w konsoli JS a zgłoszenie
 // pójdzie nie na stronę [[Wikiprojekt:Czy wiesz/propozycje]] ale na testową
 // [[Wikipedysta:Kaligula/js/CzyWiesz.js/test]], a informowanie autora
 // i wikiprojektów – na odpowiednich stronach "…/autor" i "…/wikiprojekt"
@@ -9,11 +9,11 @@
 
 window.DYKnomination = {
 	about : {
-		version    : '5.3.1.1',
+		version    : '5.4.0',
 		author     : 'Kaligula',
 		authorlink : '[[w:pl:user:Kaligula]]',
 		homepage   : '[[w:pl:Wikipedia:Narzędzia/CzyWiesz]]',
-		credits    : 'Tomasz Wachowski, Matma Rex'
+		credits    : 'Matma Rex (for HUGE help), Tomasz Wachowski (for testing)'
 	}
 };
 
@@ -60,178 +60,11 @@ if (wgNamespaceNumber === 0) {
 
 	/**
 	 * List of wikiprojects
-	 * updated 19:48, 12 wrz 2013 from https://pl.wikipedia.org/w/index.php?title=Wikipedia:Wikiprojekt&oldid=37479771
+	 * updated 23:42, 1 lut 2014 from https://pl.wikipedia.org/w/index.php?title=Wikipedia:Wikiprojekt&oldid=38585580
 	 */
 	DYKnomination.wikiprojects = {
 		counter : 1,
-		list : ['Albumy muzyczne',
-			'Anarchizm',
-			'Antropologia',
-			'Architektura',
-			'Astronautyka',
-			'Astronomia',
-			'Baseball',
-			'Białystok',
-			'Biblia',
-			'Bieżące wydarzenia',
-			'Biografie',
-			'Biologia',
-			'Bitwy',
-			'Botanika',
-			'Bydgoszcz',
-			'Chemia',
-			'Chiny',
-			'Chrześcijaństwo',
-			'Cmentarze żydowskie w Polsce',
-			'Czechy',
-			'Częstochowa',
-			'Dinozaury',
-			'Dolny Śląsk',
-			'Drogi i autostrady',
-			'Dyskografie',
-			'Dzielnice Krakowa',
-			'Ekonomia',
-			'Elektronika',
-			'Entomologia',
-			'Euro 2012',
-			'Eurowizja',
-			'Fantastyka',
-			'Filmy',
-			'Filozofia',
-			'Fizyka',
-			'Formuła 1',
-			'Francja',
-			'Futbol amerykański',
-			'Gdańsk',
-			'Gender Studies',
-			'Genetyka i biologia molekularna',
-			'Geografia',
-			'Górny Śląsk',
-			'Góry Polski',
-			'Gry komputerowe',
-			'Gwiezdne wrota',
-			'Harcerstwo',
-			'Harry Potter',
-			'Heavy metal',
-			'Herby',
-			'Hinduizm',
-			'Hip-Hop',
-			'Historia',
-			'Holandia',
-			'Igrzyska olimpijskie',
-			'Igrzyska Wspólnoty Narodów',
-			'Imiona',
-			'Informatyka',
-			'Irlandia',
-			'Islam',
-			'Izrael',
-			'Japonia',
-			'Kalifornia',
-			'Kluby sportowe',
-			'Kolarstwo',
-			'Kompozytorzy',
-			'Konflikty współczesne',
-			'Korea',
-			'Koszykówka',
-			'Kraków',
-			'Kynologia',
-			'Lekkoatletyka',
-			'LGBT',
-			'Linie lotnicze',
-			'Linux',
-			'Literatura',
-			'Literaturoznawstwo',
-			'Lotnictwo',
-			'Łódź',
-			'Malarstwo',
-			'Matematyka',
-			'Meblarstwo',
-			'Mikrobiologia',
-			'Militaria',
-			'Minerały',
-			'Mistrzostwa Świata w Piłce Nożnej 2014',
-			'Mitologia grecka',
-			'Mitologia rzymska',
-			'Mitologia słowiańska',
-			'Motoryzacja',
-			'Muzyka i muzykologia',
-			'Muzyka poważna',
-			'Mykologia',
-			'National Basketball Association',
-			'Nauki medyczne',
-			'Nauru',
-			'Nazwiska',
-			'Niemcy',
-			'Nowy Sącz',
-			'Numizmatyka',
-			'Ochrona przyrody',
-			'Olsztyn',
-			'Paleontologia',
-			'Pallotyni',
-			'Państwa świata',
-			'Petanque',
-			'Piastowie',
-			'Piłka nożna',
-			'Piłka siatkowa',
-			'Podlaskie',
-			'Pokémon',
-			'Polityka',
-			'Polskie miejsowości',
-			'Powiat radomski',
-			'Powiat szydłowiecki',
-			'Powiat wrzesiński',
-			'Poznań',
-			'Prawo',
-			'Programy telewizyjne',
-			'Przeworsk',
-			'Psychologia',
-			'Racibórz',
-			'Radio',
-			'Religioznawstwo',
-			'Rock progresywny',
-			'Rosja',
-			'Saska Kępa w Wikipedii',
-			'Seksuologia',
-			'Seriale telewizyjne',
-			'Skoki narciarskie',
-			'Słowacja',
-			'Snooker',
-			'Socjologia',
-			'Sport',
-			'Sporty motorowe',
-			'Sporty zimowe',
-			'Spółdzielczość',
-			'Stany Zjednoczone',
-			'Starożytność',
-			'Stosunki polsko-ukraińskie',
-			'Synagogi w Polsce',
-			'Szkoła austriacka (ekonomia)',
-			'Sztuka współczesna',
-			'Śródziemie',
-			'Średniowiecze',
-			'Technika',
-			'Telefony komórkowe',
-			'Tenis ziemny',
-			'Transport',
-			'Transport szynowy',
-			'Turystyka',
-			'Tybet',
-			'U-Boot',
-			'Ukraina',
-			'Unia Europejska',
-			'Warhammer',
-			'Warszawa',
-			'Wawel',
-			'Wielka Brytania',
-			'Województwo świętokrzyskie',
-			'Województwo warmińsko-mazurskie',
-			'Wrestling',
-			'Wspinaczka',
-			'XML',
-			'Zoologia',
-			'Żegluga',
-			'Żużel',
-			'Życie codzienne'],
+		list : [], //populated on askuser() from [[Wikipedysta:Kaligula/js/CzyWiesz.js/wikiprojekty]] by DYKnomination.wikiprojects.load() (see below)
 		list2 : [
 			// these wikiprojects want to be informed via their subpage
 			{
@@ -365,7 +198,22 @@ if (wgNamespaceNumber === 0) {
 				page  : 'Dyskusja wikiprojektu:Żużel',
 				type  : 'talk',
 			}
-		]
+		],
+		load : function () {
+			var D = DYKnomination;
+			$.ajax('/w/index.php?title=Wikipedysta:Kaligula/js/CzyWiesz.js/wikiprojekty&action=raw')
+			.done(function(data){
+					D.wikiprojects.list = data.match(/([^:]+)(?=\]\]$)/gm);
+					D.wikiproject_select = $('<select class="czywiesz-wikiproject"></select>').css('vertical-align', 'middle');
+					D.wikiproject_select.append('<option value="none">-- (żaden) --</option>');
+					for (var i=0;i<D.wikiprojects.list.length;i++) {
+						if (typeof(D.wikiprojects.list[i]) == 'function') continue; //on IE wikibits adds indexOf method for arrays. skip it.
+						$('<option>').attr('value',i).text(D.wikiprojects.list[i]).appendTo(D.wikiproject_select);
+					}
+					$('#CzyWieszWikiprojectContainer').append(D.wikiproject_select.clone());
+				}
+			);
+		}
 	}
 
 	DYKnomination.errors = [function (){
@@ -469,14 +317,8 @@ if (wgNamespaceNumber === 0) {
 				+ '<td><input type="text" id="CzyWieszSignature" name="CzyWieszSignature" value="' 
 				+ SIGNATURE.name + '" style="width: 50%;margin-left: 2px;"' + SIGNATURE.disabled + '></td>');
 
-		//wikiproject row
-		D.wikiproject_select = $('<select class="czywiesz-wikiproject"></select>').css('vertical-align', 'middle');
-		D.wikiproject_select.append('<option value="none">-- (żaden) --</option>');
-		for (var i=0;i<D.wikiprojects.list.length;i++) {
-			if (typeof(D.wikiprojects.list[i]) == 'function') continue; //on IE wikibits adds indexOf method for arrays. skip it.
-			$('<option value="' + i + '">' + D.wikiprojects.list[i] + '</option>').appendTo(D.wikiproject_select);
-		}
-		var $wikiproject_row = $('<span id="CzyWieszWikiprojectContainer"></span>').append(D.wikiproject_select.clone());
+		//wikiproject row (filled later by D.wikiprojects.load())
+		var $wikiproject_row = $('<span id="CzyWieszWikiprojectContainer"></span>');
 		$wikiproject_row = $('<td></td>').append($wikiproject_row)
 			.append('<a id="CzyWieszWikiprojectAdd">(+)</a>');
 		$wikiproject_row = $('<tr></tr>').append('<td>Powiadom wikiprojekt(y): </td>').append($wikiproject_row);
@@ -536,6 +378,9 @@ if (wgNamespaceNumber === 0) {
 			str = y + '-' + m + '-' + d;
 			return str;
 		});
+
+		//fill wikiproject row (filled later by D.wikiprojects.load())
+		D.wikiprojects.load();
 
 		// check size of article and make a tip for the possible author
 		D.pagerevs();
