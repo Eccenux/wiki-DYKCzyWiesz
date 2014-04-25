@@ -77,6 +77,11 @@ if (wgNamespaceNumber === 0) {
 				page  : 'Wikiprojekt:Warszawa/Czy wiesz',
 				type  : 'subpage'
 			},
+			{
+				label : 'Chemia',
+				page  : 'Wikiprojekt:Chemia/Czy wiesz',
+				type  : 'subpage',
+			},
 			// these wikiprojects want to be informed via their talk page
 			{
 				label : 'Astronomia',
@@ -91,11 +96,6 @@ if (wgNamespaceNumber === 0) {
 			{
 				label : 'Botanika',
 				page  : 'Dyskusja wikiprojektu:Botanika',
-				type  : 'talk',
-			},
-			{
-				label : 'Chemia',
-				page  : 'Dyskusja wikiprojektu:Chemia',
 				type  : 'talk',
 			},
 			{
