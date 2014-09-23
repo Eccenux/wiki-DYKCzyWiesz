@@ -405,7 +405,7 @@ if (wgNamespaceNumber === 0) {
 						for (var i=0; i<IMG_ARR.length; i++) {
 							if (i%5 == 0) {GALLERY += '<tr>';}
 							GALLERY += '<td>';
-							GALLERY += IMG_ARR[i].outerHTML.replace(/ width=\"\d+\"/,' width="100"').replace(/ height=\"[^\"]*\"/,'').replace(/ class=\"[^\"]*\"/g,'');
+							GALLERY += IMG_ARR[i].outerHTML.replace(/\swidth=\"\d+\"/,' width="100"').replace(/\sheight=\"[^\"]*\"/,'').replace(/\sclass=\"[^\"]*\"/g,'');
 							GALLERY += '</td>';
 							if (i%5 == 4) {GALLERY += '</tr>';}
 						}
