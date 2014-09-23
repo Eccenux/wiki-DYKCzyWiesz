@@ -9,7 +9,7 @@
 
 window.DYKnomination = {
 	about : {
-		version    : '5.4.0',
+		version    : '5.4.1',
 		author     : 'Kaligula',
 		authorlink : '[[w:pl:user:Kaligula]]',
 		homepage   : '[[w:pl:Wikipedia:Narzędzia/CzyWiesz]]',
@@ -1170,138 +1170,141 @@ if (wgNamespaceNumber === 0) {
 			secttitl_w = D.config.secttitl_w.replace('TITLE',wgTitle);
  
 			for (var i=0;i<Dv.wikiproject.length;i++) {
-				var curWikiproject = Dv.wikiproject[i];
+				// http://stackoverflow.com/questions/1676362/javascript-variable-binding-and-loop
+				(function(i) {
+					var curWikiproject = Dv.wikiproject[i];
 
-				var wnr = -1;
-				//check if wikiproject wants to be informed other way than 'section=new'
-				//(wnr=) -1 means 'no', any other number means 'yes' and is a number of the wikiproject in D.wikiprojects.list2
-				$(D.wikiprojects.list2).each(function(n){
-					if (this.label == curWikiproject) wnr=n;
-				});
-				D.log(debug,'D.wikiprojects.list2',D.wikiprojects.list2);
+					var wnr = -1;
+					//check if wikiproject wants to be informed other way than 'section=new'
+					//(wnr=) -1 means 'no', any other number means 'yes' and is a number of the wikiproject in D.wikiprojects.list2
+					$(D.wikiprojects.list2).each(function(n){
+						if (this.label == curWikiproject) wnr=n;
+					});
+					D.log(debug,'D.wikiprojects.list2',D.wikiprojects.list2);
 
-				var czy_talk;
-				var pageToEdit;
-				if (debug) {
-					pageToEdit = 'Wikipedysta:Kaligula/js/CzyWiesz.js/wikiprojekt';
-					D.wikiprojects.list2.push({
-						label : 'Wikipedysta:Kaligula/js/CzyWiesz.js/wikiprojekt',
-						page  : 'Wikipedysta:Kaligula/js/CzyWiesz.js/wikiprojekt',
-						type  : 'talk'
-					}); 
-					czy_talk = true;
-				} else if (wnr<0) {
-					pageToEdit = 'Wikiprojekt:'+curWikiproject;
-				} else if (D.wikiprojects.list2[wnr].type=='talk') {
-					pageToEdit = 'Dyskusja wikiprojektu:' + curWikiproject;
-					czy_talk = true;
-				} else {
-					pageToEdit = D.wikiprojects.list2[wnr].page;
-				}
+					var czy_talk;
+					var pageToEdit;
+					if (debug) {
+						pageToEdit = 'Wikipedysta:Kaligula/js/CzyWiesz.js/wikiprojekt';
+						D.wikiprojects.list2.push({
+							label : 'Wikipedysta:Kaligula/js/CzyWiesz.js/wikiprojekt',
+							page  : 'Wikipedysta:Kaligula/js/CzyWiesz.js/wikiprojekt',
+							type  : 'talk'
+						}); 
+						czy_talk = true;
+					} else if (wnr<0) {
+						pageToEdit = 'Wikiprojekt:'+curWikiproject;
+					} else if (D.wikiprojects.list2[wnr].type=='talk') {
+						pageToEdit = 'Dyskusja wikiprojektu:' + curWikiproject;
+						czy_talk = true;
+					} else {
+						pageToEdit = D.wikiprojects.list2[wnr].page;
+					}
 
-				D.log(debug,'czy_talk:',czy_talk,'D.wikiprojects.list2[wnr]:',D.wikiprojects.list2[wnr],'curWikiproject:',curWikiproject,'pageToEdit:',pageToEdit);
+					D.log(debug,'czy_talk:',czy_talk,'D.wikiprojects.list2[wnr]:',D.wikiprojects.list2[wnr],'curWikiproject:',curWikiproject,'pageToEdit:',pageToEdit);
 
-				var obj;
-				if (czy_talk) {
-				//if report type is 'section=new' then add new section
-				//DEBUG: debug page 'Wikipedysta:Kaligula/js/CzyWiesz.js/wikiprojekt' gets here, because now it's on list2
-					obj = {
-						url : '/w/api.php',
-						type : 'POST',
-						data : {
-							action : 'edit',
-							format : 'json',
-							title : pageToEdit,
-							section : 'new',
-							sectiontitle : secttitl_w,
-							text : '{' + '{Czy wiesz - wikiprojekt|' + wgTitle + '}} ~~' + '~~',
-							summary : summary_w,
-							watchlist : 'nochange',
-							token : D.edittoken
+					var obj;
+					if (czy_talk) {
+					//if report type is 'section=new' then add new section
+					//DEBUG: debug page 'Wikipedysta:Kaligula/js/CzyWiesz.js/wikiprojekt' gets here, because now it's on list2
+						obj = {
+							url : '/w/api.php',
+							type : 'POST',
+							data : {
+								action : 'edit',
+								format : 'json',
+								title : pageToEdit,
+								section : 'new',
+								sectiontitle : secttitl_w,
+								text : '{' + '{Czy wiesz - wikiprojekt|' + wgTitle + '}} ~~' + '~~',
+								summary : summary_w,
+								watchlist : 'nochange',
+								token : D.edittoken
+							}
 						}
+					} else {
+					//if report type is not 'section=new' then get page source [to edit]
+						obj = {
+							url : '/w/index.php?action=raw&title=' + encodeURIComponent(pageToEdit),
+							cache : false
+						}
+						summary_w = '/* Czy wiesz */ nowe zgłoszenie: [[' + wgTitle + ']]';
 					}
-				} else {
-				//if report type is not 'section=new' then get page source [to edit]
-					obj = {
-						url : '/w/index.php?action=raw&title=' + encodeURIComponent(pageToEdit),
-						cache : false
-					}
-					summary_w = '/* Czy wiesz */ nowe zgłoszenie: [[' + wgTitle + ']]';
-				}
- 
-				D.log(debug,'obj:',obj);
- 
-				$.ajax(obj)
-				.done(function(data){
-					D.log(debug,pageToEdit+': komenda POST' + (czy_talk?'':'(cz. 1.)') + ' zakończona\nodpowiedź serwera:',data);
-					if (data.error) {
-						D.errors.push('Błąd informowania '+ pageToEdit + (czy_talk?'':'(cz. 1.)') + ': ' + data.error.info + '.');
-						D.errors[0]();
-						console.error('Błąd informowania '+ pageToEdit + (czy_talk?'':'(cz. 1.)') + ': ' + data.error.info + '.');
-						console.error(data);
-					}
-					else {
-						if (czy_talk) {
-						//if report type is 'section=new' then this wikiproject is done
-							D.loadbar();
-							D.wikiprojects.counter++;
-							if (D.wikiprojects.counter>Dv.wikiproject.length) D.success();
+	 
+					D.log(debug,'obj:',obj);
+	 
+					$.ajax(obj)
+					.done(function(data){
+						D.log(debug,pageToEdit+': komenda POST' + (czy_talk?'':'(cz. 1.)') + ' zakończona\nodpowiedź serwera:',data);
+						if (data.error) {
+							D.errors.push('Błąd informowania '+ pageToEdit + (czy_talk?'':'(cz. 1.)') + ': ' + data.error.info + '.');
+							D.errors[0]();
+							console.error('Błąd informowania '+ pageToEdit + (czy_talk?'':'(cz. 1.)') + ': ' + data.error.info + '.');
+							console.error(data);
 						}
 						else {
-						//if report type is not 'section=new' then now we need to save the page
-							if (!data.match('<!-- Nowe zgłoszenia CzyWiesza wstawiaj poniżej tej linii. Nie zmieniaj i nie usuwaj tej linii -->')) {
-								data = data.replace('[[Kategoria:','== Czy wiesz ==\n<!-- Nowe zgłoszenia CzyWiesza wstawiaj poniżej tej linii. Nie zmieniaj i nie usuwaj tej linii -->\n\n[[Kategoria:');
+							if (czy_talk) {
+							//if report type is 'section=new' then this wikiproject is done
+								D.loadbar();
+								D.wikiprojects.counter++;
+								if (D.wikiprojects.counter>Dv.wikiproject.length) D.success();
 							}
-							data = data.replace('<!-- Nowe zgłoszenia CzyWiesza wstawiaj poniżej tej linii. Nie zmieniaj i nie usuwaj tej linii -->',
-								'<!-- Nowe zgłoszenia CzyWiesza wstawiaj poniżej tej linii. Nie zmieniaj i nie usuwaj tej linii -->\n'
-								+ '{' + '{Czy wiesz - wikiprojekt|' + wgTitle + '}}');
-
-							D.log(debug,'czy_talk (2):',czy_talk,'D.wikiprojects.list2[wnr] (2):',D.wikiprojects.list2[wnr],'curWikiproject (2):',curWikiproject,'pageToEdit (2):',pageToEdit);
-
-							$.ajax({
-								url : '/w/api.php',
-								type : 'POST',
-								data: {
-									action: 'edit',
-									format: 'json',
-									title:  pageToEdit,
-									text:   data,
-									summary: summary_w,
-									watchlist: 'nochange',
-									token:  D.edittoken
+							else {
+							//if report type is not 'section=new' then now we need to save the page
+								if (!data.match('<!-- Nowe zgłoszenia CzyWiesza wstawiaj poniżej tej linii. Nie zmieniaj i nie usuwaj tej linii -->')) {
+									data = data.replace('[[Kategoria:','== Czy wiesz ==\n<!-- Nowe zgłoszenia CzyWiesza wstawiaj poniżej tej linii. Nie zmieniaj i nie usuwaj tej linii -->\n\n[[Kategoria:');
 								}
-							})
-							.done(function(data2){
-								D.log(debug,pageToEdit+': komenda POST' + (czy_talk?'':'(cz. 2.)') + ' zakończona\nodpowiedź serwera:',data2);
-								if (data2.error) {
-									D.errors.push('Błąd informowania '+ pageToEdit + (czy_talk?'':'(cz. 2.)') + ': ' + data2.error.info + '.');
+								data = data.replace('<!-- Nowe zgłoszenia CzyWiesza wstawiaj poniżej tej linii. Nie zmieniaj i nie usuwaj tej linii -->',
+									'<!-- Nowe zgłoszenia CzyWiesza wstawiaj poniżej tej linii. Nie zmieniaj i nie usuwaj tej linii -->\n'
+									+ '{' + '{Czy wiesz - wikiprojekt|' + wgTitle + '}}');
+
+								D.log(debug,'czy_talk (2):',czy_talk,'D.wikiprojects.list2[wnr] (2):',D.wikiprojects.list2[wnr],'curWikiproject (2):',curWikiproject,'pageToEdit (2):',pageToEdit);
+
+								$.ajax({
+									url : '/w/api.php',
+									type : 'POST',
+									data: {
+										action: 'edit',
+										format: 'json',
+										title:  pageToEdit,
+										text:   data,
+										summary: summary_w,
+										watchlist: 'nochange',
+										token:  D.edittoken
+									}
+								})
+								.done(function(data2){
+									D.log(debug,pageToEdit+': komenda POST' + (czy_talk?'':'(cz. 2.)') + ' zakończona\nodpowiedź serwera:',data2);
+									if (data2.error) {
+										D.errors.push('Błąd informowania '+ pageToEdit + (czy_talk?'':'(cz. 2.)') + ': ' + data2.error.info + '.');
+										D.errors[0]();
+										console.error('Błąd informowania '+ pageToEdit + (czy_talk?'':'(cz. 2.)') + ': ' + data2.error.info + '.');
+										console.error(data2);
+									}
+									else {
+										D.loadbar();
+										D.wikiprojects.counter++;
+										if (D.wikiprojects.counter>Dv.wikiproject.length) D.success();
+									}
+								})
+								.fail(function(data2){
+									D.errors.push('Błąd informowania '+ pageToEdit + (czy_talk?'':'(cz. 2.)') + ': $.ajax.fail().');
 									D.errors[0]();
-									console.error('Błąd informowania '+ pageToEdit + (czy_talk?'':'(cz. 2.)') + ': ' + data2.error.info + '.');
+									console.error('Błąd informowania '+ pageToEdit + (czy_talk?'':'(cz. 2.)') + ': $.ajax.fail().');
+									console.error('URI: ' + obj.url);
 									console.error(data2);
-								}
-								else {
-									D.loadbar();
-									D.wikiprojects.counter++;
-									if (D.wikiprojects.counter>Dv.wikiproject.length) D.success();
-								}
-							})
-							.fail(function(data2){
-								D.errors.push('Błąd informowania '+ pageToEdit + (czy_talk?'':'(cz. 2.)') + ': $.ajax.fail().');
-								D.errors[0]();
-								console.error('Błąd informowania '+ pageToEdit + (czy_talk?'':'(cz. 2.)') + ': $.ajax.fail().');
-								console.error('URI: ' + obj.url);
-								console.error(data2);
-							});
+								});
+							}
 						}
-					}
-				})
-				.fail(function(data){
-					D.errors.push('Błąd informowania '+ pageToEdit + (czy_talk?'':'(cz. 1.)') + ': $.ajax.fail().');
-					D.errors[0]();
-					console.error('Błąd informowania '+ pageToEdit + (czy_talk?'':'(cz. 1.)') + ': $.ajax.fail().');
-					console.error('URI: ' + obj.url);
-					console.error(data);
-				});
+					})
+					.fail(function(data){
+						D.errors.push('Błąd informowania '+ pageToEdit + (czy_talk?'':'(cz. 1.)') + ': $.ajax.fail().');
+						D.errors[0]();
+						console.error('Błąd informowania '+ pageToEdit + (czy_talk?'':'(cz. 1.)') + ': $.ajax.fail().');
+						console.error('URI: ' + obj.url);
+						console.error(data);
+					});
+				})(i);
 			}
 		}
 	}
