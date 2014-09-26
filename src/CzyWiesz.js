@@ -1058,7 +1058,7 @@ if (wgNamespaceNumber === 0) {
 					action : 'edit',
 					format : 'json',
 					title : wgTitle,
-					prependtext : '{' + '{Szablon:Czy wiesz do artykułu|' + Dv.nr + '}' + '}\n',
+					prependtext : '{' + '{Czy wiesz do artykułu|' + Dv.nr + '}' + '}\n',
 					summary : D.config.summary_r,
 					watchlist : 'nochange',
 					token : D.edittoken
@@ -1087,7 +1087,7 @@ if (wgNamespaceNumber === 0) {
 				console.error('Błąd informowania w artykule: $.ajax.fail().');
 				console.error('URI: /w/api.php?action=edit&format=json&title='
 					+ encodeURIComponent(wgTitle)
-					+ '&prependtext=' + encodeURIComponent('{' + '{Szablon:Czy wiesz do artykułu|' + Dv.nr + '}' + '}\n') 
+					+ '&prependtext=' + encodeURIComponent('{' + '{Czy wiesz do artykułu|' + Dv.nr + '}' + '}\n') 
 					+ '&summary=' + encodeURIComponent(D.config.summary_r) + '&watchlist=nochange&token=' + encodeURIComponent(D.edittoken));
 				console.error(data);
 			});
