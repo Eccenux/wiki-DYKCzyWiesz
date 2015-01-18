@@ -82,6 +82,11 @@ if (wgNamespaceNumber === 0) {
 				page  : 'Wikiprojekt:Chemia/Czy wiesz',
 				type  : 'subpage',
 			},
+			{
+				label : 'Fantastyka',
+				page  : 'Wikiprojekt:Fantastyka/Czy wiesz',
+				type  : 'subpage',
+			},
 			// these wikiprojects want to be informed via their talk page
 			{
 				label : 'Astronomia',
