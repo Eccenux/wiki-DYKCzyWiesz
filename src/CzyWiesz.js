@@ -633,7 +633,7 @@ if (wgNamespaceNumber === 0) {
 					AUTHOR2.push(val);
 				}
 			});
-		var AUTHOR_INF = ( $('#CzyWieszAuthorInf').attr('checked') ? true : false );
+		var AUTHOR_INF = ( $('#CzyWieszAuthorInf').prop('checked') ? true : false );
 		var DATE = $('#CzyWieszDate').val().replace(/^\s*(.*?)\s*$/,'$1'); // remove spaces on beginning and end
 		var SIGNATURE = $('#CzyWieszSignature').val().replace(/^\s*(.*?)\s*$/,'$1'); // remove spaces on beginning and end
 		var WIKIPROJECT = [];
