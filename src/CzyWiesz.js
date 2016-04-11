@@ -9,7 +9,7 @@
 
 window.DYKnomination = {
 	about : {
-		version    : '5.4.1',
+		version    : '5.4.4'+(window.DYK_is_beta===true?'beta':''),
 		author     : 'Kaligula',
 		authorlink : '[[w:pl:user:Kaligula]]',
 		homepage   : '[[w:pl:Wikipedia:Narzędzia/CzyWiesz]]',
@@ -114,6 +114,11 @@ if (wgNamespaceNumber === 0) {
 				type  : 'talk',
 			},
 			{
+				label : 'Fizyka',
+				page  : 'Dyskusja wikiprojektu:Fizyka',
+				type  : 'talk',
+			},
+			{
 				label : 'Filmy',
 				page  : 'Dyskusja wikiprojektu:Filmy',
 				type  : 'talk',
@@ -136,6 +141,11 @@ if (wgNamespaceNumber === 0) {
 			{
 				label : 'Irlandia',
 				page  : 'Dyskusja wikiprojektu:Irlandia',
+				type  : 'talk',
+			},
+			{
+				label : 'Islam',
+				page  : 'Dyskusja wikiprojektu:Islam',
 				type  : 'talk',
 			},
 			{
@@ -171,6 +181,11 @@ if (wgNamespaceNumber === 0) {
 			{
 				label : 'Nowy Sącz',
 				page  : 'Dyskusja wikiprojektu:Nowy Sącz',
+				type  : 'talk',
+			},
+			{
+				label : 'Politechnika Warszawska',
+				page  : 'Dyskusja wikiprojektu:Politechnika Warszawska',
 				type  : 'talk',
 			},
 			{
@@ -1175,6 +1190,7 @@ if (wgNamespaceNumber === 0) {
 			secttitl_w = D.config.secttitl_w.replace('TITLE',wgTitle);
  
 			for (var i=0;i<Dv.wikiproject.length;i++) {
+				// błąd powodował wstawianie informacji tylko do jednego z wielu wybranych w formularzu Wikiprojektów
 				// http://stackoverflow.com/questions/1676362/javascript-variable-binding-and-loop
 				(function(i) {
 					var curWikiproject = Dv.wikiproject[i];
@@ -1332,7 +1348,7 @@ if (wgNamespaceNumber === 0) {
 
 
 $(document).ready(function() {
-	var menulink = $('<li id="t-DYKnomination"><a onclick="DYKnomination.askuser();">Zgłoś do „Czy wiesz…”</a></li>').css({cursor: 'pointer'});
+	var menulink = $('<li id="t-DYKnomination"><a onclick="DYKnomination.askuser();">'+(window.DYK_is_beta===true?'BETA: ':'')+'Zgłoś do „Czy wiesz…”</a></li>').css({cursor: 'pointer'});
 	if ($('#t-ajaxquickdelete')[0]) {$('#t-ajaxquickdelete').after(menulink);}
 	else {$('#p-tb ul').append(menulink);}
 });
