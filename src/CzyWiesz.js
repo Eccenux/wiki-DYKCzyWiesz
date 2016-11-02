@@ -674,7 +674,7 @@ if (wgNamespaceNumber === 0) {
 				invalid.alert.push('Wpisz pytanie.');
 			}
 			else {
-				var tITLE = wgTitle.charAt(0).toLowerCase()+wgTitle.substr(1); //title in link starting with lowercase
+				var tITLE = wgTitle[0].toLowerCase()+wgTitle.substr(1); //title in link starting with lowercase
 				if (QUESTION.length < 10) {
 					invalid.is = true;
 					invalid.fields.push('Question');
@@ -804,7 +804,7 @@ if (wgNamespaceNumber === 0) {
 		var D = DYKnomination;
 		var debug = D.debugmode;
 
-		var tmpToken = mw.user.tokens.values.editToken;
+		var tmpToken = mw.user.tokens.get('editToken');
 		if (!force && typeof tmpToken == 'string' && tmpToken.length == 34) {
 			D.edittoken = tmpToken;
 			D.log(debug,'DYKnomination.edittoken :',D.edittoken);
