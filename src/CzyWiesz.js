@@ -199,11 +199,6 @@ if (wgNamespaceNumber === 0) {
 				type  : 'talk',
 			},
 			{
-				label : 'Skoki narciarskie',
-				page  : 'Dyskusja wikiprojektu:Skoki narciarskie',
-				type  : 'talk',
-			},
-			{
 				label : 'Słowacja',
 				page  : 'Dyskusja wikiprojektu:Słowacja',
 				type  : 'talk',
