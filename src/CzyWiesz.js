@@ -87,6 +87,11 @@ if (wgNamespaceNumber === 0) {
 				page  : 'Wikiprojekt:Fantastyka/Czy wiesz',
 				type  : 'subpage',
 			},
+			{
+				label : 'Polityka',
+				page  : 'Wikiprojekt:Polityka/Czy wiesz',
+				type  : 'subpage',
+			},
 			// these wikiprojects want to be informed via their talk page
 			{
 				label : 'Astronomia',
