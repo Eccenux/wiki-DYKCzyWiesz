@@ -87,11 +87,6 @@ if (wgNamespaceNumber === 0) {
 				page  : 'Wikiprojekt:Fantastyka/Czy wiesz',
 				type  : 'subpage',
 			},
-			{
-				label : 'Polityka',
-				page  : 'Wikiprojekt:Polityka/Czy wiesz',
-				type  : 'subpage',
-			},
 			// these wikiprojects want to be informed via their talk page
 			{
 				label : 'Astronomia',
@@ -192,6 +187,11 @@ if (wgNamespaceNumber === 0) {
 				label : 'Politechnika Warszawska',
 				page  : 'Dyskusja wikiprojektu:Politechnika Warszawska',
 				type  : 'talk',
+			},
+			{
+				label : 'Polityka',
+				page  : 'Wikiprojekt:Polityka/Czy wiesz',
+				type  : 'subpage',
 			},
 			{
 				label : 'Prawo',
