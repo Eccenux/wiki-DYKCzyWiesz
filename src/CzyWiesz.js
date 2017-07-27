@@ -191,7 +191,7 @@ if (wgNamespaceNumber === 0) {
 			{
 				label : 'Polityka',
 				page  : 'Dyskusja wikiprojektu:Polityka',
-				type  : 'subpage',
+				type  : 'talk',
 			},
 			{
 				label : 'Prawo',
