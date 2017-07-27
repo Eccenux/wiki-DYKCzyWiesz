@@ -190,7 +190,7 @@ if (wgNamespaceNumber === 0) {
 			},
 			{
 				label : 'Polityka',
-				page  : 'Wikiprojekt:Polityka/Czy wiesz',
+				page  : 'Dyskusja wikiprojektu:Polityka',
 				type  : 'subpage',
 			},
 			{
