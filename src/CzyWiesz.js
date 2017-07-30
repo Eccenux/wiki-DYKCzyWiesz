@@ -223,7 +223,7 @@ if (wgNamespaceNumber === 0) {
 			var D = DYKnomination;
 			$.ajax('/w/index.php?title=Wikipedysta:Kaligula/js/CzyWiesz.js/wikiprojekty&action=raw')
 			.done(function(data){
-					D.wikiprojects.list = data.match(/([^:]+)(?=\]\]$)/gm);
+					D.wikiprojects.list = data.match(/([^:]+)(?=\]\]\s*$)/gm);
 					D.wikiproject_select = $('<select class="czywiesz-wikiproject"></select>').css('vertical-align', 'middle');
 					D.wikiproject_select.append('<option value="none">-- (żaden) --</option>');
 					for (var i=0;i<D.wikiprojects.list.length;i++) {
