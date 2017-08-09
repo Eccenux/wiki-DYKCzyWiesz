@@ -412,7 +412,7 @@ if (wgNamespaceNumber === 0) {
 		// when user ticks he wants to nominate with picture → enable picture/file field
 		$('#CzyWieszFile1').change(function(){
 			var a=$('#CzyWieszFile2');
-			(a.attr('disabled') ? a.removeAttr('disabled') : a.attr('disabled','true'));
+			a.prop('disabled', !a.prop('disabled'));
 		});
 
 		// if there are images in article → add link to small gallery to quickly choose an image from article
@@ -441,8 +441,8 @@ if (wgNamespaceNumber === 0) {
 					buttons: {
 						"Wybierz": function() {
 							if ($('#CzyWieszFile1').length > 0) {
-								$('#CzyWieszFile1').attr('checked',true);
-								$('#CzyWieszFile2').removeAttr('disabled');
+								$('#CzyWieszFile1').prop('checked',true);
+								$('#CzyWieszFile2').prop('disabled', false);
 								$('#CzyWieszFile2').val( $('.czy-wiesz-gallery-chosen').length == 0 ? '' : decodeURIComponent($('.czy-wiesz-gallery-chosen')[0].src.match(/\/\/upload\.wikimedia\.org\/wikipedia\/commons(\/thumb)?\/.\/..\/([^\/]+)\/?/)[2]).replace(/_/g,' ') ); // ← extract file name
 							}
 
@@ -636,7 +636,7 @@ if (wgNamespaceNumber === 0) {
 
 		//get the question
 		var QUESTION = $('#CzyWieszQuestion').val().replace(/(.*?)(--)?~{3,5}\s*$/,'$1').replace(/^\s*(.*?)\s*$/,'$1').replace(/^([Cc]zy wiesz)?[\s,\.]*/,''); // remove signature, spaces on beginning and end, beginning of question ("Czy wiesz")
-		var FILE = ( $('#CzyWieszFile1').attr('checked') ? $('#CzyWieszFile2').val().replace(/^\s*(.*?)\s*$/,'$1') : '' ); // remove spaces on beginning and end
+		var FILE = ( $('#CzyWieszFile1').prop('checked') ? $('#CzyWieszFile2').val().replace(/^\s*(.*?)\s*$/,'$1') : '' ); // remove spaces on beginning and end
 		var IMAGES = $('#CzyWieszImages').val().replace(/^\s*(.*?)\s*$/,'$1'); // remove spaces on beginning and end
 		var REFS = (D.sourced ? '+' : ' ');
 		var AUTHOR = $('#CzyWieszAuthor').val().replace(/^\s*(.*?)\s*$/,'$1'); // remove spaces on beginning and end
@@ -664,7 +664,7 @@ if (wgNamespaceNumber === 0) {
 			else {
 				WIKIPROJECT = ['Wikipedysta:Kaligula/js/CzyWiesz.js/wikiprojekt'];
 			}
-		var COMMENT = ( $('#CzyWieszCommentCheckbox').attr('checked') ? $('#CzyWieszComment').val().replace(/^\s*(.*?)\s*$/,'$1') : false );
+		var COMMENT = ( $('#CzyWieszCommentCheckbox').prop('checked') ? $('#CzyWieszComment').val().replace(/^\s*(.*?)\s*$/,'$1') : false );
 
 		//validate form
 		var invalid = {is: false, fields: [], alert: []};
