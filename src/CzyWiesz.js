@@ -9,15 +9,19 @@
 
 window.DYKnomination = {
 	about : {
-		version    : '5.4.4'+(window.DYK_is_beta===true?'beta':''),
+		version    : '5.5.7'+(window.DYKnomination_is_beta===true?'beta':''),
+		beta	   : (window.DYKnomination_is_beta===true?true:false),
 		author     : 'Kaligula',
 		authorlink : '[[w:pl:user:Kaligula]]',
 		homepage   : '[[w:pl:Wikipedia:Narzędzia/CzyWiesz]]',
 		credits    : 'Matma Rex (for HUGE help), Tomasz Wachowski (for testing)'
 	}
+/*	wgTitle: wgTitle, // property set on function call
+	wgUserName: wgUserName // property set on function call
+*/
 };
 
-if (wgNamespaceNumber === 0) {
+if (mw.config.get('wgNamespaceNumber') === 0) {
 
 
 
@@ -60,21 +64,16 @@ if (wgNamespaceNumber === 0) {
 
 	/**
 	 * List of wikiprojects
-	 * updated 23:42, 1 lut 2014 from https://pl.wikipedia.org/w/index.php?title=Wikipedia:Wikiprojekt&oldid=38585580
+	 * updated 18:37, 22 gru 2017 from https://pl.wikipedia.org/w/index.php?title=Dyskusja_wikipedysty:Kaligula/js/CzyWiesz.js/wikiprojekty&oldid=49997284
 	 */
 	DYKnomination.wikiprojects = {
 		counter : 1,
 		list : [], //populated on askuser() from [[Wikipedysta:Kaligula/js/CzyWiesz.js/wikiprojekty]] by DYKnomination.wikiprojects.load() (see below)
-		list2 : [
+		list2 : [ //type:subpage & type:editsection mean script needs to edit existing section on page (or talkpage), type:talk means script needs to add new section to page (or talkpage)
 			// these wikiprojects want to be informed via their subpage
 			{
 				label : 'Biologia',
 				page  : 'Wikiprojekt:Biologia/Czy wiesz',
-				type  : 'subpage'
-			},
-			{
-				label : 'Warszawa',
-				page  : 'Wikiprojekt:Warszawa/Czy wiesz',
 				type  : 'subpage'
 			},
 			{
@@ -86,6 +85,11 @@ if (wgNamespaceNumber === 0) {
 				label : 'Fantastyka',
 				page  : 'Wikiprojekt:Fantastyka/Czy wiesz',
 				type  : 'subpage',
+			},
+			{
+				label : 'Warszawa',
+				page  : 'Wikiprojekt:Warszawa/Czy wiesz',
+				type  : 'subpage'
 			},
 			// these wikiprojects want to be informed via their talk page
 			{
@@ -191,7 +195,7 @@ if (wgNamespaceNumber === 0) {
 			{
 				label : 'Polityka',
 				page  : 'Dyskusja wikiprojektu:Polityka',
-				type  : 'talk',
+				type  : 'talk'
 			},
 			{
 				label : 'Prawo',
@@ -217,19 +221,44 @@ if (wgNamespaceNumber === 0) {
 				label : 'Żużel',
 				page  : 'Dyskusja wikiprojektu:Żużel',
 				type  : 'talk',
+			},
+			// these wikiprojects want to be have their talk page's dedicated section edited
+			{
+				label : 'Ochrona przyrody',
+				page  : 'Dyskusja wikiprojektu:Ochrona przyrody',
+				type  : 'editsection',
 			}
 		],
 		load : function () {
 			var D = DYKnomination;
-			$.ajax('/w/index.php?title=Wikipedysta:Kaligula/js/CzyWiesz.js/wikiprojekty&action=raw')
+			$.ajax('/w/index.php?title=Wikipedia:Wikiprojekt/Spis_wikiprojektów&action=raw')
 			.done(function(data){
-					D.wikiprojects.list = data.match(/([^:]+)(?=\]\]\s*$)/gm);
-					D.wikiproject_select = $('<select class="czywiesz-wikiproject"></select>').css('vertical-align', 'middle');
-					D.wikiproject_select.append('<option value="none">-- (żaden) --</option>');
-					for (var i=0;i<D.wikiprojects.list.length;i++) {
-						if (typeof(D.wikiprojects.list[i]) == 'function') continue; //on IE wikibits adds indexOf method for arrays. skip it.
-						$('<option>').attr('value',i).text(D.wikiprojects.list[i]).appendTo(D.wikiproject_select);
+
+			        active_wp = data.match(/=== Aktywne wikiprojekty według dziedzin wiedzy ===[\s\S]*?=== Aktywne wikiprojekty specjalne ===/)[0];
+			        // positive lookbehind alternative (global match) by Adam Katz → https://stackoverflow.com/a/35143111
+					var regexp = /\[\[Wikiprojekt:([^:|\]\/#]+)\|/g;  // from /(?<=\[\[Wikiprojekt:)[^:|\]\/#]+(?=\|)/g
+					var list = [];
+					var matcher;
+					while ( matcher = regexp.exec(active_wp) ) {
+					  list[list.length]=matcher[1];
 					}
+					D.wikiprojects.list_wikiprojects_active = list;
+
+			        /* Sorting strings with accented characters using "Intl.Collator" or "localeCompare"
+			        → http://www.jstips.co/en/javascript/sorting-strings-with-accented-characters/
+			        localeCompare is more backwards compatible with basic support (no locale-sort) extending before Intl.Collator was introduced
+			        → https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/localeCompare
+			        */
+			        D.wikiprojects.list_wikiprojects_active.sort( function(a,b){return a.localeCompare(b, 'pl');} );
+			        
+			        D.wikiproject_select = $('<select class="czywiesz-wikiproject"></select>').css('vertical-align', 'middle');
+			        D.wikiproject_select.append('<option value="none">-- (żaden) --</option>');
+
+			        for (var i=0;i<D.wikiprojects.list_wikiprojects_active.length;i++) {
+			            if (typeof(D.wikiprojects.list_wikiprojects_active[i]) == 'function') continue; //on IE wikibits adds indexOf method for arrays. skip it.
+			            $('<option>').attr('value',i).text(D.wikiprojects.list_wikiprojects_active[i]).appendTo(D.wikiproject_select);
+			        }
+
 					$('#CzyWieszWikiprojectContainer').append(D.wikiproject_select.clone());
 				}
 			);
@@ -266,12 +295,20 @@ if (wgNamespaceNumber === 0) {
 		DYKnomination.askuser();
 	}
 
+	/*
+	 * function called when user clicks the link of the gadget
+	 *
+	 **/
+	
 	DYKnomination.askuser = function () {
 
 		var D = DYKnomination;
 		var debug = D.debugmode;
 		if (D.errors.length > 1) { D.errors = [D.errors[0]]; }
 		D.log(debug,D);
+		
+		D.wgUserName = mw.config.get('wgUserName');
+		D.wgTitle = mw.config.get('wgTitle');
 
 		var IMG_ARR = $.merge($('#mw-content-text .infobox a.image img'),$('#mw-content-text .thumb a.image img'));
 		var IMAGES = IMG_ARR.length;
@@ -288,12 +325,12 @@ if (wgNamespaceNumber === 0) {
 			for (var i=0; i < REFS.ar2.length; i++) {
 				if ( REFS.ar1.match('#' + REFS.ar2[i] + '#') ) {D.sourced = true; break;}
 			}
-		var SIGNATURE = (wgUserName ? {name: wgUserName, disabled: ' disabled'} : {name: '~~' + '~', disabled: ' disabled'} );
+		var SIGNATURE = (D.wgUserName ? {name: D.wgUserName, disabled: ' disabled'} : {name: '~~' + '~', disabled: ' disabled'} );
 
 		//workaround for Opera - the textarea must be inserted to a visible element
 
 		var $title_paragraph = $('<p></p>')
-			.html('Tytuł artykułu: &nbsp;&nbsp;<input type="text" id="CzyWieszTitle" name="CzyWieszTitle" value="' + wgTitle + '" style="width: 476px;" disabled>');
+			.html('Tytuł artykułu: &nbsp;&nbsp;<input type="text" id="CzyWieszTitle" name="CzyWieszTitle" value="' + D.wgTitle + '" style="width: 476px;" disabled>');
 
 		var $question_paragraph = $('<p><strong>Zaproponuj pytanie:</strong></p>');
 		var $question_textarea_paragraph = $('<p></p>')
@@ -313,14 +350,14 @@ if (wgNamespaceNumber === 0) {
 				+ '<span id="CzyWieszGalleryToggler" style="display: none;"> &nbsp;<small>(<a class="external">zaproponuj grafikę z artykułu</a>)</small></span>');
 
 		var $file_row = $('<tr></tr>')
-			.html('<td style="width: 28%;"><input type="checkbox" id="CzyWieszFile1" name="CzyWieszFile1" style="vertical-align: middle;"> Zaproponuj grafikę: </td>' // style="width: 36%;
+			.html('<td style="width: 30%;"><input type="checkbox" id="CzyWieszFile1" name="CzyWieszFile1" style="vertical-align: middle;"><label for="CzyWieszFile1"> Zaproponuj grafikę: </label></td>' // style="width: 36%;
 				+ '<td><tt>[[Plik:</tt><input type="text" id="CzyWieszFile2" name="CzyWieszFile2" style="width: 52%; vertical-align: middle;" disabled><tt>|100px|right]]</tt></td>');
 
 		//author row
 		var $author_row = $('<tr></tr>')
-			.html('<td>Główny autor artykułu: </td>'
+			.html('<td>Główny autor artykułu<a href="#" title="Gadżet wstawia autora największej edycji w ciągu ostatnich 10 dni (upewnij się!)"><sup>?</sup></a>: </td>'
 				+ '<td><input type="text" id="CzyWieszAuthor" name="CzyWieszAuthor" style="width: 50%;margin-left: 2px;vertical-align: middle;">'
-				+ '&nbsp;&nbsp;<input type="checkbox" id="CzyWieszAuthorInf" name="CzyWieszAuthorInf" style="vertical-align: middle;">poinformuj go</td>');
+				+ '&nbsp;&nbsp;<input type="checkbox" id="CzyWieszAuthorInf" name="CzyWieszAuthorInf" style="vertical-align: middle;"><label for="CzyWieszAuthorInf">poinformować go?</label></td>');
 
 		D.author2_input = $('<input type="text" class="CzyWieszAuthor2" name="CzyWieszAuthor2" style="width: 50%;margin-left: 2px;vertical-align: middle;">');
 		var $author2_row = $('<span id="CzyWieszAuthor2Container"></span>').append(D.author2_input.clone());
@@ -329,7 +366,7 @@ if (wgNamespaceNumber === 0) {
 		$author2_row = $('<tr id="CzyWieszAuthor2" style="display: none;" title="Dodaj *tylko* jeśli jego wkład w obecną rozbudowę artykułu był równie duży jak autora podanego powyżej!"></tr>').append('<td>Kolejny autor: </td>').append($author2_row);
 
 		var $date_row = $('<tr></tr>')
-			.html('<td>Data utw./rozbud. artykułu: </td>'
+			.html('<td>Data utw./rozbud. artykułu<a href="#" title="Gadżet wstawia datę największej edycji w ciągu ostatnich 10 dni (upewnij się!), w przeciwnym wypadku datę dzisiejszą jako datę zgłoszenia)"><sup>?</sup></a>: </td>'
 				+ '<td><input type="text" id="CzyWieszDate" name="CzyWieszDate" style="width: 50%;margin-left: 2px;vertical-align: middle;"></td>');
 
 		var $signature_row = $('<tr></tr>')
@@ -343,7 +380,7 @@ if (wgNamespaceNumber === 0) {
 			.append('<a id="CzyWieszWikiprojectAdd">(+)</a>');
 		$wikiproject_row = $('<tr></tr>').append('<td>Powiadom wikiprojekt(y): </td>').append($wikiproject_row);
  
-		var $comment_paragraph = $('<p><input type="checkbox" id="CzyWieszCommentCheckbox" name="CzyWieszCommentCheckbox" style="vertical-align: middle;">Potrzebujesz zamieścić dodatkowy komentarz?</p>');
+		var $comment_paragraph = $('<p><input type="checkbox" id="CzyWieszCommentCheckbox" name="CzyWieszCommentCheckbox" style="vertical-align: middle;"><label for="CzyWieszCommentCheckbox">Potrzebujesz zamieścić dodatkowy komentarz?</label></p>');
 		var $comment_textarea_paragraph = $('<p id="CzyWieszCommentContainer" style="display: none;"></p>')
 			.html('<textarea id="CzyWieszComment" style="width: 570px;" rows="2" value=""></textarea>');
 
@@ -361,7 +398,7 @@ if (wgNamespaceNumber === 0) {
 		//build the dialog
 		var $dialog = $('<table></table>').css('width','100%').append($ref_row).append($images_row).append($file_row)
 			.append($author_row).append($author2_row).append($date_row).append($signature_row).append($wikiproject_row);
-		var $dialog = $('<div id="CzyWieszGadget"></div>').append($title_paragraph).append($question_paragraph).append($question_textarea_paragraph)
+		$dialog = $('<div id="CzyWieszGadget"></div>').append($title_paragraph).append($question_paragraph).append($question_textarea_paragraph)
 			.append($dialog).append($comment_paragraph).append($comment_textarea_paragraph).append($rules_paragraph).append($loading_bar);
  
 		//main buttons
@@ -382,7 +419,7 @@ if (wgNamespaceNumber === 0) {
 		$dialog.dialog({
 		  width: 600,
 		  modal: true,
-		  title: 'Zgłaszanie artykułu do rubryki „Czy wiesz…”' + (debug ? ' &nbsp; (<small id="CzyWieszDialogDebug" style="color: red;">TRYB DEBUG</small>)' : ''),
+		  title: (window.DYKnomination_is_beta===true?'BETA: ':'')+'Zgłoszenie artykułu do rubryki „Czy wiesz…”' + (debug ? ' &nbsp; (<small id="CzyWieszDialogDebug" style="color: red;">TRYB DEBUG</small>)' : ''),
 		  draggable: true,
 		  dialogClass: "wikiEditor-toolbar-dialog",
 		  close: function() { $(this).dialog("destroy"); $(this).remove();},
@@ -514,7 +551,7 @@ if (wgNamespaceNumber === 0) {
 				+ '&rvlimit=max'
 				+ '&rvstart=' + encodeURIComponent(a)
 				+ '&rvend=' + encodeURIComponent(b)
-				+ '&titles=' + encodeURIComponent(wgTitle)
+				+ '&titles=' + encodeURIComponent(D.wgTitle)
 		)
 		.done(function(d0){
 			// number of edits in last 10 days
@@ -523,7 +560,7 @@ if (wgNamespaceNumber === 0) {
 			// get one more revision to check current size and diffsize of last one in 10 days period
 			$.ajax('/w/api.php?action=query&prop=revisions&format=json&rvprop=timestamp%7Cuser%7Csize&redirects=&indexpageids='
 					+ '&rvlimit=' + (revs0+1)
-					+ '&titles=' + encodeURIComponent(wgTitle)
+					+ '&titles=' + encodeURIComponent(D.wgTitle)
 			)
 			.done(function(d){
 				aj = d.query.pages[d.query.pageids[0]].revisions;
@@ -578,10 +615,10 @@ if (wgNamespaceNumber === 0) {
 /* NEW VER |START| */
 					// add a possible author…
 					$('#CzyWieszAuthor').val(maxdiffuser);
-					$('#CzyWieszAuthor').after('&nbsp;<small id="CzyWieszAuthorTip">(<span class="external" title="Autor największej edycji (' + maxdiffsize + ') w ciągu ostatnich 10 dni.">upewnij się!</span>)</small>&nbsp;');
+					$('#CzyWieszAuthor').after('&nbsp;<small id="CzyWieszAuthorTip"><span class="external" title="Autor największej edycji (' + maxdiffsize + ' znaków) w ciągu ostatnich 10 dni. Upewnij się, że to jest główny autor artykułu!">&nbsp;(!)&nbsp;</span></small>&nbsp;');
 					// …and date
 					$('#CzyWieszDate').val(maxdiffdate);
-					$('#CzyWieszDate').after('&nbsp;<small id="CzyWieszDateTip">(<span class="external" title="Data największej edycji (' + maxdiffsize + ') w ciągu ostatnich 10 dni.">upewnij się!</span>)</small>&nbsp;');
+					$('#CzyWieszDate').after('&nbsp;<small id="CzyWieszDateTip"><span class="external" title="To jest data największej edycji (' + maxdiffsize + ' znaków) w ciągu ostatnich 10 dni. Upewnij się czy to o tę datę chodzi!">&nbsp;(!)&nbsp;</span></small>&nbsp;');
 /* NEW VER |END| */
 				}
 				else {
@@ -674,17 +711,17 @@ if (wgNamespaceNumber === 0) {
 				invalid.alert.push('Wpisz pytanie.');
 			}
 			else {
-				var tITLE = wgTitle[0].toLowerCase()+wgTitle.substr(1); //title in link starting with lowercase
+				var tITLE = D.wgTitle[0].toLowerCase()+D.wgTitle.substr(1); //title in link starting with lowercase
 				if (QUESTION.length < 10) {
 					invalid.is = true;
 					invalid.fields.push('Question');
 					invalid.alert.push('Zadaj poprawne pytanie.');
 				}
-				else if (!QUESTION.match(RegExp('\'\'\'\\s*\\[\\[('+wgTitle.toRegExp()+'|'+tITLE.toRegExp()+')(\\]\\]|\\|.*?\\]\\])\\s*\'\'\''))) {
+				else if (!QUESTION.match(RegExp('\'\'\'\\s*\\[\\[('+D.wgTitle.toRegExp()+'|'+tITLE.toRegExp()+')(\\]\\]|\\|.*?\\]\\])\\s*\'\'\''))) {
 				// if there isn't any bold (a) link with title or (b) link with title starting with lowercase
 					invalid.is = true;
 					invalid.fields.push('Question');
-					invalid.alert.push('Pytanie musi zawierać link do artykułu. Pogrubiony.\n Przykład:\n   \'\'\'[['+tITLE+']]\'\'\'\n lub\n   \'\'\'[['+wgTitle+'|nazwa do wyświetlenia, jeśli inna niż tytuł]]\'\'\'.');
+					invalid.alert.push('Pytanie musi zawierać link do artykułu. Pogrubiony.\n Przykład:\n   \'\'\'[['+D.wgTitle+']]\'\'\' lub \'\'\'[['+tITLE+']]\'\'\'\n lub\n   \'\'\'[['+D.wgTitle+'|nazwa do wyświetlenia, jeśli inna niż tytuł]]\'\'\'.');
 				}
 				else {
 					QUESTION = (QUESTION.match(/^(…|\.\.\.)/) ? '' : '…') + QUESTION.replace(/\.\.\./g,'…') + (QUESTION.match(/\?[\s]*$/) ? '' : '?');
@@ -738,7 +775,7 @@ if (wgNamespaceNumber === 0) {
 				author:      AUTHOR,
 				date:        DATE,
 				signature:   SIGNATURE,
-				commment:    COMMENT,
+				comment:    COMMENT,
 				authorInf:   AUTHOR_INF,
 				wikiproject: WIKIPROJECT
 			}
@@ -932,7 +969,7 @@ if (wgNamespaceNumber === 0) {
 						D.log(debug,'section:',section,', month [m]:',m,', day [d]:',d,'new section number would be here [NR]:',NR,', updatesection:',updatesection);
 					}
 					if ( this.level && (this.level == 3) && this.line && this.line.match(/^\d+ \((.*?)\)/) ) { //sekcja zgłoszenia (nie nagłówek) i ma nazwę z nr na początku
-						if ( this.line.match(/^\d+ \((.*?)\)/)[1] == wgTitle ) {
+						if ( this.line.match(/^\d+ \((.*?)\)/)[1] == D.wgTitle ) {
 							nominated = true;
 							D.errors.push('Podany artykuł prawdopodobnie już jest zgłoszony do rubryki „Czy wiesz…”. <br />'
 								+ '<a href=\"/wiki/'+(debug?'Wikipedysta:Kaligula/js/CzyWiesz.js/test':'Wikiprojekt:Czy wiesz/propozycje')+'#' + this.anchor + '\" class="external" target=_blank>Sprawdź</a>.');
@@ -973,18 +1010,18 @@ if (wgNamespaceNumber === 0) {
 		var summary,input;
 
 		// NR ready, make summary
-		summary = D.config.summary.replace('NR (TITLE)',Dv.nr+' ('+wgTitle+')');
+		summary = D.config.summary.replace('NR (TITLE)',Dv.nr+' ('+D.wgTitle+')');
 
 		/* making data ready */
 		D.loadbar();
 
 		// making content
 		
-		input = '=== ' + Dv.nr + ' (' + wgTitle + ') ===\n'
+		input = '=== ' + Dv.nr + ' (' + D.wgTitle + ') ===\n'
 			+ '<!-- artykuł zgłoszony za pomocą gadżetu CzyWiesz -->\n'
 			+ Dv.file         //FILE is already with \n at the end
 			+ Dv.question     //QUESTION is already with \n at the end
-			+ '{' + '{Wikiprojekt:Czy wiesz/weryfikacja|' + wgTitle + '|' + Dv.refs + '|' + Dv.images + '|' + Dv.author + '|' + Dv.signature + '|?|?|?}}'
+			+ '{' + '{Wikiprojekt:Czy wiesz/weryfikacja|' + D.wgTitle + '|' + Dv.refs + '|' + Dv.images + '|' + Dv.author + '|' + Dv.signature + '|?|?|?}}'
 			+ (Dv.comment ? '\n'+Dv.comment : '');
 
 		// text ready
@@ -1077,7 +1114,7 @@ if (wgNamespaceNumber === 0) {
 				data : {
 					action : 'edit',
 					format : 'json',
-					title : wgTitle,
+					title : D.wgTitle,
 					prependtext : '{' + '{Czy wiesz do artykułu|' + Dv.nr + '}' + '}\n',
 					summary : D.config.summary_r,
 					watchlist : 'nochange',
@@ -1106,7 +1143,7 @@ if (wgNamespaceNumber === 0) {
 				D.errors[0]();
 				console.error('Błąd informowania w artykule: $.ajax.fail().');
 				console.error('URI: /w/api.php?action=edit&format=json&title='
-					+ encodeURIComponent(wgTitle)
+					+ encodeURIComponent(D.wgTitle)
 					+ '&prependtext=' + encodeURIComponent('{' + '{Czy wiesz do artykułu|' + Dv.nr + '}' + '}\n') 
 					+ '&summary=' + encodeURIComponent(D.config.summary_r) + '&watchlist=nochange&token=' + encodeURIComponent(D.edittoken));
 				console.error(data);
@@ -1127,8 +1164,8 @@ if (wgNamespaceNumber === 0) {
 			D.inform_w();
 		}
 		else {
-			secttitl_a = D.config.secttitl_a.replace('TITLE',wgTitle);
-			summary_a = D.config.summary_a.replace('TITLE',wgTitle);
+			secttitl_a = D.config.secttitl_a.replace('TITLE',D.wgTitle);
+			summary_a = D.config.summary_a.replace('TITLE',D.wgTitle);
 			$.ajax({
 				url : '/w/api.php',
 				type : 'POST',
@@ -1138,7 +1175,7 @@ if (wgNamespaceNumber === 0) {
 					title : (debug ? 'Wikipedysta:Kaligula/js/CzyWiesz.js/autor' : 'Dyskusja wikipedysty:' + Dv.author),
 					section : 'new',
 					sectiontitle : secttitl_a,
-					text : '{' + '{subst:Czy wiesz - autor0|tytuł strony='+wgTitle+'}} ~~' + '~~',
+					text : '{' + '{subst:Czy wiesz - autor0|tytuł strony='+D.wgTitle+'}} ~~' + '~~',
 					summary : summary_a,
 					watchlist : 'nochange',
 					token : D.edittoken
@@ -1164,7 +1201,7 @@ if (wgNamespaceNumber === 0) {
 					+ encodeURIComponent(debug ? 'Wikipedysta:Kaligula/js/CzyWiesz.js/autor' : 'Dyskusja wikipedysty:' + Dv.author)
 					+ '&section=new' 
 					+ '&sectiontitle=' + encodeURIComponent(secttitl_a) 
-					+ '&text=' + encodeURIComponent('{' + '{subst:Czy wiesz - autor0|tytuł strony='+wgTitle+'}}~~' + '~~') 
+					+ '&text=' + encodeURIComponent('{' + '{subst:Czy wiesz - autor0|tytuł strony='+D.wgTitle+'}}~~' + '~~') 
 					+ '&summary=' + encodeURIComponent(summary_a) + '&token=' + encodeURIComponent(D.edittoken));
 				console.error(data);
 			});
@@ -1186,8 +1223,8 @@ if (wgNamespaceNumber === 0) {
 		else {
 			// chosen wikiprojects
 			D.wikiprojects.counter = 1; //declared again in case user wants to try nominating again the article without reloading (e.g. after an error)
-			summary_w = D.config.summary_w.replace('TITLE',wgTitle);
-			secttitl_w = D.config.secttitl_w.replace('TITLE',wgTitle);
+			summary_w = D.config.summary_w.replace('TITLE',D.wgTitle);
+			secttitl_w = D.config.secttitl_w.replace('TITLE',D.wgTitle);
  
 			for (var i=0;i<Dv.wikiproject.length;i++) {
 				// błąd powodował wstawianie informacji tylko do jednego z wielu wybranych w formularzu Wikiprojektów
@@ -1197,7 +1234,7 @@ if (wgNamespaceNumber === 0) {
 
 					var wnr = -1;
 					//check if wikiproject wants to be informed other way than 'section=new'
-					//(wnr=) -1 means 'no', any other number means 'yes' and is a number of the wikiproject in D.wikiprojects.list2
+					//(wnr=) -1 means 'no' (the wikiproject is not on the list D.wikiprojects.list2), any other number means 'yes' and is a number of the wikiproject in D.wikiprojects.list2
 					$(D.wikiprojects.list2).each(function(n){
 						if (this.label == curWikiproject) wnr=n;
 					});
@@ -1226,7 +1263,7 @@ if (wgNamespaceNumber === 0) {
 
 					var obj;
 					if (czy_talk) {
-					//if report type is 'section=new' then add new section
+					//if report type is 'new section' (D.wikiprojects.list2[wnr].type=='talk' & czy_talk==true) then add new section
 					//DEBUG: debug page 'Wikipedysta:Kaligula/js/CzyWiesz.js/wikiprojekt' gets here, because now it's on list2
 						obj = {
 							url : '/w/api.php',
@@ -1237,19 +1274,19 @@ if (wgNamespaceNumber === 0) {
 								title : pageToEdit,
 								section : 'new',
 								sectiontitle : secttitl_w,
-								text : '{' + '{Czy wiesz - wikiprojekt|' + wgTitle + '}} ~~' + '~~',
+								text : '{' + '{Czy wiesz - wikiprojekt|' + D.wgTitle + '}} ~~' + '~~',
 								summary : summary_w,
 								watchlist : 'nochange',
 								token : D.edittoken
 							}
 						}
 					} else {
-					//if report type is not 'section=new' then get page source [to edit]
+					//if report type is not 'new section' then get page source [to edit]
 						obj = {
 							url : '/w/index.php?action=raw&title=' + encodeURIComponent(pageToEdit),
 							cache : false
 						}
-						summary_w = '/* Czy wiesz */ nowe zgłoszenie: [[' + wgTitle + ']]';
+						summary_w = '/* Czy wiesz */ nowe zgłoszenie: [[' + D.wgTitle + ']]';
 					}
 	 
 					D.log(debug,'obj:',obj);
@@ -1265,19 +1302,19 @@ if (wgNamespaceNumber === 0) {
 						}
 						else {
 							if (czy_talk) {
-							//if report type is 'section=new' then this wikiproject is done
+							//if report type is 'new section' then this wikiproject is done
 								D.loadbar();
 								D.wikiprojects.counter++;
 								if (D.wikiprojects.counter>Dv.wikiproject.length) D.success();
 							}
 							else {
-							//if report type is not 'section=new' then now we need to save the page
+							//if report type is not 'new section' then now we need to save the page
 								if (!data.match('<!-- Nowe zgłoszenia CzyWiesza wstawiaj poniżej tej linii. Nie zmieniaj i nie usuwaj tej linii -->')) {
 									data = data.replace('[[Kategoria:','== Czy wiesz ==\n<!-- Nowe zgłoszenia CzyWiesza wstawiaj poniżej tej linii. Nie zmieniaj i nie usuwaj tej linii -->\n\n[[Kategoria:');
 								}
 								data = data.replace('<!-- Nowe zgłoszenia CzyWiesza wstawiaj poniżej tej linii. Nie zmieniaj i nie usuwaj tej linii -->',
 									'<!-- Nowe zgłoszenia CzyWiesza wstawiaj poniżej tej linii. Nie zmieniaj i nie usuwaj tej linii -->\n'
-									+ '{' + '{Czy wiesz - wikiprojekt|' + wgTitle + '}}');
+									+ '{' + '{Czy wiesz - wikiprojekt|' + D.wgTitle + '}}');
 
 								D.log(debug,'czy_talk (2):',czy_talk,'D.wikiprojects.list2[wnr] (2):',D.wikiprojects.list2[wnr],'curWikiproject (2):',curWikiproject,'pageToEdit (2):',pageToEdit);
 
@@ -1340,7 +1377,7 @@ if (wgNamespaceNumber === 0) {
 			// end dialog: "Finished!"
 			$('<div><div class="floatright">' + D.config.CWicon + '</div><p style="margin-top: 10px;">' + D.config.tmpldone + '</p>'
 				+ '<p style="margin-left: 10px;">Dziękujemy za <a id="CzyWieszLinkAfter" href="//pl.wikipedia.org/wiki/' 
-				+ (debug ? 'Wikipedysta:Kaligula/js/CzyWiesz.js/test#' : 'Wikiprojekt:Czy_wiesz/propozycje#') + encodeURIComponent(wgTitle.replace(/ /g,'_')).replace(/%/g,'.').replace(/\(/g,'.28').replace(/\)/g,'.29') + '" class="external">zgłoszenie</a>,<br />'
+				+ (debug ? 'Wikipedysta:Kaligula/js/CzyWiesz.js/test#' : 'Wikiprojekt:Czy_wiesz/propozycje#') + encodeURIComponent(D.wgTitle.replace(/ /g,'_')).replace(/%/g,'.').replace(/\(/g,'.28').replace(/\)/g,'.29') + '" class="external">zgłoszenie</a>,<br />'
 				+ '<a href="/wiki/Wikiprojekt:Czy_wiesz" title="Wikiprojekt:Czy wiesz">Wikiprojekt Czy wiesz</a></p></div>')
 			.dialog({ modal: true, dialogClass: "wikiEditor-toolbar-dialog", close: function() { $(this).dialog("destroy"); $(this).remove(); $('#CzyWieszGadget').dialog("destroy"); $('#CzyWieszGadget').remove();} });
 		}
@@ -1348,9 +1385,12 @@ if (wgNamespaceNumber === 0) {
 
 
 $(document).ready(function() {
-	var menulink = $('<li id="t-DYKnomination"><a onclick="DYKnomination.askuser();">'+(window.DYK_is_beta===true?'BETA: ':'')+'Zgłoś do „Czy wiesz…”</a></li>').css({cursor: 'pointer'});
-	if ($('#t-ajaxquickdelete')[0]) {$('#t-ajaxquickdelete').after(menulink);}
-	else {$('#p-tb ul').append(menulink);}
+	mw.util.addPortletLink(
+		'p-tb',
+		'javascript:DYKnomination.askuser()',
+		(window.DYKnomination_is_beta===true?'BETA: ':'')+'Zgłoś do „Czy wiesz…”',
+		't-DYKnomination'
+	);
 });
 
 
