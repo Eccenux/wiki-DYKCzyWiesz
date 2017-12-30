@@ -1,15 +1,20 @@
-// DEBUG: po wpisaniu w konsoli "DYKnomination.debug()" skrypt uruchomi się
-// w trybie debug, tzn. aktualne info pokażą się w konsoli JS a zgłoszenie
-// pójdzie nie na stronę [[Wikiprojekt:Czy wiesz/propozycje]] ale na testową
-// [[Wikipedysta:Kaligula/js/CzyWiesz.js/test]], a informowanie autora
-// i wikiprojektów – na odpowiednich stronach "…/autor" i "…/wikiprojekt"
+/*
+	DEBUG:
+	po wpisaniu w konsoli przeglądarki  "DYKnomination.debug()" skrypt uruchomi
+	się w trybie debug, tzn.:
+	– aktualne informacje pokażą się w konsoli przeglądarki
+	– zgłoszenie pójdzie nie na stronę [[Wikiprojekt:Czy wiesz/propozycje]],
+	ale na testową podstronę [[Wikipedysta:Kaligula/js/CzyWiesz.js/test]]
+	– informowanie autora – na analogiczną podstronę "…/autor"
+	– informowanie wikiprojektu – na "…/wikiprojekt"
 
-// Wersja dev skryptu:
-//  https://pl.wikipedia.org/wiki/Wikipedysta:Kaligula/js/CzyWiesz.js
+	Wersja dev skryptu:
+	https://pl.wikipedia.org/wiki/Wikipedysta:Kaligula/js/CzyWiesz.js
+*/
 
 window.DYKnomination = {
 	about : {
-		version    : '5.5.7'+(window.DYKnomination_is_beta===true?'beta':''),
+		version    : '5.5.9'+(window.DYKnomination_is_beta===true?'beta':''),
 		beta	   : (window.DYKnomination_is_beta===true?true:false),
 		author     : 'Kaligula',
 		authorlink : '[[w:pl:user:Kaligula]]',
@@ -68,7 +73,7 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 	 */
 	DYKnomination.wikiprojects = {
 		counter : 1,
-		list : [], //populated on askuser() from [[Wikipedysta:Kaligula/js/CzyWiesz.js/wikiprojekty]] by DYKnomination.wikiprojects.load() (see below)
+		list : [], //populated on askuser() from [[Wikipedia:Wikiprojekt/Spis wikiprojektów]] by DYKnomination.wikiprojects.load() (see below)
 		list2 : [ //type:subpage & type:editsection mean script needs to edit existing section on page (or talkpage), type:talk means script needs to add new section to page (or talkpage)
 			// these wikiprojects want to be informed via their subpage
 			{
@@ -242,23 +247,24 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 					while ( matcher = regexp.exec(active_wp) ) {
 					  list[list.length]=matcher[1];
 					}
-					D.wikiprojects.list_wikiprojects_active = list;
+					D.wikiprojects.list = list;
 
 			        /* Sorting strings with accented characters using "Intl.Collator" or "localeCompare"
 			        → http://www.jstips.co/en/javascript/sorting-strings-with-accented-characters/
 			        localeCompare is more backwards compatible with basic support (no locale-sort) extending before Intl.Collator was introduced
 			        → https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/localeCompare
 			        */
-			        D.wikiprojects.list_wikiprojects_active.sort( function(a,b){return a.localeCompare(b, 'pl');} );
+			        D.wikiprojects.list.sort( function(a,b){return a.localeCompare(b, 'pl');} );
 			        
 			        D.wikiproject_select = $('<select class="czywiesz-wikiproject"></select>').css('vertical-align', 'middle');
 			        D.wikiproject_select.append('<option value="none">-- (żaden) --</option>');
 
-			        for (var i=0;i<D.wikiprojects.list_wikiprojects_active.length;i++) {
-			            if (typeof(D.wikiprojects.list_wikiprojects_active[i]) == 'function') continue; //on IE wikibits adds indexOf method for arrays. skip it.
-			            $('<option>').attr('value',i).text(D.wikiprojects.list_wikiprojects_active[i]).appendTo(D.wikiproject_select);
+			        for (var i=0;i<D.wikiprojects.list.length;i++) {
+			            if (typeof(D.wikiprojects.list[i]) == 'function') continue; //on IE wikibits adds indexOf method for arrays. skip it.
+			            $('<option>').attr('value',i).text(D.wikiprojects.list[i]).appendTo(D.wikiproject_select);
 			        }
 
+					$('#CzyWieszWikiprojectContainer small').remove();
 					$('#CzyWieszWikiprojectContainer').append(D.wikiproject_select.clone());
 				}
 			);
@@ -332,9 +338,9 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 		var $title_paragraph = $('<p></p>')
 			.html('Tytuł artykułu: &nbsp;&nbsp;<input type="text" id="CzyWieszTitle" name="CzyWieszTitle" value="' + D.wgTitle + '" style="width: 476px;" disabled>');
 
-		var $question_paragraph = $('<p><strong>Zaproponuj pytanie:</strong></p>');
+		var $question_paragraph = $('<p><strong>Dokończ pytanie: „Czy wiesz…”</strong></p>');
 		var $question_textarea_paragraph = $('<p></p>')
-			.html('<textarea id="CzyWieszQuestion" style="width: 570px;" rows="2" value="" autofocus></textarea>');
+			.html('<textarea id="CzyWieszQuestion" style="width: 570px;" rows="2" value="" placeholder="Możesz wpisać kilka pytań, każde w osobnej linijce – pamiętaj, żeby wtedy każde zacząć wielokropkiem i zakończyć pytajnikiem." autofocus></textarea>');
 
 		var $ref_row = $('<tr id="CzyWieszRefs"></tr>')
 			.html('<td>Źródła: </td>'
@@ -375,12 +381,27 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 				+ SIGNATURE.name + '" style="width: 50%;margin-left: 2px;"' + SIGNATURE.disabled + '></td>');
 
 		//wikiproject row (filled later by D.wikiprojects.load())
-		var $wikiproject_row = $('<span id="CzyWieszWikiprojectContainer"></span>');
+		var $wikiproject_row = $('<span id="CzyWieszWikiprojectContainer"><small>(trwa ładowanie…)</small></span>');
 		$wikiproject_row = $('<td></td>').append($wikiproject_row)
 			.append('<a id="CzyWieszWikiprojectAdd">(+)</a>');
 		$wikiproject_row = $('<tr></tr>').append('<td>Powiadom wikiprojekt(y): </td>').append($wikiproject_row);
- 
-		var $comment_paragraph = $('<p><input type="checkbox" id="CzyWieszCommentCheckbox" name="CzyWieszCommentCheckbox" style="vertical-align: middle;"><label for="CzyWieszCommentCheckbox">Potrzebujesz zamieścić dodatkowy komentarz?</label></p>');
+
+		/* need addidtional comment?
+		 *  check → #CzyWieszGadget.height+30, #CzyWieszGadget.parent.height+20
+		 *  uncheck → #CzyWieszGadget.height-30, #CzyWieszGadget.parent.height-20
+		 */
+		var $comment_paragraph_checkbox = $('<input type="checkbox" id="CzyWieszCommentCheckbox" name="CzyWieszCommentCheckbox" style="vertical-align: middle;">')
+		.click(function(){
+			var el = $('#CzyWieszGadget');
+			if ( $(this).prop('checked') ) {
+				el.height(el.height+30);
+				el.parent().height(el.parent().height+20);
+			} else {
+				el.height(el.height-30);
+				el.parent().height(el.parent().height-20);
+			}
+		});
+		var $comment_paragraph = $('<p></p>').append($comment_paragraph_checkbox).append('<label for="CzyWieszCommentCheckbox">Potrzebujesz zamieścić dodatkowy komentarz?</label>');
 		var $comment_textarea_paragraph = $('<p id="CzyWieszCommentContainer" style="display: none;"></p>')
 			.html('<textarea id="CzyWieszComment" style="width: 570px;" rows="2" value=""></textarea>');
 
@@ -436,7 +457,7 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 			return str;
 		});
 
-		//fill wikiproject row (filled later by D.wikiprojects.load())
+		//fill wikiprojects list
 		D.wikiprojects.load();
 
 		// check size of article and make a tip for the possible author
@@ -672,7 +693,7 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 		var debug = D.debugmode;
 
 		//get the question
-		var QUESTION = $('#CzyWieszQuestion').val().replace(/(.*?)(--)?~{3,5}\s*$/,'$1').replace(/^\s*(.*?)\s*$/,'$1').replace(/^([Cc]zy wiesz)?[\s,\.]*/,''); // remove signature, spaces on beginning and end, beginning of question ("Czy wiesz")
+		var QUESTION = $('#CzyWieszQuestion').val().replace(/(.*?)(--)?~{3,5}\s*$/,'$1').replace(/^\s*(.*?)\s*$/,'$1').replace(/^([Cc]zy wiesz)?[\s,\.]*/,''); // remove signature, spaces on beginning and end, beginning of question ("Czy wiesz"), first dots
 		var FILE = ( $('#CzyWieszFile1').prop('checked') ? $('#CzyWieszFile2').val().replace(/^\s*(.*?)\s*$/,'$1') : '' ); // remove spaces on beginning and end
 		var IMAGES = $('#CzyWieszImages').val().replace(/^\s*(.*?)\s*$/,'$1'); // remove spaces on beginning and end
 		var REFS = (D.sourced ? '+' : ' ');
@@ -715,7 +736,7 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 				if (QUESTION.length < 10) {
 					invalid.is = true;
 					invalid.fields.push('Question');
-					invalid.alert.push('Zadaj poprawne pytanie.');
+					invalid.alert.push('Zadaj poprawne pytanie – to jest za krótkie.');
 				}
 				else if (!QUESTION.match(RegExp('\'\'\'\\s*\\[\\[('+D.wgTitle.toRegExp()+'|'+tITLE.toRegExp()+')(\\]\\]|\\|.*?\\]\\])\\s*\'\'\''))) {
 				// if there isn't any bold (a) link with title or (b) link with title starting with lowercase
