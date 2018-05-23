@@ -128,11 +128,6 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 				type  : 'talk',
 			},
 			{
-				label : 'Filmy',
-				page  : 'Dyskusja wikiprojektu:Filmy',
-				type  : 'talk',
-			},
-			{
 				label : 'Formuła 1',
 				page  : 'Dyskusja wikiprojektu:Formuła 1',
 				type  : 'talk',
