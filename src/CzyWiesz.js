@@ -10,18 +10,6 @@
 
 	Wersja dev skryptu:
 	https://pl.wikipedia.org/wiki/Wikipedysta:Kaligula/js/CzyWiesz.js
-/*
-	DEBUG:
-	po wpisaniu w konsoli przeglądarki  "DYKnomination.debug()" skrypt uruchomi
-	się w trybie debug, tzn.:
-	– aktualne informacje pokażą się w konsoli przeglądarki
-	– zgłoszenie pójdzie nie na stronę [[Wikiprojekt:Czy wiesz/propozycje]],
-	ale na testową podstronę [[Wikipedysta:Kaligula/js/CzyWiesz.js/test]]
-	– informowanie autora – na analogiczną podstronę "…/autor"
-	– informowanie wikiprojektu – na "…/wikiprojekt"
-
-	Wersja dev skryptu:
-	https://pl.wikipedia.org/wiki/Wikipedysta:Kaligula/js/CzyWiesz.js
 */
 
 window.DYKnomination = {
