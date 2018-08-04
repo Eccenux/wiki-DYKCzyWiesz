@@ -10,11 +10,23 @@
 
 	Wersja dev skryptu:
 	https://pl.wikipedia.org/wiki/Wikipedysta:Kaligula/js/CzyWiesz.js
+/*
+	DEBUG:
+	po wpisaniu w konsoli przeglądarki  "DYKnomination.debug()" skrypt uruchomi
+	się w trybie debug, tzn.:
+	– aktualne informacje pokażą się w konsoli przeglądarki
+	– zgłoszenie pójdzie nie na stronę [[Wikiprojekt:Czy wiesz/propozycje]],
+	ale na testową podstronę [[Wikipedysta:Kaligula/js/CzyWiesz.js/test]]
+	– informowanie autora – na analogiczną podstronę "…/autor"
+	– informowanie wikiprojektu – na "…/wikiprojekt"
+
+	Wersja dev skryptu:
+	https://pl.wikipedia.org/wiki/Wikipedysta:Kaligula/js/CzyWiesz.js
 */
 
 window.DYKnomination = {
 	about : {
-		version    : '5.5.9'+(window.DYKnomination_is_beta===true?'beta':''),
+		version    : '5.6.3'+(window.DYKnomination_is_beta===true?'beta':''),
 		beta	   : (window.DYKnomination_is_beta===true?true:false),
 		author     : 'Kaligula',
 		authorlink : '[[w:pl:user:Kaligula]]',
@@ -41,8 +53,10 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 		summary_a:	'/* Czy wiesz – [[TITLE]] */ nowe zgłoszenie za pomocą [[Wikipedia:Narzędzia/CzyWiesz|gadżetu CzyWiesz]]',
 		// ↓ sectiontitle for template on author's talk page
 		secttitl_a: 'Czy wiesz – [[TITLE]]',
-		// ↓ summary for template in wikiprojects' pages/talk pages
+		// ↓ summary for template in wikiprojects (type: talk)
 		summary_w:	'/* Czy wiesz – [[TITLE]] */ nowe zgłoszenie za pomocą [[Wikipedia:Narzędzia/CzyWiesz|gadżetu CzyWiesz]]',
+		// ↓ summary for template in wikiprojects (type: editsection or subpage)
+		summary_w2:	'/* Czy wiesz */ [[TITLE]] – nowe zgłoszenie za pomocą [[Wikipedia:Narzędzia/CzyWiesz|gadżetu CzyWiesz]]',
 		// ↓ sectiontitle for template in wikiprojects' pages/talk pages
 		secttitl_w: 'Czy wiesz – [[TITLE]]',
 		// ↓ style for this gadget
@@ -222,7 +236,7 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 				page  : 'Dyskusja wikiprojektu:Żużel',
 				type  : 'talk',
 			},
-			// these wikiprojects want to be have their talk page's dedicated section edited
+			// these wikiprojects want to have their talk page's dedicated section edited
 			{
 				label : 'Ochrona przyrody',
 				page  : 'Dyskusja wikiprojektu:Ochrona przyrody',
@@ -272,7 +286,7 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 		for (var i=1;i<D.errors.length;i++) {
 			dialog.append( $('<li></li>').html(D.errors[i]) );
 		}
-		dialog = $('<div id="CzyWieszErrorDialog"></div>').append(dialog).append( $('<p>Więcej informacji w konsoli przeglądarki.</p>') );
+		dialog = $('<div id="CzyWieszErrorDialog"></div>').append(dialog).append( $('<p>Nie zamykaj tego okna. Więcej informacji znajduje się w konsoli przeglądarki. <a href="https://pl.wikipedia.org/wiki/Wikipedia:Narz%C4%99dzia/CzyWiesz#Zg%C5%82aszanie_b%C5%82%C4%99d%C3%B3w" class="external">Przeczytaj tutaj jak zgłosić błąd</a>.</p>') );
 		
 		dialog.dialog({
 		  width: 400,
@@ -917,7 +931,7 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 
 		// search for section 'dd mmmm', because there may be a section like 'Białowieski megaczywiesz na koniec sierpnia (ew. pocz. września)'
 		$.ajax({
-			url: '/w/api.php?action=mobileview&format=json&page=' + encodeURIComponent(debug ? 'Wikipedysta:Kaligula/js/CzyWiesz.js/test' : 'Wikiprojekt:Czy wiesz/propozycje') + '&prop=sections&sectionprop=level%7Cline%7Cnumber%7Canchor&noimages=',
+			url: '/w/api.php?action=mobileview&format=json&page=' + encodeURIComponent(debug ? 'Wikipedysta:Kaligula/js/CzyWiesz.js/test' : 'Wikiprojekt:Czy wiesz/propozycje') + '&prop=sections&sectionprop=level%7Cline%7Cnumber%7Canchor',
 			cache: false
 		})
 		.done(function(data){
@@ -984,8 +998,8 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 						}
 						D.log(debug,'section:',section,', month [m]:',m,', day [d]:',d,'new section number would be here [NR]:',NR,', updatesection:',updatesection);
 					}
-					if ( this.level && (this.level == 3) && this.line && this.line.match(/^\d+ \((.*?)\)/) ) { //sekcja zgłoszenia (nie nagłówek) i ma nazwę z nr na początku
-						if ( this.line.match(/^\d+ \((.*?)\)/)[1] == D.wgTitle ) {
+					if ( this.level && (this.level == 3) && this.line && this.line.match(/^\d+ \((.*?)\)$/) ) { //sekcja zgłoszenia (nie nagłówek) i ma nazwę z nr na początku
+						if ( this.line.match(/^\d+ \((.*?)\)$/)[1] == D.wgTitle ) {
 							nominated = true;
 							D.errors.push('Podany artykuł prawdopodobnie już jest zgłoszony do rubryki „Czy wiesz…”. <br />'
 								+ '<a href=\"/wiki/'+(debug?'Wikipedysta:Kaligula/js/CzyWiesz.js/test':'Wikiprojekt:Czy wiesz/propozycje')+'#' + this.anchor + '\" class="external" target=_blank>Sprawdź</a>.');
@@ -1239,8 +1253,9 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 		else {
 			// chosen wikiprojects
 			D.wikiprojects.counter = 1; //declared again in case user wants to try nominating again the article without reloading (e.g. after an error)
-			summary_w = D.config.summary_w.replace('TITLE',D.wgTitle);
 			secttitl_w = D.config.secttitl_w.replace('TITLE',D.wgTitle);
+			summary_w = D.config.summary_w.replace('TITLE',D.wgTitle);
+			summary_w2 = D.config.summary_w2.replace('TITLE',D.wgTitle);
  
 			for (var i=0;i<Dv.wikiproject.length;i++) {
 				// błąd powodował wstawianie informacji tylko do jednego z wielu wybranych w formularzu Wikiprojektów
@@ -1279,7 +1294,7 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 
 					var obj;
 					if (czy_talk) {
-					//if report type is 'new section' (D.wikiprojects.list2[wnr].type=='talk' & czy_talk==true) then add new section
+					//if report type is 'talk' (D.wikiprojects.list2[wnr].type=='talk' & czy_talk==true) just add new section
 					//DEBUG: debug page 'Wikipedysta:Kaligula/js/CzyWiesz.js/wikiprojekt' gets here, because now it's on list2
 						obj = {
 							url : '/w/api.php',
@@ -1297,12 +1312,11 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 							}
 						}
 					} else {
-					//if report type is not 'new section' then get page source [to edit]
+					//if report type is not 'editsection' or 'subpage' then get page source [to edit]
 						obj = {
 							url : '/w/index.php?action=raw&title=' + encodeURIComponent(pageToEdit),
 							cache : false
 						}
-						summary_w = '/* Czy wiesz */ nowe zgłoszenie: [[' + D.wgTitle + ']]';
 					}
 	 
 					D.log(debug,'obj:',obj);
@@ -1318,7 +1332,7 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 						}
 						else {
 							if (czy_talk) {
-							//if report type is 'new section' then this wikiproject is done
+							//if report type is 'talk' (needs to add new section) then this wikiproject is done
 								D.loadbar();
 								D.wikiprojects.counter++;
 								if (D.wikiprojects.counter>Dv.wikiproject.length) D.success();
@@ -1342,7 +1356,7 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 										format: 'json',
 										title:  pageToEdit,
 										text:   data,
-										summary: summary_w,
+										summary: summary_w2,
 										watchlist: 'nochange',
 										token:  D.edittoken
 									}
@@ -1385,7 +1399,9 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 
 	DYKnomination.success = function () {
 		var D = DYKnomination;
+		var Dv = D.values;
 		var debug = D.debugmode;
+		var SectionTitleForFinalLink = Dv.nr+' ('+D.wgTitle+')';
 
 		if (D.errors.length == 1) { //first element in errors is a nested function
 			D.loadbar('done');
@@ -1393,7 +1409,7 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 			// end dialog: "Finished!"
 			$('<div><div class="floatright">' + D.config.CWicon + '</div><p style="margin-top: 10px;">' + D.config.tmpldone + '</p>'
 				+ '<p style="margin-left: 10px;">Dziękujemy za <a id="CzyWieszLinkAfter" href="//pl.wikipedia.org/wiki/' 
-				+ (debug ? 'Wikipedysta:Kaligula/js/CzyWiesz.js/test#' : 'Wikiprojekt:Czy_wiesz/propozycje#') + encodeURIComponent(D.wgTitle.replace(/ /g,'_')).replace(/%/g,'.').replace(/\(/g,'.28').replace(/\)/g,'.29') + '" class="external">zgłoszenie</a>,<br />'
+				+ (debug ? 'Wikipedysta:Kaligula/js/CzyWiesz.js/test#' : 'Wikiprojekt:Czy_wiesz/propozycje#') + encodeURIComponent(SectionTitleForFinalLink.replace(/ /g,'_')).replace(/%/g,'.').replace(/\(/g,'.28').replace(/\)/g,'.29') + '" class="external">zgłoszenie</a>,<br />'
 				+ '<a href="/wiki/Wikiprojekt:Czy_wiesz" title="Wikiprojekt:Czy wiesz">Wikiprojekt Czy wiesz</a></p></div>')
 			.dialog({ modal: true, dialogClass: "wikiEditor-toolbar-dialog", close: function() { $(this).dialog("destroy"); $(this).remove(); $('#CzyWieszGadget').dialog("destroy"); $('#CzyWieszGadget').remove();} });
 		}
