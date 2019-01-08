@@ -175,11 +175,6 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 				type  : 'talk',
 			},
 			{
-				label : 'Militaria',
-				page  : 'Dyskusja wikiprojektu:Militaria',
-				type  : 'talk',
-			},
-			{
 				label : 'Muzyka i muzykologia',
 				page  : 'Dyskusja wikiprojektu:Muzyka i muzykologia',
 				type  : 'talk',
