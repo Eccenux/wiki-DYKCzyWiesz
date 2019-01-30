@@ -100,11 +100,6 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 				type  : 'talk',
 			},
 			{
-				label : 'Dyskografie',
-				page  : 'Dyskusja wikiprojektu:Dyskografie',
-				type  : 'talk',
-			},
-			{
 				label : 'Fizyka',
 				page  : 'Dyskusja wikiprojektu:Fizyka',
 				type  : 'talk',
