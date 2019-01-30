@@ -89,11 +89,6 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 				type  : 'subpage',
 			},
 			{
-				label : 'Fantastyka',
-				page  : 'Wikiprojekt:Fantastyka/Czy wiesz',
-				type  : 'subpage',
-			},
-			{
 				label : 'Warszawa',
 				page  : 'Wikiprojekt:Warszawa/Czy wiesz',
 				type  : 'subpage'
