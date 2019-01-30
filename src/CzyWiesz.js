@@ -170,11 +170,6 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 				type  : 'talk',
 			},
 			{
-				label : 'Polityka',
-				page  : 'Dyskusja wikiprojektu:Polityka',
-				type  : 'talk'
-			},
-			{
 				label : 'Seriale telewizyjne',
 				page  : 'Dyskusja wikiprojektu:Seriale telewizyjne',
 				type  : 'talk',
