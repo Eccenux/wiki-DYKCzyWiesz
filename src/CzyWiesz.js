@@ -95,11 +95,6 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 			},
 			// these wikiprojects want to be informed via their talk page
 			{
-				label : 'Astronomia',
-				page  : 'Dyskusja wikiprojektu:Astronomia',
-				type  : 'talk',
-			},
-			{
 				label : 'Bitwy',
 				page  : 'Dyskusja wikiprojektu:Bitwy',
 				type  : 'talk',
