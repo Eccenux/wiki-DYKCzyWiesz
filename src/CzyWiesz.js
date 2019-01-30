@@ -160,11 +160,6 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 				type  : 'talk',
 			},
 			{
-				label : 'Muzyka i muzykologia',
-				page  : 'Dyskusja wikiprojektu:Muzyka i muzykologia',
-				type  : 'talk',
-			},
-			{
 				label : 'Nowy Sącz',
 				page  : 'Dyskusja wikiprojektu:Nowy Sącz',
 				type  : 'talk',
