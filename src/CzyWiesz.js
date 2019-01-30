@@ -88,11 +88,6 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 				page  : 'Wikiprojekt:Chemia/Czy wiesz',
 				type  : 'subpage',
 			},
-			{
-				label : 'Warszawa',
-				page  : 'Wikiprojekt:Warszawa/Czy wiesz',
-				type  : 'subpage'
-			},
 			// these wikiprojects want to be informed via their talk page
 			{
 				label : 'Bitwy',
