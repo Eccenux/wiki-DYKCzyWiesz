@@ -115,11 +115,6 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 				type  : 'talk',
 			},
 			{
-				label : 'Chrześcijaństwo',
-				page  : 'Dyskusja wikiprojektu:Chrześcijaństwo',
-				type  : 'talk',
-			},
-			{
 				label : 'Dyskografie',
 				page  : 'Dyskusja wikiprojektu:Dyskografie',
 				type  : 'talk',
