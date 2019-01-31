@@ -110,11 +110,6 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 				type  : 'talk',
 			},
 			{
-				label : 'Góry Polski',
-				page  : 'Dyskusja wikiprojektu:Góry Polski',
-				type  : 'talk',
-			},
-			{
 				label : 'Gry komputerowe',
 				page  : 'Dyskusja wikiprojektu:Gry komputerowe',
 				type  : 'talk',
