@@ -110,16 +110,6 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 				type  : 'talk',
 			},
 			{
-				label : 'Gry komputerowe',
-				page  : 'Dyskusja wikiprojektu:Gry komputerowe',
-				type  : 'talk',
-			},
-			{
-				label : 'Irlandia',
-				page  : 'Dyskusja wikiprojektu:Irlandia',
-				type  : 'talk',
-			},
-			{
 				label : 'Japonia',
 				page  : 'Dyskusja wikiprojektu:Japonia',
 				type  : 'talk',
