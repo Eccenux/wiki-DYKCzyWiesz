@@ -90,18 +90,8 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 			},
 			// these wikiprojects want to be informed via their talk page
 			{
-				label : 'Bitwy',
-				page  : 'Dyskusja wikiprojektu:Bitwy',
-				type  : 'talk',
-			},
-			{
 				label : 'Botanika',
 				page  : 'Dyskusja wikiprojektu:Botanika',
-				type  : 'talk',
-			},
-			{
-				label : 'Fizyka',
-				page  : 'Dyskusja wikiprojektu:Fizyka',
 				type  : 'talk',
 			},
 			{
