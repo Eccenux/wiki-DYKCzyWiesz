@@ -120,11 +120,6 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 				type  : 'talk',
 			},
 			{
-				label : 'Islam',
-				page  : 'Dyskusja wikiprojektu:Islam',
-				type  : 'talk',
-			},
-			{
 				label : 'Japonia',
 				page  : 'Dyskusja wikiprojektu:Japonia',
 				type  : 'talk',
