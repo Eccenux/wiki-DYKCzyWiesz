@@ -140,11 +140,6 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 				type  : 'talk',
 			},
 			{
-				label : 'LGBT',
-				page  : 'Dyskusja wikiprojektu:LGBT',
-				type  : 'talk',
-			},
-			{
 				label : 'Nowy Sącz',
 				page  : 'Dyskusja wikiprojektu:Nowy Sącz',
 				type  : 'talk',
@@ -174,12 +169,6 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 				page  : 'Dyskusja wikiprojektu:Żużel',
 				type  : 'talk',
 			},
-			// these wikiprojects want to have their talk page's dedicated section edited
-			{
-				label : 'Ochrona przyrody',
-				page  : 'Dyskusja wikiprojektu:Ochrona przyrody',
-				type  : 'editsection',
-			}
 		],
 		load : function () {
 			var D = DYKnomination;
