@@ -135,33 +135,8 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 				type  : 'talk',
 			},
 			{
-				label : 'Nowy Sącz',
-				page  : 'Dyskusja wikiprojektu:Nowy Sącz',
-				type  : 'talk',
-			},
-			{
-				label : 'Politechnika Warszawska',
-				page  : 'Dyskusja wikiprojektu:Politechnika Warszawska',
-				type  : 'talk',
-			},
-			{
-				label : 'Seriale telewizyjne',
-				page  : 'Dyskusja wikiprojektu:Seriale telewizyjne',
-				type  : 'talk',
-			},
-			{
-				label : 'Słowacja',
-				page  : 'Dyskusja wikiprojektu:Słowacja',
-				type  : 'talk',
-			},
-			{
 				label : 'Śródziemie',
 				page  : 'Dyskusja wikiprojektu:Śródziemie',
-				type  : 'talk',
-			},
-			{
-				label : 'Żużel',
-				page  : 'Dyskusja wikiprojektu:Żużel',
 				type  : 'talk',
 			},
 		],
