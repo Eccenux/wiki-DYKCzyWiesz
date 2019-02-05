@@ -94,16 +94,6 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 				page  : 'Dyskusja wikiprojektu:Botanika',
 				type  : 'talk',
 			},
-			{
-				label : 'Formuła 1',
-				page  : 'Dyskusja wikiprojektu:Formuła 1',
-				type  : 'talk',
-			},
-			{
-				label : 'Koszykówka',
-				page  : 'Dyskusja wikiprojektu:Koszykówka',
-				type  : 'talk',
-			},
 		],
 		load : function () {
 			var D = DYKnomination;
