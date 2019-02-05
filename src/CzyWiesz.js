@@ -100,23 +100,8 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 				type  : 'talk',
 			},
 			{
-				label : 'Japonia',
-				page  : 'Dyskusja wikiprojektu:Japonia',
-				type  : 'talk',
-			},
-			{
 				label : 'Koszykówka',
 				page  : 'Dyskusja wikiprojektu:Koszykówka',
-				type  : 'talk',
-			},
-			{
-				label : 'Lekkoatletyka',
-				page  : 'Dyskusja wikiprojektu:Lekkoatletyka',
-				type  : 'talk',
-			},
-			{
-				label : 'Śródziemie',
-				page  : 'Dyskusja wikiprojektu:Śródziemie',
 				type  : 'talk',
 			},
 		],
