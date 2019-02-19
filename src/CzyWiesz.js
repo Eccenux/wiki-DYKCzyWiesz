@@ -83,17 +83,6 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 				page  : 'Wikiprojekt:Biologia/Czy wiesz',
 				type  : 'subpage'
 			},
-			{
-				label : 'Chemia',
-				page  : 'Wikiprojekt:Chemia/Czy wiesz',
-				type  : 'subpage',
-			},
-			// these wikiprojects want to be informed via their talk page
-			{
-				label : 'Botanika',
-				page  : 'Dyskusja wikiprojektu:Botanika',
-				type  : 'talk',
-			},
 		],
 		load : function () {
 			var D = DYKnomination;
