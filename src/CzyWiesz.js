@@ -712,7 +712,7 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 		var D = DYKnomination;
 		var debug = D.debugmode;
 
-		var tmpToken = mw.user.tokens.get('editToken');
+		var tmpToken = mw.user.tokens.get('csrfToken');
 		if (!force && typeof tmpToken == 'string' && tmpToken.length == 34) {
 			D.edittoken = tmpToken;
 			D.log(debug,'DYKnomination.edittoken :',D.edittoken);
