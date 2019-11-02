@@ -79,9 +79,6 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 		list2 : [ //type:subpage & type:editsection mean script needs to edit existing section on page (or talkpage), type:talk means script needs to add new section to page (or talkpage)
 			// these wikiprojects want to be informed via their subpage
 			{
-				label : 'Biologia',
-				page  : 'Wikiprojekt:Biologia/Czy wiesz',
-				type  : 'subpage'
 			},
 		],
 		load : function () {
