@@ -75,12 +75,20 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 	 */
 	DYKnomination.wikiprojects = {
 		counter : 1,
-		list : [], //populated on askuser() from [[Wikipedia:Wikiprojekt/Spis wikiprojektów]] by DYKnomination.wikiprojects.load() (see below)
-		list2 : [ //type:subpage & type:editsection mean script needs to edit existing section on page (or talkpage), type:talk means script needs to add new section to page (or talkpage)
-			// these wikiprojects want to be informed via their subpage
-			{
-			},
-		],
+		list :  [], // populated on askuser() from [[Wikipedia:Wikiprojekt/Spis wikiprojektów]] by DYKnomination.wikiprojects.load() (see below)
+		list2 : [   /*****
+				 * List of wikiproject which aren't o above list ans should appear on the list of wikiprojects to be notified.
+				 *
+				 * Objects containing following fields:
+				 * label - text which will appear in the dropdown menu
+				 * page - location of the wikiproject. If type is 'talk', page should point to the
+				 *        wikiproject talk page
+				 * type - 'section' or 'talk'
+				 *        - 'section' - the template will be put on the wikiproject main page, after a line
+				 *                    "<!-- Nowe zgłoszenia CzyWiesza wstawiaj poniżej tej linii. Nie zmieniaj i nie usuwaj tej linii -->" (without quotes)
+				 *        - 'talk' - the template will be placed in a new section on the wikiproject talk page.
+				 */
+			],
 		load : function () {
 			var D = DYKnomination;
 			$.ajax('/w/index.php?title=Wikipedia:Wikiprojekt/Spis_wikiprojektów&action=raw')
