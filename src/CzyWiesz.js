@@ -96,7 +96,7 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 
 			        active_wp = data.match(/=== Aktywne wikiprojekty według dziedzin wiedzy ===[\s\S]*?=== Aktywne wikiprojekty specjalne ===/)[0];
 			        // positive lookbehind alternative (global match) by Adam Katz → https://stackoverflow.com/a/35143111
-					var regexp = /\[\[Wikiprojekt:([^:|\]\/#]+)\|/g;  // from /(?<=\[\[Wikiprojekt:)[^:|\]\/#]+(?=\|)/g
+					var regexp = /\[\[Wikiprojekt:((GLAM\/)?[^:|\]\/#]+)\|/g;  // from /(?<=\[\[Wikiprojekt:)[^:|\]\/#]+(?=\|)/g
 					var list = [];
 					var matcher;
 					while ( matcher = regexp.exec(active_wp) ) {
