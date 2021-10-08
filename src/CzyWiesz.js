@@ -724,7 +724,7 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 		var debug = D.debugmode;
 
 		var tmpToken = mw.user.tokens.get('csrfToken');
-		if (!force && typeof tmpToken == 'string' && tmpToken.length == 34) {
+		if (!force && typeof tmpToken === 'string' && tmpToken.length === 34) {
 			D.edittoken = tmpToken;
 			D.log('DYKnomination.edittoken :',D.edittoken);
 			//runs callback function with all given parameters except two first ones
@@ -733,7 +733,7 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 		else {
 			/* get edittoken */
 			$.ajax({
-				url:'/w/api.php?action=tokens&format=json&type=edit',
+				url:'/w/api.php?action=query&meta=tokens&format=json&type=csrf',
 				cache: false
 			})
 			.done(function(data){
@@ -745,8 +745,8 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 					console.error(data);
 				}
 				else {
-					D.log('DYKnomination.edittoken :',D.edittoken,'data.tokens.edittoken :',data.tokens.edittoken);
-					D.edittoken = data.tokens.edittoken;
+					D.log('DYKnomination.edittoken :',D.edittoken,'data.tokens.edittoken :',data.query.tokens.csrftoken);
+					D.edittoken = data.query.tokens.csrftoken;
 					D.log('DYKnomination.edittoken :',D.edittoken);
 					//runs callback function with all given parameters except two first ones
 					window.DYKnomination[callback].apply(null, Array.prototype.slice.call(arguments, 2));
