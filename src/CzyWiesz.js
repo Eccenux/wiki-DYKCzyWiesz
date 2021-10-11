@@ -19,7 +19,7 @@
 
 window.DYKnomination = {
 	about : {
-		version    : '5.6.4'+(window.DYKnomination_is_beta===true?'beta':''),
+		version    : '5.7.0'+(window.DYKnomination_is_beta===true?'beta':''),
 		beta	   : (window.DYKnomination_is_beta===true?true:false),
 		author     : 'Kaligula',
 		authorlink : '[[w:pl:user:Kaligula]]',
@@ -82,7 +82,7 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 		counter : 1,
 		list :  [], // populated on askuser() from [[Wikipedia:Wikiprojekt/Spis wikiprojektów]] by DYKnomination.wikiprojects.load() (see below)
 		list2 : [   /*****
-				 * List of wikiproject which aren't o above list ans should appear on the list of wikiprojects to be notified.
+				 * List of wikiprojects which aren't on above list and should appear on the list of wikiprojects to be notified.
 				 *
 				 * Objects containing following fields:
 				 * label - text which will appear in the dropdown menu
@@ -150,9 +150,21 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 		});
 	}];
 
+	DYKnomination.logs = [];
 	DYKnomination.log = function (){
-		if (!this.debugmode) return;
-		if( typeof(console) !== 'undefined' ) for(var i=0;i<arguments.length;console.log(arguments[i]),i++);
+		// gather debug info in case of an error
+		DYKnomination.logs.push( (new Date()).toISOString() );
+		// show debug info only in debug mode
+		if( this.debugmode && typeof(console) !== 'undefined' )
+			console.log( (new Date()).toISOString() );
+
+		for(var i=0;i<arguments.length;i++) {
+			// gather debug info in case of an error
+			DYKnomination.logs.push(arguments[i]);
+			// show debug info only in debug mode
+			if( this.debugmode && typeof(console) !== 'undefined' )
+				console.log(arguments[i]);
+		}
 	}
 
 	DYKnomination.debugmode = false;
@@ -172,7 +184,7 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 		var D = DYKnomination;
 		var debug = D.debugmode;
 		if (D.errors.length > 1) { D.errors = [D.errors[0]]; }
-		D.log(D);
+		//D.log(D); //creates circular structure when trying to stringify DYKnimination.logs at the end
 		
 		D.wgUserName = mw.config.get('wgUserName');
 		D.wgTitle = mw.config.get('wgTitle');
@@ -783,13 +795,13 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 
 		// search for section 'dd mmmm', because there may be a section like 'Białowieski megaczywiesz na koniec sierpnia (ew. pocz. września)'
 		$.ajax({
-			url: '/w/api.php?action=mobileview&format=json&page=' + encodeURIComponent(debug ? 'Wikipedysta:Kaligula/js/CzyWiesz.js/test' : 'Wikiprojekt:Czy wiesz/propozycje') + '&prop=sections&sectionprop=level%7Cline%7Cnumber%7Canchor',
+			url: '/w/api.php?action=mobileview&format=json&page=' + encodeURIComponent(debug ? 'Wikipedysta:Kaligula/js/CzyWiesz.js/test' : 'Wikiprojekt:Czy wiesz/propozycje') + '&prop=sections&sectionprop=level%7Cline%7Cnumber%7Canchor', // ?action=mobileview is DEPRECATED! use ?action=parse&prop=sections ; only differences are: 1) section.id is now section.index, 2) listing starts from section=1 (section=0 is not listed now) // TO DO TODO
 			cache: false
 		})
 		.done(function(data){
 			D.log(
 				'get sections: komenda GET zakończona',
-				'URI: /w/api.php?action=mobileview&format=json&page=' + encodeURIComponent(debug ? 'Wikipedysta:Kaligula/js/CzyWiesz.js/test' : 'Wikiprojekt:Czy wiesz/propozycje') + '&prop=sections&sectionprop=level%7Cline%7Cnumber%7Canchor&noimages=',
+				'URI: /w/api.php?action=mobileview&format=json&page=' + encodeURIComponent(debug ? 'Wikipedysta:Kaligula/js/CzyWiesz.js/test' : 'Wikiprojekt:Czy wiesz/propozycje') + '&prop=sections&sectionprop=level%7Cline%7Cnumber%7Canchor',
 				'get sections: odpowiedź serwera:',
 				data
 			);
@@ -801,37 +813,44 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 			}
 			else {
 				sections = data.mobileview.sections;
-				D.log(sections);
-				var m0 = +(DATE[1]) - 1; //it was a string since we could've added leading zero
-				var d0 = +(DATE[2]); //it was a string since we could've added leading zero
+				D.log('Sekcje na stronie Wikiprojekt:Czy wiesz/propozycje:',sections);
+				var m0 = +(DATE[1]) - 1; //article's nomination month [0…11] //it was a string since we could've added leading zero
+				var d0 = +(DATE[2]); //article's nomination day //it was a string since we could've added leading zero
 				var mt = 99; //shorthand for 'Month - Temporary variable' - in January the previous months have bigger nr than one of the sections so if the nomination has a date that is earlier than the first date in this year then the script will go through all sections and save the nomination as last one
 				D.log('current month [m0]:',m0,', current day [d0]:',d0);
 				section = 0;
-				updatesection = -1;
+				updatesection = -1; // treat it as a flag if the target section on nomination Wikiproject page is found; when found, its value is set to 0 or 1
 				NR = 1;
 				var nominated = false;
 
 				$(sections).each(function(){
-					if ( this.level && (this.level == 2) && this.line && (updatesection < 0) ) { //sekcja nagłówkowa (nie zgłoszenia) i ma nazwę i wciąż nie określono msc wstawienia
+					if ( this.level && (this.level == 2) && this.line && (updatesection < 0) ) { //conditions: lvl2 is a date heading (not an article heading) + has name + we still haven't found target section
 						var d = this.line.split(' ')[0];
 						var m = $.inArray(this.line.split(' ')[1],miesiacArr);
-						if ( d.match(/^\d+$/) && (m>-1) ) { //date format is 'd mmmm'
-							if (m0 == m && d0 == d) { //the date is equal to section
+						if ( d.match(/^\d+$/) && (m>-1) ) { //heading's is a date in format 'd mmmm'
+							if (m0 == m && d0 == d) { //found it! the article's nomination date is equal to this (newest) section
 								section = this.id;
 								updatesection = 1;
 								//↑dla obecnej już sekcji updatesection==1 (yes) → edit section
-									var j = section;
-									while (sections[j+1] && sections[j+1].level == 3) {
-										NR++; j++;
-									} //spr jaki nr zgłoszenia dać
+									 //find out what number should the nomination have (among today's nominations)
+									while (sections[section+NR] && sections[section+NR].level == 3) {
+										NR++;
+									}
+									/* this results sometimes in a number equal/smaller than number of last section.lvl2 in this day (happens when they delete one nomination section – whether wrong or already checked); if they want to have *always* a consecutive number it can be done by:
+									var j=1;
+									while (sections[section+j] && sections[section+j].level == 3) {
+										NR = +(sections[section+j].line.match(/^\d+/)[0])+1;
+										j++;
+									}
+									*/
 							}
-							else if (m0>m || (m0==m && d0>d) ) { //the date is newer than the section
+							else if ( (m0==m && d0>d) || (m0>m && m0-11!=m) || m0+11==m ) { //article's nomination date is newer than this (newest) section; cases: 1) found target month in this section but earlier days, 2) found earlier month in section (but exclude: nominating December articles in January, when a few January articles were already nominated), 3) want to nominate first January article and found December as first section
 								section = (this.id-1);
 								updatesection = 0;
 								//↑dla nieobecnej updatesection==0 (no) → append section
 							}
-							else if (mt<m) { //we went to previous year dates so STOP //TO DO: !
-								if (m0 < 6) { //if first half of the year then as above
+							else if (mt<m) { //trying to nominate December article (or a January article from a not-yet-nominated-earlier date while latter nomination dates are present) we went back past January 1st to the previous year's dates
+								if (m0 < 6) { //if we need date in first half of the year (e.g. first days of January) then as above
 									section = (this.id-1);
 									updatesection = 0;
 									//↑dla nieobecnej updatesection==0 (no) → append section
@@ -842,22 +861,22 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 								}
 							}
 							else {
-							//jeśli nie nastąpią powyższe to ten będzie zapisywał kolejne id aż do _ost._sekcji_
+							//if not above (=looking for a date older than this section) - continue (even until end)
 								section = this.id;
 								//↑dla nieobecnej najstarszej updatesection<0 (unset) → new section
 							}
 							mt = m;
 						}
-						D.log('section:',section,', month [m]:',m,', day [d]:',d,'new section number would be here [NR]:',NR,', updatesection:',updatesection);
+						D.log('section:',section,', month [m]:',m,', day [d]:',+d,'("',d,'"), if this was the date, the new section number would be here [NR]:',NR,', updatesection:',updatesection);
 					}
 					if ( this.level && (this.level == 3) && this.line && this.line.match(/^\d+ \((.*?)\)$/) ) { //sekcja zgłoszenia (nie nagłówek) i ma nazwę z nr na początku
 						if ( this.line.match(/^\d+ \((.*?)\)$/)[1] == D.wgTitle ) {
 							nominated = true;
 							D.errors.push('Podany artykuł prawdopodobnie już jest zgłoszony do rubryki „Czy wiesz…”. <br />'
-								+ '<a href=\"/wiki/'+(debug?'Wikipedysta:Kaligula/js/CzyWiesz.js/test':'Wikiprojekt:Czy wiesz/propozycje')+'#' + this.anchor + '\" class="external" target=_blank>Sprawdź</a>.');
+								+ '<a href=\"/wiki/'+encodeURIComponent(debug?'Wikipedysta:Kaligula/js/CzyWiesz.js/test':'Wikiprojekt:Czy wiesz/propozycje')+'#' + this.anchor + '\" class="external" target=_blank>Sprawdź</a>.');
 							D.errors[0]();
 							console.error('Podany artykuł prawdopodobnie już jest zgłoszony do rubryki „Czy wiesz…”.\n'
-								+ 'Sprawdź: '+location.origin+'/wiki/'+(debug?'Wikipedysta:Kaligula/js/CzyWiesz.js/test':'Wikiprojekt:Czy wiesz/propozycje')+'#' + this.anchor);
+								+ 'Sprawdź: '+location.origin+'/wiki/'+encodeURIComponent(debug?'Wikipedysta:Kaligula/js/CzyWiesz.js/test':'Wikiprojekt:Czy wiesz/propozycje')+'#' + this.anchor);
 						}
 					}
 				});
@@ -908,14 +927,14 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 
 		// text ready
 		// ↓ new section or not? if updatesection =
-		// =  1 then add only the nomination (to a section)
-		// =  0 then add whole new section (to a section)
-		// = -1 then add whole new section (at the end)
+		// =  1 then add only the nomination to a section (=update section)
+		// =  0 then add whole new section to a section (=append section)
+		// = -1 then add whole new section at the end (=new section)
 
-		if (Dv.updatesection == 1) { // if up-to-date → new subsection inside date section
+		if (Dv.updatesection == 1) { // if up-to-date → new subsection lvl3 inside date section
 			input = '\n\n' + input;
 		}
-		else if (Dv.updatesection < 1) { // if not up-to-date → new section with date + new subsection inside date section
+		else if (Dv.updatesection < 1) { // if not up-to-date → new section lvl2 with date + new subsection lvl3 inside date section
 			input = '\n\n== ' + Dv.dzisiaj +' ==\n' + input + '\n\n';
 		}
 		
@@ -931,6 +950,8 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 		var D = DYKnomination;
 		var Dv = D.values;
 		var debug = D.debugmode;
+		
+		D.log('DYKnomination.values:',Dv);
 
 		D.loadbar();
 
@@ -1261,10 +1282,60 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 			// end dialog: "Finished!"
 			$('<div><div class="floatright">' + D.config.CWicon + '</div><p style="margin-top: 10px;">' + D.config.tmpldone + '</p>'
 				+ '<p style="margin-left: 10px;">Dziękujemy za <a id="CzyWieszLinkAfter" href="//pl.wikipedia.org/wiki/' 
-				+ (debug ? 'Wikipedysta:Kaligula/js/CzyWiesz.js/test#' : 'Wikiprojekt:Czy_wiesz/propozycje#') + encodeURIComponent(SectionTitleForFinalLink.replace(/ /g,'_')).replace(/%/g,'.').replace(/\(/g,'.28').replace(/\)/g,'.29') + '" class="external">zgłoszenie</a>,<br />'
+				+ (debug ? 'Wikipedysta:Kaligula/js/CzyWiesz.js/test#' : 'Wikiprojekt:Czy_wiesz/propozycje#') + encodeURIComponent(SectionTitleForFinalLink.replace(/ /g,'_')).replace(/%/g,'.').replace(/\(/g,'.28').replace(/\)/g,'.29') + '" class="external">zgłoszenie</a>.<br />'
+				+ 'Dla pewności sprawdź <a href="//pl.wikipedia.org/wiki/Specjalna:Wk%C5%82ad/'
+				+ encodeURIComponent(Dv.signature)
+				+ '" class="external">swój wkład</a> czy wszystko poszło zgodnie z planem.'
+				+ '<small>(A jeśli coś jest nie tak to <a href="#" id="CzyWieszEmailDoAutoraWyslij">wyślij mi e-mail z logami.</a><span id="CzyWieszEmailDoAutoraWyslano"></span>)</small><br />'
+				+ '<br />'
 				+ '<a href="/wiki/Wikiprojekt:Czy_wiesz" title="Wikiprojekt:Czy wiesz">Wikiprojekt Czy wiesz</a></p></div>')
 			.dialog({ modal: true, dialogClass: "wikiEditor-toolbar-dialog", close: function() { $(this).dialog("destroy"); $(this).remove(); $('#CzyWieszGadget').dialog("destroy"); $('#CzyWieszGadget').remove();} });
+			$('#CzyWieszEmailDoAutoraWyslij').click( DYKnomination.emailauthor );
 		}
+	}
+
+	DYKnomination.emailauthor = function () {
+		var D = DYKnomination;
+		var Dv = D.values;
+		var debug = D.debugmode;
+
+		var emailbody = JSON.stringify( DYKnomination.logs );
+
+		$.ajax({
+			url : '/w/api.php',
+			type: 'POST',
+			data : {
+				action : 'emailuser',
+				format : 'json',
+				target : 'Kaligula',
+				subject : 'Błąd w Gadżecie Czy wiesz',
+				text : emailbody,
+				token : D.edittoken
+			}
+		})
+		.done(function(data){
+			D.log('Sent e-mail to dev\nserver response:',data);
+			if (data.error) {
+				D.errors.push('Błąd wysyłania e-maila do twórcy: ' + data.error.info + '.');
+				D.errors[0]();
+				console.error('Błąd wysyłania e-maila do twórcy: ' + data.error.info + '.');
+				console.error(data);
+			}
+			else {
+				$('#CzyWieszEmailDoAutoraWyslano').text(' Wysłano!');
+			}
+		})
+		.fail(function(data){
+			D.errors.push('Błąd wysyłania e-maila do twórcy: $.ajax.fail().');
+			D.errors[0]();
+			console.error('Błąd wysyłania e-maila do twórcy: $.ajax.fail().');
+			console.error('URI: /w/api.php?action=emailuser&format=json&target=Kaligula' 
+				+ '&subject=' + encodeURIComponent('Błąd w Gadżecie Czy wiesz') 
+				+ '&text=' + encodeURIComponent(emailbody)
+				+ '&token=' + encodeURIComponent(D.edittoken));
+			console.error(data);
+		});
+
 	}
 
 
@@ -1281,5 +1352,12 @@ $(document).ready(function() {
 
 }
 else {
+
 	DYKnomination.error = 'The page is not an article. You cannot nominate this page.';
+
+	//insert current version number while on Wikipedia:Narzędzia/CzyWiesz
+	if (mw.config.get('wgPageName')=='Wikipedia:Narzędzia/CzyWiesz') {
+		$('.DYKnomination-version').html(DYKnomination.about.version);
+	}
+
 }
