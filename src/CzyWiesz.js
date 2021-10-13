@@ -19,7 +19,7 @@
 
 window.DYKnomination = {
 	about : {
-		version    : '5.7.0'+(window.DYKnomination_is_beta===true?'beta':''),
+		version    : '5.7.1'+(window.DYKnomination_is_beta===true?'beta':''),
 		beta	   : (window.DYKnomination_is_beta===true?true:false),
 		author     : 'Kaligula',
 		authorlink : '[[w:pl:user:Kaligula]]',
@@ -56,11 +56,13 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 		styletag:	$('<style id="CzyWieszStyleTag">' 
 						+ '.wikiEditor-toolbar-dialog .czy-wiesz-gallery-chosen { border: solid 2px red; }\n' 
 						+ '#CzyWieszWikiprojectAdd {cursor: pointer; }\n'
-						+ '#CzyWieszGalleryToggler a, #CzyWieszLinkAfter, #CzyWieszRefs a, #CzyWieszErrorDialog a { '
+						+ '#CzyWieszGalleryToggler a, #CzyWieszRefs a, a.czywiesz-external { '
 							+ 'color: #0645AD; text-decoration: underline; cursor: pointer; padding-right: 13px; '
 							+ 'background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAVklEQVR4Xn3PgQkAMQhDUXfqTu7kTtkpd5RA8AInfArtQ2'
 							+ 'iRXFWT2QedAfttj2FsPIOE1eCOlEuoWWjgzYaB/IkeGOrxXhqB+uA9Bfcm0lAZuh+YIeAD+cAqSz4kCMUAAAAASUVORK5CYII=) center right no-repeat; '
 							+ 'background: url(/w/skins/Vector/images/external-link-ltr-icon.png) center right no-repeat!ie; }'
+						+ '#CzyWieszErrorDialog.wait-im-sending-email, #CzyWieszSuccess.wait-im-sending-email { '
+						+ 'cursor: wait; }'
 					+ '</style>'),
 		// ↓ [[File:Crystal Clear app clean.png]] (20px) [2012-11-20]
 		yes:		'<img alt="Crystal Clear app clean.png" src="//upload.wikimedia.org/wikipedia/commons/thumb/3/34/Crystal_Clear_app_clean.png/20px-Crystal_Clear_app_clean.png" width="20" height="20">',
@@ -138,7 +140,7 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 		for (var i=1;i<D.errors.length;i++) {
 			dialog.append( $('<li></li>').html(D.errors[i]) );
 		}
-		dialog = $('<div id="CzyWieszErrorDialog"></div>').append(dialog).append( $('<p>Nie zamykaj tego okna. Więcej informacji znajduje się w konsoli przeglądarki. <a href="https://pl.wikipedia.org/wiki/Wikipedia:Narz%C4%99dzia/CzyWiesz#Zg%C5%82aszanie_b%C5%82%C4%99d%C3%B3w" class="external">Przeczytaj tutaj jak zgłosić błąd</a>.</p>') );
+		dialog = $('<div id="CzyWieszErrorDialog"></div>').append(dialog).append( $('<p>Coś poszło nie tak. Więcej informacji w konsoli przeglądarki. Możesz <a href="#" class="CzyWieszEmailDoAutoraWyslij">kliknąć tutaj</a>, aby gadżet wysłał twórcy e-mail z danymi błędu.<span class="CzyWieszEmailDoAutoraWyslano"></span><br />Opisz też co się stało na <a href="https://pl.wikipedia.org/wiki/Dyskusja_wikipedysty:Kaligula" class="czywiesz-external" target="_blank">jego stronie dyskusji</a>.</p>') );
 		
 		dialog.dialog({
 		  width: 400,
@@ -148,6 +150,7 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 		  dialogClass: "wikiEditor-toolbar-dialog",
 		  close: function() { $(this).dialog("destroy"); $(this).remove();}
 		});
+		$('#CzyWieszErrorDialog a.CzyWieszEmailDoAutoraWyslij').click( DYKnomination.emailauthor );
 	}];
 
 	DYKnomination.logs = [];
@@ -192,7 +195,7 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 		var IMG_ARR = $.merge($('#mw-content-text .infobox a.image img'),$('#mw-content-text .thumb a.image img'));
 		var IMAGES = IMG_ARR.length;
 		var REFS = {
-			warn:	D.config.no + '&nbsp;&nbsp;<strong style="color: red;">Brak źródeł dyskwalifikuje artykuł ze zgłoszenia!!</strong> <small>(<a class="external">info</a>)</small>',
+			warn:	D.config.no + '&nbsp;&nbsp;<strong style="color: red;">Brak źródeł dyskwalifikuje artykuł ze zgłoszenia!!</strong> <small>(<a class="czywiesz-external">info</a>)</small>',
 			ar1:	[''],
 			ar2:	['Bibliografia','Przypisy']
 		}
@@ -226,7 +229,7 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 			.html('<td>Liczba grafik w artykule: </td>'
 				+ '<td><input type="text" id="CzyWieszImages" name="CzyWieszImages" value="' + IMAGES + '"' 
 				+ 'style="width: 8%;text-align: right;margin-left: 2px;">'
-				+ '<span id="CzyWieszGalleryToggler" style="display: none;"> &nbsp;<small>(<a class="external">zaproponuj grafikę z artykułu</a>)</small></span>');
+				+ '<span id="CzyWieszGalleryToggler" style="display: none;"> &nbsp;<small>(<a class="czywiesz-external">zaproponuj grafikę z artykułu</a>)</small></span>');
 
 		var $file_row = $('<tr></tr>')
 			.html('<td style="width: 30%;"><input type="checkbox" id="CzyWieszFile1" name="CzyWieszFile1" style="vertical-align: middle;"><label for="CzyWieszFile1"> Zaproponuj grafikę: </label></td>' // style="width: 36%;
@@ -494,13 +497,13 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 
 /* OLD VER |START|
 					// add a tip about possible author…
-					$('#CzyWieszAuthor').after('&nbsp;<small id="CzyWieszAuthorTip">(<a class=external>sugestia?</a>)</small>&nbsp;');
+					$('#CzyWieszAuthor').after('&nbsp;<small id="CzyWieszAuthorTip">(<a class="czywiesz-external">sugestia?</a>)</small>&nbsp;');
 					$('#CzyWieszAuthorTip a').click(function(){
 						prompt('Autor największej edycji (' + maxdiffsize + ') w ciągu ostatnich 10 dni (skopiuj wciskając Ctrl+C):',maxdiffuser);
 						$('#CzyWieszAuthor').select();
 					});
 					// …and about date
-					$('#CzyWieszDate').after('&nbsp;<small id="CzyWieszDateTip">(<a class=external>sugestia?</a>)</small>&nbsp;');
+					$('#CzyWieszDate').after('&nbsp;<small id="CzyWieszDateTip">(<a class="czywiesz-external">sugestia?</a>)</small>&nbsp;');
 					$('#CzyWieszDateTip a').click(function(){
 						prompt('Data największej edycji (' + maxdiffsize + ') w ciągu ostatnich 10 dni (skopiuj wciskając Ctrl+C):',maxdiffdate);
 						$('#CzyWieszDate').select();
@@ -509,10 +512,10 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 /* NEW VER |START| */
 					// add a possible author…
 					$('#CzyWieszAuthor').val(maxdiffuser);
-					$('#CzyWieszAuthor').after('&nbsp;<small id="CzyWieszAuthorTip"><span class="external" title="Autor największej edycji (' + maxdiffsize + ' znaków) w ciągu ostatnich 10 dni. Upewnij się, że to jest główny autor artykułu!">&nbsp;(!)&nbsp;</span></small>&nbsp;');
+					$('#CzyWieszAuthor').after('&nbsp;<small id="CzyWieszAuthorTip"><span class="czywiesz-external" title="Autor największej edycji (' + maxdiffsize + ' znaków) w ciągu ostatnich 10 dni. Upewnij się, że to jest główny autor artykułu!">&nbsp;(!)&nbsp;</span></small>&nbsp;');
 					// …and date
 					$('#CzyWieszDate').val(maxdiffdate);
-					$('#CzyWieszDate').after('&nbsp;<small id="CzyWieszDateTip"><span class="external" title="To jest data największej edycji (' + maxdiffsize + ' znaków) w ciągu ostatnich 10 dni. Upewnij się czy to o tę datę chodzi!">&nbsp;(!)&nbsp;</span></small>&nbsp;');
+					$('#CzyWieszDate').after('&nbsp;<small id="CzyWieszDateTip"><span class="czywiesz-external" title="To jest data największej edycji (' + maxdiffsize + ' znaków) w ciągu ostatnich 10 dni. Upewnij się czy to o tę datę chodzi!">&nbsp;(!)&nbsp;</span></small>&nbsp;');
 /* NEW VER |END| */
 				}
 				else {
@@ -525,7 +528,7 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 				D.articlesize = {
 					size:	aj[0].size,
 					enough:	(aj[0].size > 2047),
-					warn:	( (aj[0].size > 2047) ? '' : (D.config.no + '&nbsp;&nbsp;<strong style="color: red;">Rozmiar ' + aj[0].size + ' b dyskwalifikuje artykuł ze zgłoszenia!!</strong> <!--small>(<a class="external">info</a>)</small-->') )
+					warn:	( (aj[0].size > 2047) ? '' : (D.config.no + '&nbsp;&nbsp;<strong style="color: red;">Rozmiar ' + aj[0].size + ' b dyskwalifikuje artykuł ze zgłoszenia!!</strong> <!--small>(<a class="czywiesz-external">info</a>)</small-->') )
 				};
 
 				var $size_row = $('<tr id="CzyWieszSize"></tr>')
@@ -873,7 +876,7 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 						if ( this.line.match(/^\d+ \((.*?)\)$/)[1] == D.wgTitle ) {
 							nominated = true;
 							D.errors.push('Podany artykuł prawdopodobnie już jest zgłoszony do rubryki „Czy wiesz…”. <br />'
-								+ '<a href=\"/wiki/'+encodeURIComponent(debug?'Wikipedysta:Kaligula/js/CzyWiesz.js/test':'Wikiprojekt:Czy wiesz/propozycje')+'#' + this.anchor + '\" class="external" target=_blank>Sprawdź</a>.');
+								+ '<a href=\"/wiki/'+encodeURIComponent(debug?'Wikipedysta:Kaligula/js/CzyWiesz.js/test':'Wikiprojekt:Czy wiesz/propozycje')+'#' + this.anchor + '\" class="czywiesz-external" target="_blank">Sprawdź</a>.');
 							D.errors[0]();
 							console.error('Podany artykuł prawdopodobnie już jest zgłoszony do rubryki „Czy wiesz…”.\n'
 								+ 'Sprawdź: '+location.origin+'/wiki/'+encodeURIComponent(debug?'Wikipedysta:Kaligula/js/CzyWiesz.js/test':'Wikiprojekt:Czy wiesz/propozycje')+'#' + this.anchor);
@@ -1245,7 +1248,8 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 									else {
 										D.loadbar();
 										D.wikiprojects.counter++;
-										if (D.wikiprojects.counter>Dv.wikiproject.length) D.success();
+										if (D.wikiprojects.counter>Dv.wikiproject.length)
+											D.success();
 									}
 								})
 								.fail(function(data2){
@@ -1278,19 +1282,38 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 
 		if (D.errors.length == 1) { //first element in errors is a nested function
 			D.loadbar('done');
+			D.log('Zgłoszenie zakończone sukcesem!');
 
 			// end dialog: "Finished!"
-			$('<div><div class="floatright">' + D.config.CWicon + '</div><p style="margin-top: 10px;">' + D.config.tmpldone + '</p>'
+			$('<div id="CzyWieszSuccess"><div class="floatright">' + D.config.CWicon + '</div>'
 				+ '<p style="margin-left: 10px;">Dziękujemy za <a id="CzyWieszLinkAfter" href="//pl.wikipedia.org/wiki/' 
-				+ (debug ? 'Wikipedysta:Kaligula/js/CzyWiesz.js/test#' : 'Wikiprojekt:Czy_wiesz/propozycje#') + encodeURIComponent(SectionTitleForFinalLink.replace(/ /g,'_')).replace(/%/g,'.').replace(/\(/g,'.28').replace(/\)/g,'.29') + '" class="external">zgłoszenie</a>.<br />'
-				+ 'Dla pewności sprawdź <a href="//pl.wikipedia.org/wiki/Specjalna:Wk%C5%82ad/'
+				+ (debug ? 'Wikipedysta:Kaligula/js/CzyWiesz.js/test#' : 'Wikiprojekt:Czy_wiesz/propozycje#') + encodeURIComponent(SectionTitleForFinalLink.replace(/ /g,'_')).replace(/%/g,'.').replace(/\(/g,'.28').replace(/\)/g,'.29') + '" class="czywiesz-external" target="_blank">zgłoszenie</a>.<br /><br />'
+				+ 'Dla pewności możesz sprawdzić <a href="//pl.wikipedia.org/wiki/Specjalna:Wk%C5%82ad/'
 				+ encodeURIComponent(Dv.signature)
-				+ '" class="external">swój wkład</a> czy wszystko poszło zgodnie z planem.'
-				+ '<small>(A jeśli coś jest nie tak to <a href="#" id="CzyWieszEmailDoAutoraWyslij">wyślij mi e-mail z logami.</a><span id="CzyWieszEmailDoAutoraWyslano"></span>)</small><br />'
+				+ '" class="czywiesz-external" target="_blank">swój wkład</a> czy wszystko poszło zgodnie z planem.'
+				+ '<br /><small><a class="CzyWieszEmailDoAutoraToggle">(Coś nie działa?)</a></small><br />'
+				+ '<span class="CzyWieszEmailDoAutoraInfo" style="display:none;">A jeśli coś poszło nie tak to <a href="#" class="CzyWieszEmailDoAutoraWyslij">kliknij tutaj</a>, aby gadżet wysłał twórcy e-mail z danymi błędu.<span class="CzyWieszEmailDoAutoraWyslano"></span><br />'
+				+ 'Opisz też co się stało na <a href="https://pl.wikipedia.org/wiki/Dyskusja_wikipedysty:Kaligula" class="czywiesz-external" target="_blank">jego stronie dyskusji</a>.<br /></span>'
 				+ '<br />'
 				+ '<a href="/wiki/Wikiprojekt:Czy_wiesz" title="Wikiprojekt:Czy wiesz">Wikiprojekt Czy wiesz</a></p></div>')
-			.dialog({ modal: true, dialogClass: "wikiEditor-toolbar-dialog", close: function() { $(this).dialog("destroy"); $(this).remove(); $('#CzyWieszGadget').dialog("destroy"); $('#CzyWieszGadget').remove();} });
-			$('#CzyWieszEmailDoAutoraWyslij').click( DYKnomination.emailauthor );
+			.dialog({
+				modal: true,
+				dialogClass: "wikiEditor-toolbar-dialog",
+				title: D.config.tmpldone,
+				close: function() {
+					$(this).dialog("destroy");
+					$(this).remove();
+					$('#CzyWieszGadget').dialog("destroy");
+					$('#CzyWieszGadget').remove();
+				}
+			});
+			$('#CzyWieszSuccess a.CzyWieszEmailDoAutoraToggle').click( function() {
+				$('#CzyWieszSuccess .CzyWieszEmailDoAutoraInfo').toggle()
+			});
+			$('#CzyWieszSuccess a.CzyWieszEmailDoAutoraWyslij').click( DYKnomination.emailauthor );
+		}
+		else {
+			D.errors[0]();
 		}
 	}
 
@@ -1299,7 +1322,12 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 		var Dv = D.values;
 		var debug = D.debugmode;
 
+		D.log('DYKnomination.errors: ',D.errors);
 		var emailbody = JSON.stringify( DYKnomination.logs );
+		
+		//throbber and cursor-wait – until e-mail sent
+		$('.CzyWieszEmailDoAutoraWyslano').html('<img src="https://upload.wikimedia.org/wikipedia/commons/1/1a/Denken.gif" width="10" height="10">');
+		$('#CzyWieszErrorDialog, #CzyWieszSuccess').addClass('wait-im-sending-email');
 
 		$.ajax({
 			url : '/w/api.php',
@@ -1322,7 +1350,8 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 				console.error(data);
 			}
 			else {
-				$('#CzyWieszEmailDoAutoraWyslano').text(' Wysłano!');
+				$('#CzyWieszErrorDialog, #CzyWieszSuccess').removeClass('wait-im-sending-email');
+				$('.CzyWieszEmailDoAutoraWyslano').text(' Wysłano!');
 			}
 		})
 		.fail(function(data){
