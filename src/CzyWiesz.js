@@ -1290,10 +1290,9 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 				+ (debug ? 'Wikipedysta:Kaligula/js/CzyWiesz.js/test#' : 'Wikiprojekt:Czy_wiesz/propozycje#') + encodeURIComponent(SectionTitleForFinalLink.replace(/ /g,'_')).replace(/%/g,'.').replace(/\(/g,'.28').replace(/\)/g,'.29') + '" class="czywiesz-external" target="_blank">zgłoszenie</a>.<br /><br />'
 				+ 'Dla pewności możesz sprawdzić <a href="//pl.wikipedia.org/wiki/Specjalna:Wk%C5%82ad/'
 				+ encodeURIComponent(Dv.signature)
-				+ '" class="czywiesz-external" target="_blank">swój wkład</a> czy wszystko poszło zgodnie z planem.'
-				+ '<br /><small><a class="CzyWieszEmailDoAutoraToggle">(Coś nie działa?)</a></small><br />'
-				+ '<span class="CzyWieszEmailDoAutoraInfo" style="display:none;">A jeśli coś poszło nie tak to <a href="#" class="CzyWieszEmailDoAutoraWyslij">kliknij tutaj</a>, aby gadżet wysłał twórcy e-mail z danymi błędu.<span class="CzyWieszEmailDoAutoraWyslano"></span><br />'
-				+ 'Opisz też co się stało na <a href="https://pl.wikipedia.org/wiki/Dyskusja_wikipedysty:Kaligula" class="czywiesz-external" target="_blank">jego stronie dyskusji</a>.<br /></span>'
+				+ '" class="czywiesz-external" target="_blank">swój wkład</a> czy wszystko poszło zgodnie z planem.<br />'
+				+ '<small><a class="CzyWieszEmailDoAutoraToggle">(Coś nie działa?)</a></small><br />'
+				+ '<span class="CzyWieszEmailDoAutoraInfo" style="display:none;">Jeśli coś poszło nie tak to <a href="#" class="CzyWieszEmailDoAutoraWyslij">kliknij tutaj</a>, aby wysłać twórcy gadżetu e-mail z opisem błędu, a gadżet dołączy do niego szczegóły techniczne.<span class="CzyWieszEmailDoAutoraWyslano"></span><br /></span>'
 				+ '<br />'
 				+ '<a href="/wiki/Wikiprojekt:Czy_wiesz" title="Wikiprojekt:Czy wiesz">Wikiprojekt Czy wiesz</a></p></div>')
 			.dialog({
@@ -1322,8 +1321,13 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 		var Dv = D.values;
 		var debug = D.debugmode;
 
-		D.log('DYKnomination.errors: ',D.errors);
-		var emailbody = JSON.stringify( DYKnomination.logs );
+        var opis = prompt('Opisz co się stało. Bez tego twórca nie będzie wiedział co naprawiać.','');
+        if (!opis) {
+            alert('Nic nie wyślę twórcy, dopóki nie opiszesz błędu swoimi słowami. Bez Twojego opisu twórca nie będzie wiedział co naprawiać.');
+            return;
+        }
+        D.log('DYKnomination.errors: ', D.errors); //add potential errors, before stringifying all logs
+        var emailbody = opis + '\n\n' + JSON.stringify(DYKnomination.logs);
 		
 		//throbber and cursor-wait – until e-mail sent
 		$('.CzyWieszEmailDoAutoraWyslano').html('<img src="https://upload.wikimedia.org/wikipedia/commons/1/1a/Denken.gif" width="10" height="10">');
