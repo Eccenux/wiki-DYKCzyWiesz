@@ -277,7 +277,7 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 				el.parent().height(el.parent().height-20);
 			}
 		});
-		var $comment_paragraph = $('<p></p>').append($comment_paragraph_checkbox).append('<label for="CzyWieszCommentCheckbox">Potrzebujesz zamieścić dodatkowy komentarz?</label>');
+		var $comment_paragraph = $('<p></p>').append($comment_paragraph_checkbox).append('<label for="CzyWieszCommentCheckbox">Potrzebujesz zamieścić dodatkowy komentarz? (Twój podpis zostanie dodany automatycznie)</label>');
 		var $comment_textarea_paragraph = $('<p id="CzyWieszCommentContainer" style="display: none;"></p>')
 			.html('<textarea id="CzyWieszComment" style="width: 570px;" rows="2" value=""></textarea>');
 
@@ -925,8 +925,8 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 			+ '<!-- artykuł zgłoszony za pomocą gadżetu CzyWiesz -->\n'
 			+ Dv.file         //FILE is already with \n at the end
 			+ Dv.question     //QUESTION is already with \n at the end
-			+ '{' + '{Wikiprojekt:Czy wiesz/weryfikacja|' + D.wgTitle + '|' + Dv.refs + '|' + Dv.images + '|' + Dv.author + '|' + Dv.signature + '|?|?|?}}'
-			+ (Dv.comment ? '\n'+Dv.comment : '');
+			+ '{' + '{Wikiprojekt:Czy wiesz/weryfikacja|' + D.wgTitle + '|' + Dv.refs + '|' + Dv.images + '|' + Dv.author + '|' + Dv.signature + '|?|?|?}}\n'
+			+ (Dv.comment ? Dv.comment + ' ' : '') + '~~' + '~~';
 
 		// text ready
 		// ↓ new section or not? if updatesection =
