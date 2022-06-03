@@ -798,13 +798,13 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 
 		// search for section 'dd mmmm', because there may be a section like 'Białowieski megaczywiesz na koniec sierpnia (ew. pocz. września)'
 		$.ajax({
-			url: '/w/api.php?action=mobileview&format=json&page=' + encodeURIComponent(debug ? 'Wikipedysta:Kaligula/js/CzyWiesz.js/test' : 'Wikiprojekt:Czy wiesz/propozycje') + '&prop=sections&sectionprop=level%7Cline%7Cnumber%7Canchor', // ?action=mobileview is DEPRECATED! use ?action=parse&prop=sections ; only differences are: 1) section.id is now section.index, 2) listing starts from section=1 (section=0 is not listed now) // TO DO TODO
+			url: '/w/api.php?action=parse&format=json&page=' + encodeURIComponent(debug ? 'Wikipedysta:Kaligula/js/CzyWiesz.js/test' : 'Wikiprojekt:Czy wiesz/propozycje') + '&prop=sections',
 			cache: false
 		})
 		.done(function(data){
 			D.log(
 				'get sections: komenda GET zakończona',
-				'URI: /w/api.php?action=mobileview&format=json&page=' + encodeURIComponent(debug ? 'Wikipedysta:Kaligula/js/CzyWiesz.js/test' : 'Wikiprojekt:Czy wiesz/propozycje') + '&prop=sections&sectionprop=level%7Cline%7Cnumber%7Canchor',
+				'URI: /w/api.php?action=parse&format=json&page=' + encodeURIComponent(debug ? 'Wikipedysta:Kaligula/js/CzyWiesz.js/test' : 'Wikiprojekt:Czy wiesz/propozycje') + '&prop=sections',
 				'get sections: odpowiedź serwera:',
 				data
 			);
@@ -815,7 +815,7 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 				console.error(data);
 			}
 			else {
-				sections = data.mobileview.sections;
+				sections = data.parse.sections;
 				D.log('Sekcje na stronie Wikiprojekt:Czy wiesz/propozycje:',sections);
 				var m0 = +(DATE[1]) - 1; //article's nomination month [0…11] //it was a string since we could've added leading zero
 				var d0 = +(DATE[2]); //article's nomination day //it was a string since we could've added leading zero
@@ -832,7 +832,7 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 						var m = $.inArray(this.line.split(' ')[1],miesiacArr);
 						if ( d.match(/^\d+$/) && (m>-1) ) { //heading's is a date in format 'd mmmm'
 							if (m0 == m && d0 == d) { //found it! the article's nomination date is equal to this (newest) section
-								section = this.id;
+								section = Number(this.index);
 								updatesection = 1;
 								//↑dla obecnej już sekcji updatesection==1 (yes) → edit section
 									 //find out what number should the nomination have (among today's nominations)
@@ -848,24 +848,24 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 									*/
 							}
 							else if ( (m0==m && d0>d) || (m0>m && m0-11!=m) || m0+11==m ) { //article's nomination date is newer than this (newest) section; cases: 1) found target month in this section but earlier days, 2) found earlier month in section (but exclude: nominating December articles in January, when a few January articles were already nominated), 3) want to nominate first January article and found December as first section
-								section = (this.id-1);
+								section = Number(this.index)-1;
 								updatesection = 0;
 								//↑dla nieobecnej updatesection==0 (no) → append section
 							}
 							else if (mt<m) { //trying to nominate December article (or a January article from a not-yet-nominated-earlier date while latter nomination dates are present) we went back past January 1st to the previous year's dates
 								if (m0 < 6) { //if we need date in first half of the year (e.g. first days of January) then as above
-									section = (this.id-1);
+									section = Number(this.index)-1;
 									updatesection = 0;
 									//↑dla nieobecnej updatesection==0 (no) → append section
 								}
 								else { //then as below (=we go on and check next)
-									section = this.id;
+									section = Number(this.index);
 									//↑dla nieobecnej najstarszej updatesection<0 (unset) → new section
 								}
 							}
 							else {
 							//if not above (=looking for a date older than this section) - continue (even until end)
-								section = this.id;
+								section = Number(this.index);
 								//↑dla nieobecnej najstarszej updatesection<0 (unset) → new section
 							}
 							mt = m;
