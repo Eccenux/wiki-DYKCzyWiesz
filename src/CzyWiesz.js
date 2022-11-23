@@ -19,7 +19,7 @@
 
 window.DYKnomination = {
 	about : {
-		version    : '5.7.1'+(window.DYKnomination_is_beta===true?'beta':''),
+		version    : '5.7.2'+(window.DYKnomination_is_beta===true?'beta':''),
 		beta	   : (window.DYKnomination_is_beta===true?true:false),
 		author     : 'Kaligula',
 		authorlink : '[[w:pl:user:Kaligula]]',
@@ -827,7 +827,7 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 				var nominated = false;
 
 				$(sections).each(function(){
-					if ( this.level && (this.level == 2) && this.line && (updatesection < 0) ) { //conditions: lvl2 is a date heading (not an article heading) + has name + we still haven't found target section
+					if ( this.level && (this.level == 1) && this.line && (updatesection < 0) ) { //conditions: lvl1 is a date heading (not an article heading) + has name + we still haven't found target section
 						var d = this.line.split(' ')[0];
 						var m = $.inArray(this.line.split(' ')[1],miesiacArr);
 						if ( d.match(/^\d+$/) && (m>-1) ) { //heading's is a date in format 'd mmmm'
@@ -836,12 +836,12 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 								updatesection = 1;
 								//↑dla obecnej już sekcji updatesection==1 (yes) → edit section
 									 //find out what number should the nomination have (among today's nominations)
-									while (sections[section+NR] && sections[section+NR].level == 3) {
+									while (sections[section+NR] && sections[section+NR].level == 2) {
 										NR++;
 									}
-									/* this results sometimes in a number equal/smaller than number of last section.lvl2 in this day (happens when they delete one nomination section – whether wrong or already checked); if they want to have *always* a consecutive number it can be done by:
+									/* this results sometimes in a number equal/smaller than number of last section.lvl1 in this day (happens when they delete one nomination section – whether wrong or already checked); if they want to have *always* a consecutive number it can be done by:
 									var j=1;
-									while (sections[section+j] && sections[section+j].level == 3) {
+									while (sections[section+j] && sections[section+j].level == 2) {
 										NR = +(sections[section+j].line.match(/^\d+/)[0])+1;
 										j++;
 									}
@@ -872,7 +872,7 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 						}
 						D.log('section:',section,', month [m]:',m,', day [d]:',+d,'("',d,'"), if this was the date, the new section number would be here [NR]:',NR,', updatesection:',updatesection);
 					}
-					if ( this.level && (this.level == 3) && this.line && this.line.match(/^\d+ \((.*?)\)$/) ) { //sekcja zgłoszenia (nie nagłówek) i ma nazwę z nr na początku
+					if ( this.level && (this.level == 2) && this.line && this.line.match(/^\d+ \((.*?)\)$/) ) { //sekcja zgłoszenia (nie nagłówek) i ma nazwę z nr na początku
 						if ( this.line.match(/^\d+ \((.*?)\)$/)[1] == D.wgTitle ) {
 							nominated = true;
 							D.errors.push('Podany artykuł prawdopodobnie już jest zgłoszony do rubryki „Czy wiesz…”. <br />'
@@ -921,7 +921,7 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 
 		// making content
 		
-		input = '=== ' + Dv.nr + ' (' + D.wgTitle + ') ===\n'
+		input = '== ' + Dv.nr + ' (' + D.wgTitle + ') ==\n'
 			+ '<!-- artykuł zgłoszony za pomocą gadżetu CzyWiesz -->\n'
 			+ Dv.file         //FILE is already with \n at the end
 			+ Dv.question     //QUESTION is already with \n at the end
@@ -934,11 +934,11 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 		// =  0 then add whole new section to a section (=append section)
 		// = -1 then add whole new section at the end (=new section)
 
-		if (Dv.updatesection == 1) { // if up-to-date → new subsection lvl3 inside date section
+		if (Dv.updatesection == 1) { // if up-to-date → new subsection lvl2 inside date section
 			input = '\n\n' + input;
 		}
-		else if (Dv.updatesection < 1) { // if not up-to-date → new section lvl2 with date + new subsection lvl3 inside date section
-			input = '\n\n== ' + Dv.dzisiaj +' ==\n' + input + '\n\n';
+		else if (Dv.updatesection < 1) { // if not up-to-date → new section lvl1 with date + new subsection lvl2 inside date section
+			input = '\n\n= ' + Dv.dzisiaj +' =\n' + input + '\n\n';
 		}
 		
 		D.log('input:',input);
