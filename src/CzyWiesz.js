@@ -832,7 +832,7 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 						var m = $.inArray(this.line.split(' ')[1],miesiacArr);
 						if ( d.match(/^\d+$/) && (m>-1) ) { //heading's is a date in format 'd mmmm'
 							if (m0 == m && d0 == d) { //found it! the article's nomination date is equal to this (newest) section
-								section = Number(this.index);
+								section = Number(this.index)-1;
 								updatesection = 1;
 								//↑dla obecnej już sekcji updatesection==1 (yes) → edit section
 									 //find out what number should the nomination have (among today's nominations)
@@ -848,24 +848,24 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 									*/
 							}
 							else if ( (m0==m && d0>d) || (m0>m && m0-11!=m) || m0+11==m ) { //article's nomination date is newer than this (newest) section; cases: 1) found target month in this section but earlier days, 2) found earlier month in section (but exclude: nominating December articles in January, when a few January articles were already nominated), 3) want to nominate first January article and found December as first section
-								section = Number(this.index)-1;
+								section = Number(this.index)-1-1;
 								updatesection = 0;
 								//↑dla nieobecnej updatesection==0 (no) → append section
 							}
 							else if (mt<m) { //trying to nominate December article (or a January article from a not-yet-nominated-earlier date while latter nomination dates are present) we went back past January 1st to the previous year's dates
 								if (m0 < 6) { //if we need date in first half of the year (e.g. first days of January) then as above
-									section = Number(this.index)-1;
+									section = Number(this.index)-1-1;
 									updatesection = 0;
 									//↑dla nieobecnej updatesection==0 (no) → append section
 								}
 								else { //then as below (=we go on and check next)
-									section = Number(this.index);
+									section = Number(this.index)-1;
 									//↑dla nieobecnej najstarszej updatesection<0 (unset) → new section
 								}
 							}
 							else {
 							//if not above (=looking for a date older than this section) - continue (even until end)
-								section = Number(this.index);
+								section = Number(this.index)-1;
 								//↑dla nieobecnej najstarszej updatesection<0 (unset) → new section
 							}
 							mt = m;
