@@ -19,7 +19,7 @@
 
 window.DYKnomination = {
 	about : {
-		version    : '5.7.3'+(window.DYKnomination_is_beta===true?'beta':''),
+		version    : '5.7.4'+(window.DYKnomination_is_beta===true?'beta':''),
 		beta	   : (window.DYKnomination_is_beta===true?true:false),
 		author     : 'Kaligula',
 		authorlink : '[[w:pl:user:Kaligula]]',
@@ -835,17 +835,29 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 								section = Number(this.index);
 								updatesection = 1;
 								//↑dla obecnej już sekcji updatesection==1 (yes) → edit section
-									 //find out what number should the nomination have (among today's nominations)
-									while (sections[section+NR-1] && sections[section+NR-1].level == 2) {
-										NR++;
-									}
-									/* this results sometimes in a number equal/smaller than number of last section.lvl1 in this day (happens when they delete one nomination section – whether wrong or already checked); if they want to have *always* a consecutive number it can be done by:
-									var j=1;
-									while (sections[section+j] && sections[section+j].level == 2) {
-										NR = +(sections[section+j].line.match(/^\d+/)[0])+1;
-										j++;
-									}
-									*/
+									
+								//find out what number should the nomination have (among this day's nominations)
+								/* old method
+								   always gave ([amount of present sections]+1)
+								   this resulted sometimes in a number equal/smaller than number of last nomination section in this day
+								   – happened when one (or more) nomination section was deleted (e.g. wrong or checked);
+								*/
+								/*
+								while (sections[section-1+NR] && sections[section-1+NR].level == 2) {
+									NR++;
+								}
+								*/
+								/* new method
+								   always a consecutive number
+								*/
+								var j = section;
+								var heading_number;
+								while (sections[j] && sections[j].level == 2) {
+									heading_number = sections[j].line.match(/^(\d+)\s/);
+									NR = +(heading_number ? heading_number[1] : 0) + 1;
+									j++;
+								}
+							
 							}
 							else if ( (m0==m && d0>d) || (m0>m && m0-11!=m) || m0+11==m ) { //article's nomination date is newer than this (newest) section; cases: 1) found target month in this section but earlier days, 2) found earlier month in section (but exclude: nominating December articles in January, when a few January articles were already nominated), 3) want to nominate first January article and found December as first section
 								section = Number(this.index)-1;
