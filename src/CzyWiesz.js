@@ -19,7 +19,7 @@
 
 window.DYKnomination = {
 	about : {
-		version    : '5.8.0'+(window.DYKnomination_is_beta===true?'beta':''),
+		version    : '5.8.1'+(window.DYKnomination_is_beta===true?'beta':''),
 		beta	   : (window.DYKnomination_is_beta===true?true:false),
 		author     : 'Kaligula',
 		authorlink : '[[w:pl:user:Kaligula]]',
@@ -74,7 +74,7 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 		tmpldone:	'<span class="template-done"><img alt="Crystal Clear app clean.png" src="//upload.wikimedia.org/wikipedia/commons/thumb/3/34/Crystal_Clear_app_clean.png/20px-Crystal_Clear_app_clean.png" width="20" height="20" srcset="//upload.wikimedia.org/wikipedia/commons/thumb/3/34/Crystal_Clear_app_clean.png/30px-Crystal_Clear_app_clean.png 1.5x, //upload.wikimedia.org/wikipedia/commons/thumb/3/34/Crystal_Clear_app_clean.png/40px-Crystal_Clear_app_clean.png 2x"><span style="display:none">T</span> <b>Załatwione</b></span>',
 		// ↓ = {{niezałatwione}} [2012-11-20]
 		tmplndone:	'<span class="template-not-done"><img alt="Crystal Clear action button cancel.png" src="//upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Crystal_Clear_action_button_cancel.png/20px-Crystal_Clear_action_button_cancel.png" width="20" height="20" srcset="//upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Crystal_Clear_action_button_cancel.png/30px-Crystal_Clear_action_button_cancel.png 1.5x, //upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Crystal_Clear_action_button_cancel.png/40px-Crystal_Clear_action_button_cancel.png 2x"><span style="display:none">N</span> <b>Niezałatwione</b></span>'
-	}
+	};
 
 	/**
 	 * List of wikiprojects
@@ -123,7 +123,7 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 				}
 			);
 		}
-	}
+	};
 
 	DYKnomination.errors = [function (){
 		var D = DYKnomination;
@@ -159,14 +159,14 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 			if( this.debugmode && typeof(console) !== 'undefined' )
 				console.log(arguments[i]);
 		}
-	}
+	};
 
 	DYKnomination.debugmode = false;
 
 	DYKnomination.debug = function () {
 		DYKnomination.debugmode = true;
 		DYKnomination.askuser();
-	}
+	};
 
 	/*
 	 * function called when user clicks the link of the gadget
@@ -189,7 +189,7 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 			warn:	D.config.no + '&nbsp;&nbsp;<strong style="color: red;">Brak źródeł dyskwalifikuje artykuł ze zgłoszenia!!</strong> <small>(<a class="czywiesz-external">info</a>)</small>',
 			ar1:	[''],
 			ar2:	['Bibliografia','Przypisy']
-		}
+		};
 			$('.mw-headline').each(function(){
 				REFS.ar1.push( $(this).html().replace(/<span class="mw-headline-number"[^>]*>\d+<\/span> */,'') );
 			});
@@ -421,7 +421,7 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 		//$('#CzyWieszQuestion').keyup();
 		$('#CzyWieszQuestion').focus();
 		
-	}
+	};
 
 	DYKnomination.pagerevs = function () {
 
@@ -475,7 +475,7 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 
 					maxdiffsize = Math.max.apply(Math,str);
 					maxdiffrev = $.inArray(maxdiffsize,str); //if the same size is more than once it brings the most recent revision!
-					(maxdiffsize > 0) ? (maxdiffsize = '+' + maxdiffsize) : '';
+					if (maxdiffsize > 0) maxdiffsize = '+' + maxdiffsize;
 					maxdiffuser = aj[maxdiffrev].user;
 					//maxdiffdate; get this in format YYYY-MM-DD but in local time (with TimezoneOffset)
 					//this way is quicker than converting (g.getFullYear() +'-'+ g.getMonth() +'-'+ g.getDate()) from YYYY-M-D into YYYY-MM-DD
@@ -541,18 +541,18 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 			console.error('Błąd pobierania historii artykułu (funkcja zewnętrzna): $.ajax.fail().');
 			console.error(data);
 		});
-	}
+	};
 
 	if (!String.toRegExp){
 		String.prototype.toRegExp = function () {
 			return this.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
-		}
+		};
 	}
 /*	DYKnomination.strToRegExp = function (str) {
 		return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
 	}*/
 	
-	DYKnomination.values = {}
+	DYKnomination.values = {};
 
 	DYKnomination.checkForm = function () {
 
@@ -666,11 +666,11 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 				comment:    COMMENT,
 				authorInf:   AUTHOR_INF,
 				wikiproject: WIKIPROJECT
-			}
+			};
 			// here is the call of editing/ajax function
 			D.prepare();
 		}
-	}
+	};
 
 	DYKnomination.task = -1;
 	DYKnomination.loadbar = function (task) {
@@ -722,7 +722,7 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 			$('#CzyWieszLoaderBarInner').css({backgroundColor: 'red'});
 		}
 
-	}
+	};
 
 	DYKnomination.getEditToken = function (callback,force) {
  
@@ -765,7 +765,7 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 				console.error(data);
 			});
 		}
-	}
+	};
 
 	DYKnomination.prepare = function () {
 
@@ -888,7 +888,7 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 				});
 
 				if (nominated === false) {
-					Dv.nr = NR
+					Dv.nr = NR;
 					Dv.updatesection = updatesection;
 					Dv.dzisiaj = dzisiaj;
 					Dv.section = section;
@@ -907,7 +907,7 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 		}); // returns sections and section
 		// we know the section to edit (section) and if it's up-to-date (updatesection:boolean)
 
-	}
+	};
 
 	DYKnomination.runNominate = function () {
 
@@ -949,7 +949,7 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 		Dv.input = input;
 		Dv.summary = summary;
 		D.nominate();
-	}
+	};
 
 	DYKnomination.nominate = function () {
 
@@ -1003,7 +1003,7 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 			console.error(data);
 		});
 		
-	}
+	};
 
 	DYKnomination.inform_r = function () {
  
@@ -1058,7 +1058,7 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 				console.error(data);
 			});
 		}
-	}
+	};
 
 	DYKnomination.inform_a = function () {
  
@@ -1115,7 +1115,7 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 				console.error(data);
 			});
 		}
-	}
+	};
 
 	DYKnomination.inform_w = function () {
  
@@ -1189,13 +1189,13 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 								watchlist : 'nochange',
 								token : D.edittoken
 							}
-						}
+						};
 					} else {
 					//if report type is not 'editsection' or 'subpage' then get page source [to edit]
 						obj = {
 							url : '/w/index.php?action=raw&title=' + encodeURIComponent(pageToEdit),
 							cache : false
-						}
+						};
 					}
 	 
 					D.log('obj:',obj);
@@ -1275,7 +1275,7 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 				})(i);
 			}
 		}
-	}
+	};
 
 	DYKnomination.success = function () {
 		var D = DYKnomination;
@@ -1310,14 +1310,14 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 				}
 			});
 			$('#CzyWieszSuccess a.CzyWieszEmailDoAutoraToggle').click( function() {
-				$('#CzyWieszSuccess .CzyWieszEmailDoAutoraInfo').toggle()
+				$('#CzyWieszSuccess .CzyWieszEmailDoAutoraInfo').toggle();
 			});
 			$('#CzyWieszSuccess a.CzyWieszEmailDoAutoraWyslij').click( DYKnomination.emailauthor );
 		}
 		else {
 			D.errors[0]();
 		}
-	}
+	};
 
 	DYKnomination.emailauthor = function () {
 		var D = DYKnomination;
@@ -1372,7 +1372,7 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 			console.error(data);
 		});
 
-	}
+	};
 
 
 $(document).ready(function() {
