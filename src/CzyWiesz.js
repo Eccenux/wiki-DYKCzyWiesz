@@ -19,7 +19,7 @@
 
 window.DYKnomination = {
 	about : {
-		version    : '5.7.4'+(window.DYKnomination_is_beta===true?'beta':''),
+		version    : '5.8.0'+(window.DYKnomination_is_beta===true?'beta':''),
 		beta	   : (window.DYKnomination_is_beta===true?true:false),
 		author     : 'Kaligula',
 		authorlink : '[[w:pl:user:Kaligula]]',
@@ -98,26 +98,17 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 			],
 		load : function () {
 			var D = DYKnomination;
-			$.ajax('/w/index.php?title=Wikipedia:Wikiprojekt/Spis_wikiprojektów&action=raw')
-			.done(function(data){
+			
+			gadget.getWikiprojects()
+			.then(function(data){
 
-			        var active_wp = data.match(/=== Aktywne wikiprojekty według dziedzin wiedzy ===[\s\S]*?=== Aktywne wikiprojekty specjalne ===/)[0];
-			        // positive lookbehind alternative (global match) by Adam Katz → https://stackoverflow.com/a/35143111
-					var regexp = /\[\[Wikiprojekt:((GLAM\/)?[^:|\]/#]+)\|/g;  // from /(?<=\[\[Wikiprojekt:)[^:|\]\/#]+(?=\|)/g
-					var list = [];
-					var matcher;
-					// eslint-disable-next-line no-cond-assign
-					while ( matcher = regexp.exec(active_wp) ) {
-					  list[list.length]=matcher[1];
-					}
+					var list = data.wikiprojects.map(
+						function (wikiproject) {
+							return wikiproject.name;
+						}
+					);
+
 					D.wikiprojects.list = list;
-
-			        /* Sorting strings with accented characters using "Intl.Collator" or "localeCompare"
-			        → http://www.jstips.co/en/javascript/sorting-strings-with-accented-characters/
-			        localeCompare is more backwards compatible with basic support (no locale-sort) extending before Intl.Collator was introduced
-			        → https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/localeCompare
-			        */
-			        D.wikiprojects.list.sort( function(a,b){return a.localeCompare(b, 'pl');} );
 			        
 			        D.wikiproject_select = $('<select class="czywiesz-wikiproject"></select>').css('vertical-align', 'middle');
 			        D.wikiproject_select.append('<option value="none">-- (żaden) --</option>');
