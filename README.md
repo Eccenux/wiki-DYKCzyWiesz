@@ -6,10 +6,10 @@ A basic rollout/deployment example.
 
 Create a deployment script from scratch:
 
-1. **Prepare JS and CSS**. This can be just raw, vanilla `test.js` and `test.css`.
+1. **Prepare JS and CSS**. This can be just raw, vanilla `test.js` and `test.css` (example in `/dist`).
 2. **Install Wikiploy**. Run `npm install wikiploy` (or `npm i ...`). Obviously you'll need [Node.JS](https://nodejs.org/en) for that. Node 12+ should be fine (you can use NVM if you need multiple Node.js versions installed).
 3. **Enable import/export modules** (optional). If you want to use newer syntax for importing Node modules remember to add `"type": "module",` in `package.json` (see example `package.json`).
-4. **Create deployment script**. You can start with a basic script below or with `Wiki_bot_test.js`.
+4. **Create deployment script**. You can start with a basic script below or with `wikiploy-test.js`.
 5. **Run Chrome with debug**. Run Chrome Canary with debug mode enabled. I recommend using the Canary edition to ensure that you do not use your main Chrome browser for automation.
 
   - Example command on Windows:
@@ -19,8 +19,7 @@ Create a deployment script from scratch:
 
 ### Code to deploy test.js
 ```js
-import DeployConfig from 'wikiploy/DeployConfig.js';
-import Wikiploy from 'wikiploy/Wikiploy.js';
+import {DeployConfig, Wikiploy} from 'wikiploy';
 
 const ployBot = new Wikiploy();
 
@@ -42,8 +41,7 @@ const ployBot = new Wikiploy();
 
 This is just to import classes defined in the Wikiploy.
 ```js
-import DeployConfig from 'wikiploy/DeployConfig.js';
-import Wikiploy from 'wikiploy/Wikiploy.js';
+import {DeployConfig, Wikiploy} from 'wikiploy';
 ```
 
 This just creates and instance of the `Wikiploy` class. Note that I'm using const from new-ish JavaScript.

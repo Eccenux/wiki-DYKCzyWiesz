@@ -1,5 +1,4 @@
-import DeployConfig from 'wikiploy/DeployConfig.js';
-import Wikiploy from 'wikiploy/Wikiploy.js';
+import {DeployConfig, Wikiploy} from 'wikiploy';
 
 //
 // init deployment bot
@@ -17,11 +16,11 @@ console.log(ployBot);
 (async () => {
 	const configs = [];
 	configs.push(new DeployConfig({
-		src: 'test.js',
+		src: 'dist/test.js',
 		dst: 'User:Nux/test-jsbot--test.js',
 	}));
 	configs.push(new DeployConfig({
-		src: 'test.css',
+		src: 'dist/test.css',
 		dst: 'User:Nux/test-jsbot--test.css',
 	}));
 	await ployBot.deploy(configs);
