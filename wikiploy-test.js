@@ -17,11 +17,21 @@ console.log(ployBot);
 	const configs = [];
 	configs.push(new DeployConfig({
 		src: 'dist/test.js',
-		dst: 'User:Nux/test-jsbot--test.js',
+		dst: '~/test-wikiploy--test.js',
 	}));
 	configs.push(new DeployConfig({
 		src: 'dist/test.css',
-		dst: 'User:Nux/test-jsbot--test.css',
+		dst: '~/test-wikiploy--test.css',
+	}));
+	configs.push(new DeployConfig({
+		src: 'dist/test.js',
+		dst: '~/test-wikiploy--test.js',
+		site: 'en.wikipedia.org',
+	}));
+	configs.push(new DeployConfig({
+		src: 'dist/test.css',
+		dst: '~/test-wikiploy--test.css',
+		site: 'en.wikipedia.org',
 	}));
 	await ployBot.deploy(configs);
 })().catch(err => {

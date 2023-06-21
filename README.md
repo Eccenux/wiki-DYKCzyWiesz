@@ -28,7 +28,7 @@ const ployBot = new Wikiploy();
 	const configs = [];
 	configs.push(new DeployConfig({
 		src: 'test.js',
-		dst: 'User:Nux/test-jsbot--test.js',
+		dst: 'User:Nux/test-wikiploy--test.js',
 	}));
 	await ployBot.deploy(configs);
 })().catch(err => {
@@ -71,4 +71,58 @@ You can have any number of configurations. Seriously, you could deploy a file to
 And finally this runs deployments:
 ```js
 	await ployBot.deploy(configs);
+```
+
+
+## Destination URL
+
+There are various ways you can specify a URL.
+
+### Explicit
+You can specify `dst` explicitly. This would deploy in User:Example space:
+```js
+	configs.push(new DeployConfig({
+		src: 'test.js',
+		dst: 'User:Example/test.js',
+	}));
+```
+
+### Logged in user
+This would deploy the same as above for user "Example":
+```js
+	configs.push(new DeployConfig({
+		src: 'test.js',
+		dst: '~/test.js',
+	}));
+```
+
+Or the same , but shorter:
+```js
+	configs.push(new DeployConfig({
+		src: 'test.js',
+	}));
+```
+This is recommended for user scripts when source name and destination name is the same. 
+
+### Non-default site
+
+Default site of Wikiploy is "pl.wikipedia.org".
+
+You can change default globally like so:
+```js
+const ployBot = new Wikiploy();
+ployBot.site = "en.wikipedia.org"; 
+```
+
+You can also deploy to multiple sites by changing config:
+```js
+	// to default/global
+	configs.push(new DeployConfig({
+		src: 'test.js',
+	}));
+	// to de.wiki
+	configs.push(new DeployConfig({
+		src: 'test.js',
+		site: "de.wikipedia.org",
+	}));
 ```

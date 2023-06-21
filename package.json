@@ -1,6 +1,7 @@
 {
+	"name": "wikiploy-rollout-example",
 	"type": "module",
 	"dependencies": {
-		"wikiploy": "^1.1.0"
+		"wikiploy": "latest"
 	}
 }
