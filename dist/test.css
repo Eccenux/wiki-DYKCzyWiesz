@@ -1,5 +1,12 @@
+/**
+ * Wikiploy example.
+ * v1.4 
+ */
+
 /* test.css */
 .yadda.yadda.yadda {
 	content: 'bla, bla, bla';
 }
-.something {}
+.wood {
+	background-color: forestgreen;
+}
