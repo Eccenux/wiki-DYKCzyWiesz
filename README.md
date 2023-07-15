@@ -2,8 +2,8 @@
 
 A basic rollout/deployment example.
 
-Note! If you are not sure if you want to use full Wikiploy or WikiployLite, then you might want to try to setup WikiployLite.
-If **WikiployLite** works for you then it **will be faster** in the long run. Even though the setup might be a bit longer.
+Note! If you are not sure if you want to use full Wikiploy or WikiployLite, then you might want to try to set up WikiployLite.
+If **WikiployLite** works for you, then it **will be faster** in the long run, even though the setup might be a bit longer.
 
 ## Steps to deploy
 
@@ -13,7 +13,7 @@ Create a deployment script from scratch:
 
 **Step. 2. Install Wikiploy**. Run `npm install wikiploy` (or `npm i ...`). Obviously you'll need [Node.JS](https://nodejs.org/en) for that. Node 12+ should be fine (you can use NVM if you need multiple Node.js versions installed).
 
-**Step. 3. Enable import/export modules** (optional). If you want to use newer syntax for importing Node modules remember to add `"type": "module",` in `package.json` (see example `package.json`).
+**Step. 3. Enable import/export modules** (optional). If you want to use newer syntax for importing Node modules (`import ... from` ), remember to add `"type": "module",` in `package.json` (see example `package.json`).
 
 As a side note: you can use `.mjs` extensions if you want to use `import ... from` syntax only in selected files (and use `commonjs` type for `.js` files).
 
@@ -72,12 +72,14 @@ const ployBot = new Wikiploy();
 
 ### Deployment details
 
-This is just to import classes defined in the Wikiploy.
+Let's walk through above code.
+
+This code is just to import classes defined in the Wikiploy.
 ```js
 import {DeployConfig, Wikiploy} from 'wikiploy';
 ```
 
-This just creates and instance of the `Wikiploy` class. Note that I'm using const from new-ish JavaScript.
+This just creates and instance of the `Wikiploy` class. Note that I'm using `const` from new-ish JavaScript (ES6).
 ```js
 const ployBot = new Wikiploy();
 ```
@@ -99,7 +101,7 @@ This adds a single configuration (deployment specification):
 		dst: 'User:Nux/test-jsbot--test.js',
 	}));
 ```
-You can have any number of configurations. Seriously, you could deploy a file to 100 destinations. It should just work. Wikiploy has quite robust caching, which should partially work even if you upload to multiple Wikimedia projects.
+You can have any number of configurations. Seriously, you could deploy a file to 100 destinations. It should just work. Wikiploy has quite robust caching, which should partially work even if you upload to multiple Wikimedia projects. And if you will use `WikiployLite` then it will be even faster.
 
 And finally this runs deployments:
 ```js
