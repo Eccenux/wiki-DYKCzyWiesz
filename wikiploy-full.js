@@ -1,4 +1,4 @@
-import {DeployConfig, Wikiploy} from 'wikiploy';
+import {DeployConfig, Wikiploy, verlib} from 'wikiploy';
 
 //
 // init deployment bot
@@ -8,7 +8,14 @@ const ployBot = new Wikiploy();
 // ployBot.mock = true;
 // ployBot.mockSleep = 5_000;
 
-console.log(ployBot);
+// extra if you want to read your version from the package.json
+const version = await verlib.readVersion('./package.json');
+
+// custom summary
+ployBot.summary = () => {
+	//return 'v2.7.0: adding a new cool feature';
+	return `v${version}: adding a new cool feature`;
+}
 
 /**
  * Deploy test.js and css as user scripts.
