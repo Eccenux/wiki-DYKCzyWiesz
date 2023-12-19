@@ -3,7 +3,7 @@
 	"type": "commonjs",
 	"scripts": {
 		"test": "mocha",
-		"build": "browserify src/main.js -o dist/yourGadetName.js",
+		"build": "browserify src/main.js -o dist/yourGadgetName.js",
 		"deploy-dev": "node wikiploy-dev.mjs",
 		"deploy": "node wikiploy.mjs",
 		"rollout-dev": "npm run build && npm run deploy-dev",
