@@ -1,8 +1,21 @@
 {
 	"name": "wikiploy-rollout-example",
-	"type": "module",
-	"version": "1.4.0",
+	"type": "commonjs",
+	"scripts": {
+		"test": "mocha",
+		"build": "browserify src/main.js -o dist/yourGadetName.js",
+		"deploy-dev": "node wikiploy-dev.mjs",
+		"deploy": "node wikiploy.mjs",
+		"rollout-dev": "npm run build && npm run deploy-dev",
+		"rollout": "npm run build && npm run deploy"
+	},
+	"devDependencies": {
+		"browserify": "17.x",
+		"chai": "4.x",
+		"eslint": "8.x",
+		"mocha": "10.x"
+	},
 	"dependencies": {
-		"wikiploy": "latest"
+		"wikiploy": "1.x"
 	}
 }

@@ -1,0 +1,13 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "npm",
+			"script": "deploy",
+			"group": "none",
+			"problemMatcher": [],
+			"label": "Run deploy",
+			"detail": "Run deploy script (wikiploy)"
+		}
+	]
+}

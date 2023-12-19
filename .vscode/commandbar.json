@@ -1,0 +1,42 @@
+// Requires `gsppvo.vscode-commandbar`.
+// Also: in settings (UI), `files.associations`, add `commandbar.json: jsonc` (json with comments).
+{
+	"skipTerminateQuickPick": true,
+	"skipSwitchToOutput": false,
+	"skipErrorMessage": true,
+	"commands": [
+		{
+			"text": "test",
+			"tooltip": "Run mocha tests.",
+			"color": "lightgreen",
+			"commandType": "script",
+			"command": "test",
+			"priority": 0
+		},
+		{
+			"text": "build",
+			"tooltip": "Run the browserify build.",
+			"color": "lightgreen",
+			"commandType": "script",
+			"command": "build",
+			"priority": 0
+		},
+		// running build as a task (so that prompts work)
+		{
+			"text": "build and wikiploy",
+			"tooltip": "Deploy pre-built script.",
+			"color": "lightgreen",
+			"commandType": "palette",
+			"command": "workbench.action.tasks.runTask|Run deploy via npm",
+			"priority": 0
+		},
+		{
+			"text": "build & deploy",
+			"tooltip": "Build (browserify) and deploy (wikiploy).",
+			"color": "lightgreen",
+			"commandType": "palette",
+			"command": "workbench.action.tasks.runTask|Run rollout",
+			"priority": 0
+		}
+	]
+}
