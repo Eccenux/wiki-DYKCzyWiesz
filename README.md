@@ -20,7 +20,7 @@ if (mw.config.get('wgNamespaceNumber') === 0 || mw.config.get('wgPageName')=='Wi
 	mw.loader.using("mediawiki.util, jquery.ui, ext.gadget.lib-wikiprojects".split(/, ?/)).then(function() {
 		window.DYKnomination_is_beta = true;
 		mw.hook('userjs.DYKnomination.loaded').add(function (DYKnomination) {
-			console.log('[DYKnomination]', 'loaded v' + DYKnomination.version);
+			console.log('[DYKnomination]', 'loaded v' + DYKnomination.about.version);
 			DYKnomination.debugmode = true;
 		});
 		importScript('Wikipedysta:Nux/CzyWiesz-dev.js');
