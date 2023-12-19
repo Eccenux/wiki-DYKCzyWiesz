@@ -11,6 +11,23 @@ Wersja dev skryptu:
 Instrukcja: [Wikipedia:Narzędzia/CzyWiesz](https://pl.wikipedia.org/wiki/Wikipedia:Narz%C4%99dzia/CzyWiesz)
 (na tej stronie wyświetlany jest również *Numer aktualnej wersji*)
 
+## Budowanie gadżetu
+
+Gadżet jest budowany w [Node.js](https://nodejs.org/en) (w miarę dowolny Node, ale pewnie przynajmniej v16).
+
+Do pracy zalecyny jest VSCode, ale można budować wszystko z linii poleceń.
+```bash
+npm i
+npm run test
+npm run build
+```
+
+Do wdrażania potrzebny jest `bot.config.mjs` (o ile chcesz wdrażać jednym kliknięciem).
+- Hasło utworzysz w: https://test.wikipedia.org/wiki/Special:BotPasswords/Wikiploy
+- Przykład konfiguracji: https://github.com/Eccenux/Wikiploy/blob/main/assets/public--bot.config.mjs
+
+Więcej info: [*Deploy script* w instrukcji z Wikiploy](https://github.com/Eccenux/Wikiploy/blob/main/README.building%20your%20project.md#deploy-script)
+
 ## Debug
 
 Wersja dev z włączonym debug:
