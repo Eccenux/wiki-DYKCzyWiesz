@@ -13,23 +13,5 @@
 			],
 			"program": "${workspaceFolder}\\${file}"
 		},
-		{
-			"type": "node",
-			"request": "launch",
-			"name": "Deploy lite.js",
-			"skipFiles": [
-				"<node_internals>/**"
-			],
-			"program": "${workspaceFolder}\\wikiploy-lite.js"
-		},
-		{
-			"type": "node",
-			"request": "launch",
-			"name": "Deploy full.js",
-			"skipFiles": [
-				"<node_internals>/**"
-			],
-			"program": "${workspaceFolder}\\wikiploy-full.js"
-		}
 	]
 }

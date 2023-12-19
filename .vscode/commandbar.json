@@ -1,10 +1,10 @@
-// Requires `gsppvo.vscode-commandbar`.
-// Also: in settings (UI), `files.associations`, add `commandbar.json: jsonc` (json with comments).
+// Remember to change VSC settings (UI): in `files.associations` add `commandbar.json: jsonc`
 {
 	"skipTerminateQuickPick": true,
 	"skipSwitchToOutput": false,
 	"skipErrorMessage": true,
 	"commands": [
+		// "commandType": "script" runs npm script directly
 		{
 			"text": "test",
 			"tooltip": "Run mocha tests.",
@@ -13,6 +13,7 @@
 			"command": "test",
 			"priority": 0
 		},
+		
 		{
 			"text": "build",
 			"tooltip": "Run the browserify build.",
@@ -21,21 +22,25 @@
 			"command": "build",
 			"priority": 0
 		},
-		// running build as a task (so that prompts work)
+		
+		// running deployment as a task (so that prompts work)
+		// note that "Run dev deploy" is a label from tasks.json 
 		{
-			"text": "build and wikiploy",
+			"text": "wikiploy-dev",
 			"tooltip": "Deploy pre-built script.",
 			"color": "lightgreen",
 			"commandType": "palette",
-			"command": "workbench.action.tasks.runTask|Run deploy via npm",
+			"command": "workbench.action.tasks.runTask|Run dev deploy",
 			"priority": 0
 		},
+
+		// this our one-click rollout
 		{
-			"text": "build & deploy",
+			"text": "build & deploy-dev",
 			"tooltip": "Build (browserify) and deploy (wikiploy).",
 			"color": "lightgreen",
 			"commandType": "palette",
-			"command": "workbench.action.tasks.runTask|Run rollout",
+			"command": "workbench.action.tasks.runTask|Run dev rollout",
 			"priority": 0
 		}
 	]

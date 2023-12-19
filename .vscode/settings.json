@@ -1,8 +1,9 @@
 {
-	"search.exclude": {
-		"package-lock.json": true,
-	},
     "editor.detectIndentation": false,
     "editor.useTabStops": true,
     "editor.insertSpaces": false,
+	"search.exclude": {
+		"package-lock.json": true,
+		"**/dist/": true,
+	},
 }

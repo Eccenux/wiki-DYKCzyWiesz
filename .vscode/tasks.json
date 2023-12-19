@@ -3,11 +3,51 @@
 	"tasks": [
 		{
 			"type": "npm",
+			"script": "test",
+			"group": "test",
+			"problemMatcher": [],
+			"label": "Run tests",
+			"detail": "mocha"
+		},
+		{
+			"type": "npm",
+			"script": "deploy-dev",
+			"group": "none",
+			"problemMatcher": [],
+			"label": "Run dev deploy",
+			"detail": "Run deploy script (wikiploy)"
+		},
+		{
+			"type": "npm",
 			"script": "deploy",
 			"group": "none",
 			"problemMatcher": [],
 			"label": "Run deploy",
 			"detail": "Run deploy script (wikiploy)"
+		},
+		{
+			"type": "npm",
+			"script": "rollout-dev",
+			"group": "none",
+			"problemMatcher": [],
+			"label": "Run dev rollout",
+			"detail": "Run rollout script (browserify & wikiploy)"
+		},
+		{
+			"type": "npm",
+			"script": "rollout",
+			"group": "none",
+			"problemMatcher": [],
+			"label": "Run rollout",
+			"detail": "Run rollout script (browserify & wikiploy)"
+		},
+		{
+			"type": "npm",
+			"script": "install",
+			"group": "none",
+			"problemMatcher": [],
+			"label": "npm install",
+			"detail": "install dependencies from package"
 		}
 	]
 }
