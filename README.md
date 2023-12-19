@@ -1,56 +1,46 @@
 # Wikiploy example
 
-A basic rollout/deployment example.
-
-Note! If you are not sure if you want to use full Wikiploy or WikiployLite, then you might want to try to set up WikiployLite.
-If **WikiployLite** works for you, then it **will be faster** in the long run, even though the setup might be a bit longer.
+A rollout/deployment example that includes:
+- Recommended setup for building scripts: Bundling multiple files into a single JS file (from `src` to `dist`).
+- Visual Studio Code setup: Tasks and command bar for a one-click build.
+- Deploy scripts: Separate developer and release deployments.
+- Example gadget: Gadget with hooks and a link in the toolbar (*Tool* menu of articles).
+- Full setup of unit testing: Simple parser class with a test. VSC is set up for test debugging.
 
 ## Steps to deploy
 
-Create a deployment script from scratch:
+Note! It is now recommended to use the `WikiployLite` class (not `Wikiploy`). The older `Wikiploy` class uses Puppeteer and still works, but can be quite slow. **`WikiployLite` is much faster**. In future versions, Puppeteer integration might be removed. Please let me know if you would like to keep Puppeteer integration.
 
-**Step. 1. Prepare JS and CSS**. This can be just raw, vanilla `test.js` and `test.css` (example in `/dist`).
+As a startup for your project, you can simply fork this repository (treat it as a template). Otherwise, you should follow the [README: building your project, Wikiploy](https://github.com/Eccenux/Wikiploy/blob/main/README.building%20your%20project.md) recommendations on how to build JS for your gadgets (includes unit testing setup).
 
-**Step. 2. Install Wikiploy**. Run `npm install wikiploy` (or `npm i ...`). Obviously you'll need [Node.JS](https://nodejs.org/en) for that. Node 12+ should be fine (you can use NVM if you need multiple Node.js versions installed).
+### Wikiploy full (deprecated)
 
-**Step. 3. Enable import/export modules** (optional). If you want to use newer syntax for importing Node modules (`import ... from` ), remember to add `"type": "module",` in `package.json` (see example `package.json`).
+**Step. 1. Create deployment script**. You can start with a basic script below.
 
-As a side note: you can use `.mjs` extensions if you want to use `import ... from` syntax only in selected files (and use `commonjs` type for `.js` files).
-
-### Wikiploy full
-
-**Step. 4. Create deployment script**. You can start with a basic script below or with `wikiploy-full.js`.
-
-**Step. 5. Run Chrome with debug**. Run Chrome Canary with debug mode enabled. I recommend using the Canary edition to ensure that you do not use your main Chrome browser for automation.
+**Step. 2. Run Chrome with debug**. Run Chrome Canary with debug mode enabled. I recommend using the Canary edition to ensure that you do not use your main Chrome browser for automation.
 
   - Example command on Windows:
   - "C:\Users\YOUR_USER_NAME\AppData\Local\Google\Chrome SxS\Application\chrome.exe" --remote-debugging-port=9222
 
-### Wikiploy lite
+### Wikiploy lite (recommnded)
 
-**Step. 4. Create deployment script**. You can start with script from `wikiploy-lite.js`.
+**Step. 1. Create deployment script**. You can start with script from `wikiploy.js`.
 
-**Step. 5. Prepare bot password**. 
+**Step. 2. Prepare bot password**. 
 * Setup you password on Special:BotPasswords. For Wikimedia wikis you can use: https://test.wikipedia.org/wiki/Special:BotPasswords
 * Rights you should setup (if you can): https://github.com/Eccenux/Wikiploy/blob/main/assets/Bot%20passwords%20-%20Test%20Wikipedia.png
 
-**Step. 6. Preapre bot.config.js**. 
+**Step. 3. Preapre bot.config.js**. 
 * Create `bot.config.js` (note that your file MUST NOT be public).
 * Example config file in: https://github.com/Eccenux/Wikiploy/blob/main/assets/bot.config.public.js
 
-**Step. 7. Make sure bot.config.js is _not_ public**. 
+**Step. 4. Make sure bot.config.js is _not_ public**.
 
-Example `.gitignore` for your project:
-```bash
-node_modules
-*.lnk
-*.priv.*
-bot.config.js
-```
-
-## Basic script
+## Basic Wikiploy script
 
 ### Code to deploy test.js
+
+This could be your `wikiploy.mjs`
 ```js
 import {DeployConfig, Wikiploy} from 'wikiploy';
 
@@ -161,3 +151,6 @@ You can also deploy to multiple sites by changing config:
 		site: "de.wikipedia.org",
 	}));
 ```
+
+## See also
+- [README: building your project](https://github.com/Eccenux/Wikiploy/blob/main/README.building%20your%20project.md) recommendation on how to build JS and CSS for your gadgets (includes unit testing setup).
