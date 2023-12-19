@@ -1,4 +1,4 @@
-# Wikiploy example
+# Gadget example with Wikiploy
 
 A rollout/deployment example that includes:
 - Recommended setup for building scripts: Bundling multiple files into a single JS file (from `src` to `dist`).
