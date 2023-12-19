@@ -4,7 +4,7 @@ var { MyGadget } = require("./MyGadget");
 var gadget = new MyGadget();
 
 // hook when object is ready
-mw.hook('userjs.yourGadgetNameExample.loaded').fire(gadget);
+mw.hook('userjs.CzyWiesz.loaded').fire(gadget);
 
 $(function(){
 	// load Mediwiki core dependency
@@ -13,6 +13,6 @@ $(function(){
 		gadget.init();
 
 		// hook when initial elements are ready 
-		mw.hook('userjs.yourGadgetNameExample.ready').fire(gadget);
+		mw.hook('userjs.CzyWiesz.ready').fire(gadget);
 	});
 });

@@ -6,15 +6,15 @@ import { DeployConfig, userPrompt } from 'wikiploy';
  * @param {String} site Domian of a MW site.
  */
 export function addConfig(configs, site, isRelease) {
-	let deploymentName = isRelease ? '~/yourGadgetName' : '~/yourGadgetName-dev';
+	let deploymentName = isRelease ? 'MediaWiki:Gadget-CzyWiesz' : '~/CzyWiesz-dev';
 	configs.push(new DeployConfig({
-		src: 'dist/yourGadgetName.js',
+		src: 'dist/CzyWiesz.js',
 		dst: `${deploymentName}.js`,
 		site,
 		nowiki: true,
 	}));
 	configs.push(new DeployConfig({
-		src: 'dist/yourGadgetName.css',
+		src: 'dist/CzyWiesz.css',
 		dst: `${deploymentName}.css`,
 		site,
 	}));
