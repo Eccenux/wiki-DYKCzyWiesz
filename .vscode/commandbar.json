@@ -42,6 +42,14 @@
 			"commandType": "palette",
 			"command": "workbench.action.tasks.runTask|Run dev rollout",
 			"priority": 0
+		},
+		{
+			"text": "build & deploy-RELEASE",
+			"tooltip": "Build (browserify) and deploy (wikiploy).",
+			"color": "lightgreen",
+			"commandType": "palette",
+			"command": "workbench.action.tasks.runTask|Run rollout",
+			"priority": 0
 		}
 	]
 }
