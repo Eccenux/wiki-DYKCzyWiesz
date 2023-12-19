@@ -1,0 +1,9 @@
+.yourGadgetName {
+  background-color: #3498db;
+  color: white;
+}
+.yourGadgetName .header {
+  background-color: #e74c3c;
+  padding: 10px;
+  text-align: center;
+}
