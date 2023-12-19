@@ -1,3 +1,4 @@
+(function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 /* eslint-disable no-useless-escape */
 /* eslint-disable no-mixed-spaces-and-tabs */
 /* eslint-disable indent */
@@ -1370,3 +1371,37 @@ function createFullDyk(DYKnomination) {
 }
 
 module.exports = { createFullDyk, DYKnomination };
+
+},{}],2:[function(require,module,exports){
+var { DYKnomination, createFullDyk } = require("./CzyWiesz");
+
+// init in main namespace
+if (mw.config.get('wgNamespaceNumber') === 0) {
+	createFullDyk(DYKnomination);
+	mw.hook('userjs.DYKnomination.loaded').fire(DYKnomination);
+
+	mw.loader.using(["mediawiki.util"]).then(function() {
+		$(document).ready(function() {
+			mw.util.addPortletLink(
+				'p-tb',
+				'javascript:DYKnomination.askuser()',
+				(window.DYKnomination_is_beta===true?'BETA: ':'') + DYKnomination.config.portlet_title,
+				't-DYKnomination'
+			);
+			mw.hook('userjs.DYKnomination.ready').fire(DYKnomination);
+		});
+	});
+}
+else {
+	DYKnomination.error = 'The page is not an article. You cannot nominate this page.';
+
+	//insert current version number while on Wikipedia:Narzędzia/CzyWiesz
+	if (mw.config.get('wgPageName')=='Wikipedia:Narzędzia/CzyWiesz') {
+		$('.DYKnomination-version').html(DYKnomination.about.version);
+	}
+}
+
+// expose to others
+window.DYKnomination = DYKnomination;
+
+},{"./CzyWiesz":1}]},{},[2]);

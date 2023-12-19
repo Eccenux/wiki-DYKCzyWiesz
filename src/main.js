@@ -1,18 +1,30 @@
-var { MyGadget } = require("./MyGadget");
+var { DYKnomination, createFullDyk } = require("./CzyWiesz");
 
-// instance
-var gadget = new MyGadget();
+// init in main namespace
+if (mw.config.get('wgNamespaceNumber') === 0) {
+	createFullDyk(DYKnomination);
+	mw.hook('userjs.DYKnomination.loaded').fire(DYKnomination);
 
-// hook when object is ready
-mw.hook('userjs.CzyWiesz.loaded').fire(gadget);
-
-$(function(){
-	// load Mediwiki core dependency
-	// (in this case util is for `mw.util.addPortletLink`)
-	mw.loader.using(["mediawiki.util"]).then( function() {
-		gadget.init();
-
-		// hook when initial elements are ready 
-		mw.hook('userjs.CzyWiesz.ready').fire(gadget);
+	mw.loader.using(["mediawiki.util"]).then(function() {
+		$(document).ready(function() {
+			mw.util.addPortletLink(
+				'p-tb',
+				'javascript:DYKnomination.askuser()',
+				(window.DYKnomination_is_beta===true?'BETA: ':'') + DYKnomination.config.portlet_title,
+				't-DYKnomination'
+			);
+			mw.hook('userjs.DYKnomination.ready').fire(DYKnomination);
+		});
 	});
-});
+}
+else {
+	DYKnomination.error = 'The page is not an article. You cannot nominate this page.';
+
+	//insert current version number while on Wikipedia:Narzędzia/CzyWiesz
+	if (mw.config.get('wgPageName')=='Wikipedia:Narzędzia/CzyWiesz') {
+		$('.DYKnomination-version').html(DYKnomination.about.version);
+	}
+}
+
+// expose to others
+window.DYKnomination = DYKnomination;
