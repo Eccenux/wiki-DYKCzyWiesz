@@ -5,12 +5,34 @@
  * History and docs:
  * https://github.com/Eccenux/wikiploy-rollout-example
  * 
- * Deployed with love using Wikiploy: [[Wikipedia:Wikiploy]]
+ * Deployed using: [[Wikipedia:Wikiploy]]
  */
-function MyGadget() {
+class MyGadget {
+	constructor() {
+		this.options = {
+			createTool: true,
+		};
+	}
+
 	/** Initialize things when DOM is ready. */
-	this.init = function() {
-		console.log("init done");
+	init() {
+		// Example link in the tools sidebar
+		if (this.options.createTool) {
+			var portletId = mw.config.get('skin') === 'timeless' ? 'p-pagemisc' : 'p-tb';
+			var linkLabel = 'My gadget dialog';
+			var itemId = 'some-unique-gadget-tool';
+			var item = mw.util.addPortletLink(portletId, '#', linkLabel, itemId);
+			$(item).on('click', (evt) => {
+				evt.preventDefault();
+				this.openDialog();
+			});
+		}
+	}
+
+	/** Open some dialog. */
+	openDialog() {
+		// Open a dialog window here
+		alert("We are open for community!");
 	}
 }
 
@@ -22,9 +44,18 @@ var { MyGadget } = require("./MyGadget");
 // instance
 var gadget = new MyGadget();
 
-// init elements
+// hook when object is ready
+mw.hook('userjs.yourGadgetNameExample.loaded').fire(gadget);
+
 $(function(){
-	gadget.init();
+	// load Mediwiki core dependency
+	// (in this case util is for `mw.util.addPortletLink`)
+	mw.loader.using(["mediawiki.util"]).then( function() {
+		gadget.init();
+
+		// hook when initial elements are ready 
+		mw.hook('userjs.yourGadgetNameExample.ready').fire(gadget);
+	});
 });
 
 },{"./MyGadget":1}]},{},[2]);
