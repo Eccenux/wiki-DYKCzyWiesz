@@ -19,7 +19,7 @@ class MyGadget {
 		// Example link in the tools sidebar
 		if (this.options.createTool) {
 			var portletId = mw.config.get('skin') === 'timeless' ? 'p-pagemisc' : 'p-tb';
-			var linkLabel = 'My gadget dialog';
+			var linkLabel = '🧩 My gadget dialog';
 			var itemId = 'some-unique-gadget-tool';
 			var item = mw.util.addPortletLink(portletId, '#', linkLabel, itemId);
 			$(item).on('click', (evt) => {
