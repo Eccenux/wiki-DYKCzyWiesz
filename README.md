@@ -7,11 +7,23 @@ A rollout/deployment example that includes:
 - Example gadget: Gadget with hooks and a link in the toolbar (*Tool* menu of articles).
 - Full setup of unit testing: Simple parser class with a test. VSC is set up for test debugging.
 
+## Testing Wikiploy
+
+As a startup for your project, you can simply clone/fork this repository (treat it as a template). Otherwise, you should follow the [README: building your project, Wikiploy](https://github.com/Eccenux/Wikiploy/blob/main/README.building%20your%20project.md) recommendations.
+
+Quick steps:
+1. Clone this repository.
+1. Run `npm i` to install libraries.
+1. Open the repo folder in [VSCode](https://code.visualstudio.com/).
+1. Install recommended extensions.
+1. Run test and build commands from the command bar (green buttons, should be on the bottom bar of VSCode).
+
+Note that before running `wikiploy.mjs`, you will have to set up your bot password and bot.config (see below).
+
 ## Steps to deploy
 
 Note! It is now recommended to use the `WikiployLite` class (not `Wikiploy`). The older `Wikiploy` class uses Puppeteer and still works, but can be quite slow. **`WikiployLite` is much faster**. In future versions, Puppeteer integration might be removed. Please let me know if you would like to keep Puppeteer integration.
 
-As a startup for your project, you can simply fork this repository (treat it as a template). Otherwise, you should follow the [README: building your project, Wikiploy](https://github.com/Eccenux/Wikiploy/blob/main/README.building%20your%20project.md) recommendations on how to build JS for your gadgets (includes unit testing setup).
 
 ### Wikiploy full (deprecated)
 
@@ -24,7 +36,7 @@ As a startup for your project, you can simply fork this repository (treat it as 
 
 ### Wikiploy lite (recommnded)
 
-**Step. 1. Create deployment script**. You can start with script from `wikiploy.js`.
+**Step. 1. Create deployment script**. You can start with a basic script below or with `wikiploy.mjs` and `wikiploy-dev.mjs` provided in this repository.
 
 **Step. 2. Prepare bot password**. 
 * Setup you password on Special:BotPasswords. For Wikimedia wikis you can use: https://test.wikipedia.org/wiki/Special:BotPasswords
@@ -42,7 +54,7 @@ As a startup for your project, you can simply fork this repository (treat it as 
 
 This could be your `wikiploy.mjs`
 ```js
-import {DeployConfig, Wikiploy} from 'wikiploy';
+import { DeployConfig, Wikiploy } from 'wikiploy';
 
 const ployBot = new Wikiploy();
 
@@ -60,13 +72,15 @@ const ployBot = new Wikiploy();
 });
 ```
 
+Note that `wikiploy.mjs` and `wikiploy-dev.mjs` differ from the basic script above. However, the generic concepts are the same.
+
 ### Deployment details
 
 Let's walk through above code.
 
 This code is just to import classes defined in the Wikiploy.
 ```js
-import {DeployConfig, Wikiploy} from 'wikiploy';
+import { DeployConfig, Wikiploy } from 'wikiploy';
 ```
 
 This just creates and instance of the `Wikiploy` class. Note that I'm using `const` from new-ish JavaScript (ES6).
