@@ -18,7 +18,7 @@
  */
 var DYKnomination = {
 	about : {
-		version    : '5.8.2' + (window.DYKnomination_is_beta===true?'beta':''),
+		version    : '5.8.3' + (window.DYKnomination_is_beta===true?'beta':''),
 		beta	   : (window.DYKnomination_is_beta===true?true:false),
 		author     : 'Kaligula',
 		authorlink : '[[w:pl:user:Kaligula]]',
@@ -77,8 +77,7 @@ function createFullDyk(DYKnomination) {
 	};
 
 	/**
-	 * List of wikiprojects
-	 * updated 18:37, 22 gru 2017 from https://pl.wikipedia.org/w/index.php?title=Dyskusja_wikipedysty:Kaligula/js/CzyWiesz.js/wikiprojekty&oldid=49997284
+	 * List of wikiprojects.
 	 */
 	DYKnomination.wikiprojects = {
 		counter : 1,
@@ -99,6 +98,8 @@ function createFullDyk(DYKnomination) {
 		load : function () {
 			var D = DYKnomination;
 			
+			// https://pl.wikipedia.org/wiki/MediaWiki:Gadget-lib-wikiprojects.js
+			// eslint-disable-next-line no-undef
 			gadget.getWikiprojects()
 			.then(function(data){
 
@@ -424,7 +425,7 @@ function createFullDyk(DYKnomination) {
 	DYKnomination.pagerevs = function () {
 
 		var D = DYKnomination;
-		var a,b,c,d0,d,i,aj0,revs0,aj,revs,str,maxdiffsize,maxdiffrev,maxdiffuser,maxdiffdate,g;
+		var a,b,d,aj0,revs0,aj,revs,str,maxdiffsize,maxdiffrev,maxdiffuser,maxdiffdate,g;
 
 		d = new Date();
 		a = d.toISOString(); // '2012-08-14T17:43:33Z' OR '2012-08-14T17:43:33.324Z'
@@ -520,7 +521,7 @@ function createFullDyk(DYKnomination) {
 					warn:	( (aj[0].size > 2047) ? '' : (D.config.no + '&nbsp;&nbsp;<strong style="color: red;">Rozmiar ' + aj[0].size + ' b dyskwalifikuje artykuł ze zgłoszenia!!</strong> <!--small>(<a class="czywiesz-external">info</a>)</small-->') )
 				};
 
-				var $size_row = $('<tr id="CzyWieszSize"></tr>')
+				$('<tr id="CzyWieszSize"></tr>')
 					.insertAfter($('#CzyWieszRefs'))
 					.html('<td>Rozmiar (>2 kb): </td>'
 						+ '<td>' + (D.articlesize.enough ? D.config.yes : D.articlesize.warn) + '</td>')
@@ -560,7 +561,7 @@ function createFullDyk(DYKnomination) {
 		var AUTHOR = $('#CzyWieszAuthor').val().replace(/^\s*(.*?)\s*$/,'$1'); // remove spaces on beginning and end
 		var AUTHOR2 = [];
 			//get authors
-			$('.CzyWieszAuthor2').each( function(index) {
+			$('.CzyWieszAuthor2').each( function() {
 				var val = $(this).val().replace(/^\s*(.*?)\s*$/,'$1'); // remove spaces on beginning and end
 				if (val != '') {
 					AUTHOR2.push(val);
@@ -572,7 +573,7 @@ function createFullDyk(DYKnomination) {
 		var WIKIPROJECT = [];
 			if (!debug) {
 				//get the wikiprojects
-				$('.czywiesz-wikiproject').each( function(index) {
+				$('.czywiesz-wikiproject').each( function() {
 					var val = $(this).val();
 					if (val != 'none') {
 						WIKIPROJECT.push(D.wikiprojects.list[val]);
@@ -720,6 +721,7 @@ function createFullDyk(DYKnomination) {
 	DYKnomination.getEditToken = function (callback,force) {
  
 		var D = DYKnomination;
+		// eslint-disable-next-line no-unused-vars
 		var debug = D.debugmode;
 
 		var tmpToken = mw.user.tokens.get('csrfToken');
@@ -906,6 +908,7 @@ function createFullDyk(DYKnomination) {
 
 		var D = DYKnomination;
 		var Dv = D.values;
+		// eslint-disable-next-line no-unused-vars
 		var debug = D.debugmode;
 		var summary,input;
 
@@ -1314,7 +1317,7 @@ function createFullDyk(DYKnomination) {
 
 	DYKnomination.emailauthor = function () {
 		var D = DYKnomination;
-		var Dv = D.values;
+		// eslint-disable-next-line no-unused-vars
 		var debug = D.debugmode;
 
         var opis = prompt('Opisz co się stało. Bez tego twórca nie będzie wiedział co naprawiać.','');
