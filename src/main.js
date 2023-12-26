@@ -17,13 +17,9 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 		});
 	});
 }
-else {
-	DYKnomination.error = 'The page is not an article. You cannot nominate this page.';
-
-	//insert current version number while on Wikipedia:Narzędzia/CzyWiesz
-	if (mw.config.get('wgPageName')=='Wikipedia:Narzędzia/CzyWiesz') {
-		$('.DYKnomination-version').html(DYKnomination.about.version);
-	}
+//insert current version number while on Wikipedia:Narzędzia/CzyWiesz
+else if (mw.config.get('wgPageName')=='Wikipedia:Narzędzia/CzyWiesz') {
+	$('.DYKnomination-version').html(DYKnomination.about.version);
 }
 
 // expose to others

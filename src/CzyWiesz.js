@@ -16,19 +16,17 @@
  * 
  * Wdrożone za pomocą: [[Wikipedia:Wikiploy]]
  */
-var DYKnomination = {
-	about : {
-		version    : '5.8.3' + (window.DYKnomination_is_beta===true?'beta':''),
-		beta	   : (window.DYKnomination_is_beta===true?true:false),
-		author     : 'Kaligula',
-		authorlink : '[[w:pl:user:Kaligula]]',
-		homepage   : '[[w:pl:Wikipedia:Narzędzia/CzyWiesz]]',
-		credits    : 'Matma Rex (for HUGE help), Tomasz Wachowski (for testing)'
-	}
-/*	wgTitle: wgTitle, // property set on function call
-	wgUserName: wgUserName // property set on function call
-*/
-};
+var DYKnomination = {};
+
+/** About (meta). */
+DYKnomination.about = {
+	version    : '5.8.3' + (window.DYKnomination_is_beta===true?'beta':''),
+	beta	   : (window.DYKnomination_is_beta===true?true:false),
+	author     : 'Kaligula',
+	authorlink : '[[w:pl:user:Kaligula]]',
+	homepage   : '[[w:pl:Wikipedia:Narzędzia/CzyWiesz]]',
+	credits    : 'Matma Rex (for HUGE help), Tomasz Wachowski (for testing)'
+}
 
 /** Init the DYK object. */
 function createFullDyk(DYKnomination) {
