@@ -107,18 +107,17 @@ function createFullDyk(DYKnomination) {
 
 	DYKnomination.logs = [];
 	DYKnomination.log = function (){
-		// gather debug info in case of an error
-		DYKnomination.logs.push( (new Date()).toISOString() );
-		// show debug info only in debug mode
-		if( this.debugmode && typeof(console) !== 'undefined' )
-			console.log( (new Date()).toISOString() );
+		// could also ...spread, but that would require explicit ES6
+		var args = Array.from(arguments);
 
-		for(var i=0;i<arguments.length;i++) {
-			// gather debug info in case of an error
-			DYKnomination.logs.push(arguments[i]);
-			// show debug info only in debug mode
-			if( this.debugmode && typeof(console) !== 'undefined' )
-				console.log(arguments[i]);
+		// gather debug info in case of an error
+		var dt = new Date().toISOString();
+		DYKnomination.logs.push({dt:dt, log:args});
+
+		// show debug info only in debug mode
+		if( this.debugmode && typeof(console) !== 'undefined' ) {
+			args.unshift('[DYK]');	// tag
+			console.log.apply(console, args);
 		}
 	};
 
