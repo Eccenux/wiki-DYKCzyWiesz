@@ -28,8 +28,9 @@ DYKnomination.about = {
 	credits    : 'Matma Rex (for HUGE help), Tomasz Wachowski (for testing)'
 }
 
-var { apiAsync } = require("./asyncAjax");
-var { config } = require("./config");
+const { ErrorInfo } = require("./ErrorInfo");
+const { apiAsync } = require("./asyncAjax");
+const { config } = require("./config");
 
 /** Init the DYK object. */
 function createFullDyk(DYKnomination) {
@@ -90,25 +91,6 @@ function createFullDyk(DYKnomination) {
 		}
 	};
 
-	DYKnomination.errors = [function (){
-		var D = DYKnomination;
-		var dialog = $('<ul></ul>');
-		for (var i=1;i<D.errors.length;i++) {
-			dialog.append( $('<li></li>').html(D.errors[i]) );
-		}
-		dialog = $('<div id="CzyWieszErrorDialog"></div>').append(dialog).append( $('<p>Coś poszło nie tak. Więcej informacji w konsoli przeglądarki. Możesz <a href="#" class="CzyWieszEmailDoAutoraWyslij">kliknąć tutaj</a>, aby gadżet wysłał twórcy e-mail z danymi błędu.<span class="CzyWieszEmailDoAutoraWyslano"></span><br />Opisz też co się stało na <a href="https://pl.wikipedia.org/wiki/Dyskusja_wikipedysty:Kaligula" class="czywiesz-external" target="_blank">jego stronie dyskusji</a>.</p>') );
-		
-		dialog.dialog({
-		  width: 400,
-		  modal: true,
-		  title: 'Wystąpił błąd',
-		  draggable: true,
-		  dialogClass: "wikiEditor-toolbar-dialog",
-		  close: function() { $(this).dialog("destroy"); $(this).remove();}
-		});
-		$('#CzyWieszErrorDialog a.CzyWieszEmailDoAutoraWyslij').click( () => { D.emailauthor(); } );
-	}];
-
 	DYKnomination.logs = [];
 	DYKnomination.log = function (){
 		// could also ...spread, but that would require explicit ES6
@@ -139,7 +121,7 @@ function createFullDyk(DYKnomination) {
 
 		var D = DYKnomination;
 		var debug = D.debugmode;
-		if (D.errors.length > 1) { D.errors = [D.errors[0]]; }
+		D.errors.clear();
 		//D.log(D); //creates circular structure when trying to stringify DYKnimination.logs at the end
 		
 		D.wgUserName = mw.config.get('wgUserName');
@@ -492,14 +474,14 @@ function createFullDyk(DYKnomination) {
 			})
 			.fail(function(data){
 				D.errors.push('Błąd pobierania historii artykułu (funkcja wewnętrzna): $.ajax.fail().');
-				D.errors[0]();
+				D.errors.show();
 				console.error('Błąd pobierania historii artykułu (funkcja wewnętrzna): $.ajax.fail().');
 				console.error(data);
 			});
 		})
 		.fail(function(data){
 			D.errors.push('Błąd pobierania historii artykułu (funkcja zewnętrzna): $.ajax.fail().');
-			D.errors[0]();
+			D.errors.show();
 			console.error('Błąd pobierania historii artykułu (funkcja zewnętrzna): $.ajax.fail().');
 			console.error(data);
 		});
@@ -695,22 +677,26 @@ function createFullDyk(DYKnomination) {
 			D.edittoken = data.query.tokens.csrftoken;
 		} catch (error) {
 			D.errors.push('Błąd pobierania tokena: '+error+'.');
-			D.errors[0]();
+			D.errors.show();
 			console.error('Błąd pobierania tokena: ', error);
 		}
 
 		return D.edittoken;
 	};
 
+	/** Prepare nomination. */
 	DYKnomination.prepare = function () {
 
 		var D = DYKnomination;
 		var Dv = D.values;
 
-		/* prepare place for edition */
+		// clear errors
+		D.errors.clear();
 
+		// main tasks count
 		D.tasks = 4 + Dv.wikiproject.length + (Dv.authorInf?1:0);
 
+		// init progress
 		D.loadbar();
 
 			var miesiacArr = D.config.miesiacArr;
@@ -735,7 +721,7 @@ function createFullDyk(DYKnomination) {
 			);
 			if (data.error) {
 				D.errors.push('Błąd sprawdzania sekcji na stronie zgłoszeń: ' + data.error.info + '.');
-				D.errors[0]();
+				D.errors.show();
 				console.error('Błąd sprawdzania sekcji na stronie zgłoszeń: ' + data.error.info + '.');
 				console.error(data);
 			}
@@ -814,7 +800,7 @@ function createFullDyk(DYKnomination) {
 							nominated = true;
 							D.errors.push('Podany artykuł prawdopodobnie już jest zgłoszony do rubryki „Czy wiesz…”. <br />'
 								+ '<a href=\"/wiki/'+encodeURIComponent(D.getBasePage())+'#' + this.anchor + '\" class="czywiesz-external" target="_blank">Sprawdź</a>.');
-							D.errors[0]();
+							D.errors.show();
 							console.error('Podany artykuł prawdopodobnie już jest zgłoszony do rubryki „Czy wiesz…”.\n'
 								+ 'Sprawdź: '+location.origin+'/wiki/'+encodeURIComponent(D.getBasePage())+'#' + this.anchor);
 						}
@@ -834,7 +820,7 @@ function createFullDyk(DYKnomination) {
 		})
 		.fail(function(data){
 			D.errors.push('Błąd pobierania listy sekcji: $.ajax.fail().');
-			D.errors[0]();
+			D.errors.show();
 			console.error('Błąd pobierania listy sekcji: $.ajax.fail().');
 			console.error(data);
 		}); // returns sections and section
@@ -846,8 +832,6 @@ function createFullDyk(DYKnomination) {
 
 		var D = DYKnomination;
 		var Dv = D.values;
-		// eslint-disable-next-line no-unused-vars
-		var debug = D.debugmode;
 		var summary,input;
 
 		// NR ready, make summary
@@ -918,7 +902,7 @@ function createFullDyk(DYKnomination) {
 			});
 		} catch (error) {
 			D.errors.push('Błąd zgłaszania do rubryki: ' + error + '.');
-			D.errors[0]();
+			D.errors.show();
 			console.error('Błąd zgłaszania do rubryki: ', error);
 		}
 	};
@@ -957,7 +941,7 @@ function createFullDyk(DYKnomination) {
 			});
 		} catch (info) {
 			D.errors.push('Błąd informowania w artykule: ' + info);
-			D.errors[0]();
+			D.errors.show();
 			console.error('Błąd informowania w artykule:', info);
 		}
 	};
@@ -993,7 +977,7 @@ function createFullDyk(DYKnomination) {
 			})
 		} catch (info) {
 			D.errors.push('Błąd informowania autora: ' + info);
-			D.errors[0]();
+			D.errors.show();
 			console.error('Błąd informowania autora:',  info);
 		}
 
@@ -1020,7 +1004,7 @@ function createFullDyk(DYKnomination) {
 					await D.inform_wLoop(secttitl_w, summary_w, summary_w2, curWikiproject);
 				} catch (error) {
 					D.errors.push('Błąd informowania projektu: '+ curWikiproject + ': '+error.toString()+'.');
-					D.errors[0]();
+					D.errors.show();
 					console.error('Błąd informowania projektu: '+ curWikiproject + ': '+error.toString()+'.');
 					throw new Error(`Błąd informowania projektów (${i} / ${Dv.wikiproject.length}).`);
 				}
@@ -1122,45 +1106,48 @@ function createFullDyk(DYKnomination) {
 		await apiAsync(mainCall);
 	};
 
+	/** Finalize nomination (might actually show errors if there were any). */
 	DYKnomination.success = function () {
 		var D = DYKnomination;
 		var Dv = D.values;
 		var SectionTitleForFinalLink = Dv.nr+' ('+D.wgTitle+')';
 
-		if (D.errors.length == 1) { //first element in errors is a nested function
-			D.loadbar('done');
-			D.log('Zgłoszenie zakończone sukcesem!');
+		if (!D.errors.isEmpty()) {
+			D.errors.show();
+			return false;
+		}
 
-			// end dialog: "Finished!"
-			$('<div id="CzyWieszSuccess"><div class="floatright">' + D.config.CWicon + '</div>'
-				+ '<p style="margin-left: 10px;">Dziękujemy za <a id="CzyWieszLinkAfter" href="//pl.wikipedia.org/wiki/' 
-				+ encodeURIComponent(D.getBasePage()) + '#' + encodeURIComponent(SectionTitleForFinalLink.replace(/ /g,'_')).replace(/%/g,'.').replace(/\(/g,'.28').replace(/\)/g,'.29') + '" class="czywiesz-external" target="_blank">zgłoszenie</a>.<br /><br />'
-				+ 'Dla pewności możesz sprawdzić <a href="//pl.wikipedia.org/wiki/Specjalna:Wk%C5%82ad/'
-				+ encodeURIComponent(Dv.signature)
-				+ '" class="czywiesz-external" target="_blank">swój wkład</a> czy wszystko poszło zgodnie z planem.<br />'
-				+ '<small><a class="CzyWieszEmailDoAutoraToggle">(Coś nie działa?)</a></small><br />'
-				+ '<span class="CzyWieszEmailDoAutoraInfo" style="display:none;">Jeśli coś poszło nie tak to <a href="#" class="CzyWieszEmailDoAutoraWyslij">kliknij tutaj</a>, aby wysłać twórcy gadżetu e-mail z opisem błędu, a gadżet dołączy do niego szczegóły techniczne.<span class="CzyWieszEmailDoAutoraWyslano"></span><br /></span>'
-				+ '<br />'
-				+ '<a href="/wiki/Wikiprojekt:Czy_wiesz" title="Wikiprojekt:Czy wiesz">Wikiprojekt Czy wiesz</a></p></div>')
-			.dialog({
-				modal: true,
-				dialogClass: "wikiEditor-toolbar-dialog",
-				title: D.config.tmpldone,
-				close: function() {
-					$(this).dialog("destroy");
-					$(this).remove();
-					$('#CzyWieszGadget').dialog("destroy");
-					$('#CzyWieszGadget').remove();
-				}
-			});
-			$('#CzyWieszSuccess a.CzyWieszEmailDoAutoraToggle').click( function() {
-				$('#CzyWieszSuccess .CzyWieszEmailDoAutoraInfo').toggle();
-			});
-			$('#CzyWieszSuccess a.CzyWieszEmailDoAutoraWyslij').click( () => { D.emailauthor(); } );
-		}
-		else {
-			D.errors[0]();
-		}
+		D.loadbar('done');
+		D.log('Zgłoszenie zakończone sukcesem!');
+
+		// end dialog: "Finished!"
+		$('<div id="CzyWieszSuccess"><div class="floatright">' + D.config.CWicon + '</div>'
+			+ '<p style="margin-left: 10px;">Dziękujemy za <a id="CzyWieszLinkAfter" href="//pl.wikipedia.org/wiki/' 
+			+ encodeURIComponent(D.getBasePage()) + '#' + encodeURIComponent(SectionTitleForFinalLink.replace(/ /g,'_')).replace(/%/g,'.').replace(/\(/g,'.28').replace(/\)/g,'.29') + '" class="czywiesz-external" target="_blank">zgłoszenie</a>.<br /><br />'
+			+ 'Dla pewności możesz sprawdzić <a href="//pl.wikipedia.org/wiki/Specjalna:Wk%C5%82ad/'
+			+ encodeURIComponent(Dv.signature)
+			+ '" class="czywiesz-external" target="_blank">swój wkład</a> czy wszystko poszło zgodnie z planem.<br />'
+			+ '<small><a class="CzyWieszEmailDoAutoraToggle">(Coś nie działa?)</a></small><br />'
+			+ '<span class="CzyWieszEmailDoAutoraInfo" style="display:none;">Jeśli coś poszło nie tak to <a href="#" class="CzyWieszEmailDoAutoraWyslij">kliknij tutaj</a>, aby wysłać twórcy gadżetu e-mail z opisem błędu, a gadżet dołączy do niego szczegóły techniczne.<span class="CzyWieszEmailDoAutoraWyslano"></span><br /></span>'
+			+ '<br />'
+			+ '<a href="/wiki/Wikiprojekt:Czy_wiesz" title="Wikiprojekt:Czy wiesz">Wikiprojekt Czy wiesz</a></p></div>')
+		.dialog({
+			modal: true,
+			dialogClass: "wikiEditor-toolbar-dialog",
+			title: D.config.tmpldone,
+			close: function() {
+				$(this).dialog("destroy");
+				$(this).remove();
+				$('#CzyWieszGadget').dialog("destroy");
+				$('#CzyWieszGadget').remove();
+			}
+		});
+		$('#CzyWieszSuccess a.CzyWieszEmailDoAutoraToggle').click( function() {
+			$('#CzyWieszSuccess .CzyWieszEmailDoAutoraInfo').toggle();
+		});
+		$('#CzyWieszSuccess a.CzyWieszEmailDoAutoraWyslij').click( () => { D.emailauthor(); } );
+
+		return true;
 	};
 
 	DYKnomination.emailauthor = async function () {
@@ -1184,8 +1171,8 @@ function createFullDyk(DYKnomination) {
 			data : {
 				action : 'emailuser',
 				format : 'json',
-				target : config.debugMail,
-				subject : config.debugTopic,
+				target : config.supportUser,
+				subject : config.supportEmailTopic,
 				text : emailbody,
 				token : D.edittoken
 			},
@@ -1196,12 +1183,16 @@ function createFullDyk(DYKnomination) {
 			})
 			.catch(function(info){
 				D.errors.push(`Błąd wysyłania e-maila do twórcy: ${info}.`);
-				D.errors[0]();
+				D.errors.show();
 				console.error('Błąd wysyłania e-maila do twórcy: ', info);
 			})
 		;
 	};
 
+	/**
+	 * @type {ErrorInfo}
+	 */
+	DYKnomination.errors = new ErrorInfo(DYKnomination.emailauthor, config.supportUser);
 }
 
 module.exports = { createFullDyk, DYKnomination };

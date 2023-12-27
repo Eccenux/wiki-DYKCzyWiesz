@@ -5,9 +5,9 @@ var config = {
 	/** Debug base page. */
 	debugBase: 'Wikipedysta:Kaligula/js/CzyWiesz.js',
 	/** E-mail debug info to this user. */
-	debugMail: 'Kaligula',
+	supportUser: 'Nux',
 	/** E-mail topic (debug info). */
-	debugTopic: 'Błąd w Gadżecie Czy wiesz',
+	supportEmailTopic: 'Błąd w Gadżecie Czy wiesz',
 
 	portlet_title: 'Zgłoś do „Czy wiesz…”',
 	/** summary template for nomination */
