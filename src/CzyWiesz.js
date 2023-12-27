@@ -985,7 +985,7 @@ function createFullDyk(DYKnomination) {
 					title : (debug ? config.debugBase + '/autor' : 'Dyskusja wikipedysty:' + Dv.author),
 					section : 'new',
 					sectiontitle : secttitl_a,
-					text : (debug ? "debug: '''" + Dv.author + "'''" : '') + '{' + '{subst:Czy wiesz - autor0|tytuł strony='+D.wgTitle+'}} ~~' + '~~',
+					text : (debug ? "debug: '''" + Dv.author + "'''\n" : '') + '{' + '{subst:Czy wiesz - autor0|tytuł strony='+D.wgTitle+'}} ~~' + '~~',
 					summary : summary_a,
 					watchlist : 'nochange',
 					token : D.edittoken
@@ -1071,7 +1071,7 @@ function createFullDyk(DYKnomination) {
 					title : (debug ? config.debugBase + '/wikiprojekt' : pageToEdit),
 					section : 'new',
 					sectiontitle : (debug ? secttitl_w + ' • ' + curWikiproject : secttitl_w),
-					text : (debug ? "debug: '''" + pageToEdit + "'''" : '') +  '{' + '{Czy wiesz - wikiprojekt|' + D.wgTitle + '}} ~~' + '~~',
+					text : (debug ? "debug: '''" + pageToEdit + "'''\n" : '') +  '{' + '{Czy wiesz - wikiprojekt|' + D.wgTitle + '}} ~~' + '~~',
 					summary : summary_w,
 					watchlist : 'nochange',
 					token : D.edittoken
