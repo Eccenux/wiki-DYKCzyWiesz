@@ -28,6 +28,7 @@ DYKnomination.about = {
 	credits    : 'Matma Rex (for HUGE help), Tomasz Wachowski (for testing)'
 }
 
+var { apiAsync } = require("./asyncAjax");
 var { config } = require("./config");
 
 /** Init the DYK object. */
@@ -35,11 +36,15 @@ function createFullDyk(DYKnomination) {
 
 	DYKnomination.config = config;
 
+	/** Base page for nominations. */
+	DYKnomination.getBasePage = function () {
+		return this.debugmode ? config.debugBase + '/test' : 'Wikiprojekt:Czy wiesz/propozycje';
+	}
+
 	/**
 	 * List of wikiprojects.
 	 */
 	DYKnomination.wikiprojects = {
-		counter : 1,
 		list :  [], // populated on askuser() from [[Wikipedia:Wikiprojekt/Spis wikiprojektów]] by DYKnomination.wikiprojects.load() (see below)
 		list2 : [   /*****
 				 * List of wikiprojects which aren't on above list and should appear on the list of wikiprojects to be notified.
@@ -101,7 +106,7 @@ function createFullDyk(DYKnomination) {
 		  dialogClass: "wikiEditor-toolbar-dialog",
 		  close: function() { $(this).dialog("destroy"); $(this).remove();}
 		});
-		$('#CzyWieszErrorDialog a.CzyWieszEmailDoAutoraWyslij').click( DYKnomination.emailauthor );
+		$('#CzyWieszErrorDialog a.CzyWieszEmailDoAutoraWyslij').click( () => { D.emailauthor(); } );
 	}];
 
 	DYKnomination.logs = [];
@@ -509,7 +514,6 @@ function createFullDyk(DYKnomination) {
 	DYKnomination.checkForm = function () {
 
 		var D = DYKnomination;
-		var debug = D.debugmode;
 
 		//get the question
 		var QUESTION = $('#CzyWieszQuestion').val().replace(/(.*?)(--)?~{3,5}\s*$/,'$1').replace(/^\s*(.*?)\s*$/,'$1').replace(/^([Cc]zy wiesz)?[\s,\.]*/,''); // remove signature, spaces on beginning and end, beginning of question ("Czy wiesz"), first dots
@@ -529,18 +533,13 @@ function createFullDyk(DYKnomination) {
 		var DATE = $('#CzyWieszDate').val().replace(/^\s*(.*?)\s*$/,'$1'); // remove spaces on beginning and end
 		var SIGNATURE = $('#CzyWieszSignature').val().replace(/^\s*(.*?)\s*$/,'$1'); // remove spaces on beginning and end
 		var WIKIPROJECT = [];
-			if (!debug) {
-				//get the wikiprojects
-				$('.czywiesz-wikiproject').each( function() {
-					var val = $(this).val();
-					if (val != 'none') {
-						WIKIPROJECT.push(D.wikiprojects.list[val]);
-					}
-				});
+		//get the wikiprojects
+		$('.czywiesz-wikiproject').each( function() {
+			var val = $(this).val();
+			if (val != 'none') {
+				WIKIPROJECT.push(D.wikiprojects.list[val]);
 			}
-			else {
-				WIKIPROJECT = ['Wikipedysta:Kaligula/js/CzyWiesz.js/wikiprojekt'];
-			}
+		});
 		var COMMENT = ( $('#CzyWieszCommentCheckbox').prop('checked') ? $('#CzyWieszComment').val().replace(/^\s*(.*?)\s*$/,'$1') : false );
 
 		//validate form
@@ -676,55 +675,37 @@ function createFullDyk(DYKnomination) {
 
 	};
 
-	DYKnomination.getEditToken = function (callback,force) {
- 
+	DYKnomination.getEditToken = async function (force) {
 		var D = DYKnomination;
-		// eslint-disable-next-line no-unused-vars
-		var debug = D.debugmode;
 
 		var tmpToken = mw.user.tokens.get('csrfToken');
 		if (!force && typeof tmpToken === 'string' && tmpToken.length === 34) {
 			D.edittoken = tmpToken;
 			D.log('DYKnomination.edittoken :',D.edittoken);
-			//runs callback function with all given parameters except two first ones
-			window.DYKnomination[callback].apply(null, Array.prototype.slice.call(arguments, 2));
+			return D.edittoken;
 		}
-		else {
-			/* get edittoken */
-			$.ajax({
+
+		/* get edittoken */
+		try {
+			let data = await apiAsync({
 				url:'/w/api.php?action=query&meta=tokens&format=json&type=csrf',
 				cache: false
-			})
-			.done(function(data){
-				D.log('CzyWiesz edittoken: komenda GET zakończona\nodpowiedź serwera:',data);
-				if (data.error) {
-					D.errors.push('Błąd pobierania tokena: ' + data.error.info + '.');
-					D.errors[0]();
-					console.error('Błąd pobierania tokena: ' + data.error.info + '.');
-					console.error(data);
-				}
-				else {
-					D.log('DYKnomination.edittoken :',D.edittoken,'data.tokens.edittoken :',data.query.tokens.csrftoken);
-					D.edittoken = data.query.tokens.csrftoken;
-					D.log('DYKnomination.edittoken :',D.edittoken);
-					//runs callback function with all given parameters except two first ones
-					window.DYKnomination[callback].apply(null, Array.prototype.slice.call(arguments, 2));
-				}
-			})
-			.fail(function(data){
-				D.errors.push('Błąd pobierania tokena: $.ajax.fail().');
-				D.errors[0]();
-				console.error('Błąd pobierania tokena: $.ajax.fail().');
-				console.error(data);
 			});
+			D.log('DYKnomination.edittoken :',D.edittoken,'data token :',data.query.tokens.csrftoken);
+			D.edittoken = data.query.tokens.csrftoken;
+		} catch (error) {
+			D.errors.push('Błąd pobierania tokena: '+error+'.');
+			D.errors[0]();
+			console.error('Błąd pobierania tokena: ', error);
 		}
+
+		return D.edittoken;
 	};
 
 	DYKnomination.prepare = function () {
 
 		var D = DYKnomination;
 		var Dv = D.values;
-		var debug = D.debugmode;
 
 		/* prepare place for edition */
 
@@ -742,13 +723,13 @@ function createFullDyk(DYKnomination) {
 
 		// search for section 'dd mmmm', because there may be a section like 'Białowieski megaczywiesz na koniec sierpnia (ew. pocz. września)'
 		$.ajax({
-			url: '/w/api.php?action=parse&format=json&page=' + encodeURIComponent(debug ? 'Wikipedysta:Kaligula/js/CzyWiesz.js/test' : 'Wikiprojekt:Czy wiesz/propozycje') + '&prop=sections',
+			url: '/w/api.php?action=parse&format=json&page=' + encodeURIComponent(D.getBasePage()) + '&prop=sections',
 			cache: false
 		})
 		.done(function(data){
 			D.log(
 				'get sections: komenda GET zakończona',
-				'URI: /w/api.php?action=parse&format=json&page=' + encodeURIComponent(debug ? 'Wikipedysta:Kaligula/js/CzyWiesz.js/test' : 'Wikiprojekt:Czy wiesz/propozycje') + '&prop=sections',
+				'URI: /w/api.php?action=parse&format=json&page=' + encodeURIComponent(D.getBasePage()) + '&prop=sections',
 				'get sections: odpowiedź serwera:',
 				data
 			);
@@ -832,10 +813,10 @@ function createFullDyk(DYKnomination) {
 						if ( this.line.match(/^\d+ \((.*?)\)$/)[1] == D.wgTitle ) {
 							nominated = true;
 							D.errors.push('Podany artykuł prawdopodobnie już jest zgłoszony do rubryki „Czy wiesz…”. <br />'
-								+ '<a href=\"/wiki/'+encodeURIComponent(debug?'Wikipedysta:Kaligula/js/CzyWiesz.js/test':'Wikiprojekt:Czy wiesz/propozycje')+'#' + this.anchor + '\" class="czywiesz-external" target="_blank">Sprawdź</a>.');
+								+ '<a href=\"/wiki/'+encodeURIComponent(D.getBasePage())+'#' + this.anchor + '\" class="czywiesz-external" target="_blank">Sprawdź</a>.');
 							D.errors[0]();
 							console.error('Podany artykuł prawdopodobnie już jest zgłoszony do rubryki „Czy wiesz…”.\n'
-								+ 'Sprawdź: '+location.origin+'/wiki/'+encodeURIComponent(debug?'Wikipedysta:Kaligula/js/CzyWiesz.js/test':'Wikiprojekt:Czy wiesz/propozycje')+'#' + this.anchor);
+								+ 'Sprawdź: '+location.origin+'/wiki/'+encodeURIComponent(D.getBasePage())+'#' + this.anchor);
 						}
 					}
 				});
@@ -845,10 +826,9 @@ function createFullDyk(DYKnomination) {
 					Dv.updatesection = updatesection;
 					Dv.dzisiaj = dzisiaj;
 					Dv.section = section;
-					D.getEditToken(
-					    'runNominate',
-						false
-					);
+					D.getEditToken(false).then(function(){
+						D.runNominate();
+					});
 				}
 			}
 		})
@@ -862,7 +842,7 @@ function createFullDyk(DYKnomination) {
 
 	};
 
-	DYKnomination.runNominate = function () {
+	DYKnomination.runNominate = async function () {
 
 		var D = DYKnomination;
 		var Dv = D.values;
@@ -900,78 +880,69 @@ function createFullDyk(DYKnomination) {
 		
 		D.log('input:',input);
 
-		Dv.input = input;
-		Dv.summary = summary;
-		D.nominate();
+		await D.createNomination(input, summary);
+		await D.inform_r();
+		await D.inform_a();
+		await D.inform_w();
+
+		D.success();
 	};
 
-	DYKnomination.nominate = function () {
+	/* Add nomination. */
+	DYKnomination.createNomination = async function (input, summary) {
 
 		var D = DYKnomination;
 		var Dv = D.values;
-		var debug = D.debugmode;
 		
 		D.log('DYKnomination.values:',Dv);
 
 		D.loadbar();
 
-		/* edit */
 
-		// Wikiprojekt:Czy wiesz
 		D.loadbar();
 		
-		$.ajax({
-			url : '/w/api.php',
-			type: 'POST',
-			data : {
-				action : 'edit',
-				format : 'json',
-				title : (debug ? 'Wikipedysta:Kaligula/js/CzyWiesz.js/test' : 'Wikiprojekt:Czy wiesz/propozycje'),
-				section : Dv.section,
-				appendtext : Dv.input,
-				summary : Dv.summary,
-				watchlist : 'nochange',
-				token : D.edittoken
-			}
-		})
-		.done(function(data){
-			D.log('CzyWiesz nominate: POST done\nserver response:',data);
-			if (data.error) {
-				D.errors.push('Błąd zgłaszania do rubryki: ' + data.error.info + '.');
-				D.errors[0]();
-				console.error('Błąd zgłaszania do rubryki: ' + data.error.info + '.');
-				console.error(data);
-			}
-			else {
-				D.inform_r();
-			}
-		})
-		.fail(function(data){
-			D.errors.push('Błąd zgłaszania do rubryki: $.ajax.fail().');
+		try {
+			await apiAsync({
+				url : '/w/api.php',
+				type: 'POST',
+				data : {
+					action : 'edit',
+					format : 'json',
+					title : (D.getBasePage()),
+					section : Dv.section,
+					appendtext : input,
+					summary : summary,
+					watchlist : 'nochange',
+					token : D.edittoken
+				}
+			});
+		} catch (error) {
+			D.errors.push('Błąd zgłaszania do rubryki: ' + error + '.');
 			D.errors[0]();
-			console.error('Błąd zgłaszania do rubryki: $.ajax.fail().');
-			console.error('URI: /w/api.php?action=edit&format=json&title=' 
-				+ encodeURIComponent( (debug ? 'Wikipedysta:Kaligula/js/CzyWiesz.js/test' : 'Wikiprojekt:Czy wiesz/propozycje') ) 
-				+ '&section=' + Dv.section + '&appendtext=' + encodeURIComponent(Dv.input) 
-				+ '&summary=' + encodeURIComponent(Dv.summary) + '&token=' + encodeURIComponent(D.edittoken));
-			console.error(data);
-		});
-		
+			console.error('Błąd zgłaszania do rubryki: ', error);
+		}
 	};
 
-	DYKnomination.inform_r = function () {
+	/**
+	 * Inform readers.
+	 * 
+	 * Inserts a template to the nominated article.
+	 * 
+	 * @returns Promise.
+	 */
+	DYKnomination.inform_r = async function () {
  
 		var D = DYKnomination;
 		var Dv = D.values;
 		var debug = D.debugmode;
 
-		/* inform readers (=insert template to nominated article) */
-
+		// skip for debug
 		if ( debug ) {
-			D.inform_a();
+			return;
 		}
-		else {
-			$.ajax({
+
+		try {
+			await apiAsync({
 				url : '/w/api.php',
 				type : 'POST',
 				data : {
@@ -983,258 +954,177 @@ function createFullDyk(DYKnomination) {
 					watchlist : 'nochange',
 					token : D.edittoken
 				}
-			})
-			.done(function(data){
-				D.log('inform_r: komenda POST zakończona\nodpowiedź serwera:',data);
-				if (data.error) {
-					D.errors.push('Błąd informowania w artykule: ' + data.error.info + '.');
-					D.errors[0]();
-					console.error('Błąd informowania w artykule: ' + data.error.info + '.');
-					console.error(data);
-				}
-				else {
-					if (Dv.authorInf) {
-						D.inform_a();
-					}
-					else {
-						D.inform_w();
-					}
-				}
-			})
-			.fail(function(data){
-				D.errors.push('Błąd informowania w artykule: $.ajax.fail().');
-				D.errors[0]();
-				console.error('Błąd informowania w artykule: $.ajax.fail().');
-				console.error('URI: /w/api.php?action=edit&format=json&title='
-					+ encodeURIComponent(D.wgTitle)
-					+ '&prependtext=' + encodeURIComponent('{' + '{Czy wiesz do artykułu|' + Dv.nr + '}' + '}\n') 
-					+ '&summary=' + encodeURIComponent(D.config.summary_r) + '&watchlist=nochange&token=' + encodeURIComponent(D.edittoken));
-				console.error(data);
 			});
+		} catch (info) {
+			D.errors.push('Błąd informowania w artykule: ' + info);
+			D.errors[0]();
+			console.error('Błąd informowania w artykule:', info);
 		}
 	};
 
-	DYKnomination.inform_a = function () {
- 
+	/** Inform author. */
+	DYKnomination.inform_a = async function () {
 		var D = DYKnomination;
 		var Dv = D.values;
 		var debug = D.debugmode;
 		var secttitl_a,summary_a;
 
-		/* inform author */
-
 		if ( !Dv.authorInf ) {
-			D.inform_w();
+			return;
 		}
-		else {
+
+		try {
 			secttitl_a = D.config.secttitl_a.replace('TITLE',D.wgTitle);
 			summary_a = D.config.summary_a.replace('TITLE',D.wgTitle);
-			$.ajax({
+			await apiAsync({
 				url : '/w/api.php',
 				type : 'POST',
 				data : {
 					action : 'edit',
 					format : 'json',
-					title : (debug ? 'Wikipedysta:Kaligula/js/CzyWiesz.js/autor' : 'Dyskusja wikipedysty:' + Dv.author),
+					title : (debug ? config.debugBase + '/autor' : 'Dyskusja wikipedysty:' + Dv.author),
 					section : 'new',
 					sectiontitle : secttitl_a,
-					text : '{' + '{subst:Czy wiesz - autor0|tytuł strony='+D.wgTitle+'}} ~~' + '~~',
+					text : (debug ? "debug: '''" + Dv.author + "'''" : '') + '{' + '{subst:Czy wiesz - autor0|tytuł strony='+D.wgTitle+'}} ~~' + '~~',
 					summary : summary_a,
 					watchlist : 'nochange',
 					token : D.edittoken
-				}
+				},
 			})
-			.done(function(data){
-				D.log('autor_inf: komenda POST zakończona\nodpowiedź serwera:',data);
-				if (data.error) {
-					D.errors.push('Błąd informowania autora: ' + data.error.info + '.');
-					D.errors[0]();
-					console.error('Błąd informowania autora: ' + data.error.info + '.');
-					console.error(data);
-				}
-				else {
-					D.inform_w();
-				}
-			})
-			.fail(function(data){
-				D.errors.push('Błąd informowania autora: $.ajax.fail().');
-				D.errors[0]();
-				console.error('Błąd informowania autora: $.ajax.fail().');
-				console.error('URI: /w/api.php?action=edit&format=json&title='
-					+ encodeURIComponent(debug ? 'Wikipedysta:Kaligula/js/CzyWiesz.js/autor' : 'Dyskusja wikipedysty:' + Dv.author)
-					+ '&section=new' 
-					+ '&sectiontitle=' + encodeURIComponent(secttitl_a) 
-					+ '&text=' + encodeURIComponent('{' + '{subst:Czy wiesz - autor0|tytuł strony='+D.wgTitle+'}}~~' + '~~') 
-					+ '&summary=' + encodeURIComponent(summary_a) + '&token=' + encodeURIComponent(D.edittoken));
-				console.error(data);
-			});
+		} catch (info) {
+			D.errors.push('Błąd informowania autora: ' + info);
+			D.errors[0]();
+			console.error('Błąd informowania autora:',  info);
 		}
+
 	};
 
-	DYKnomination.inform_w = function () {
- 
+	/** Inform wikiprojects. */
+	DYKnomination.inform_w = async function () {
 		var D = DYKnomination;
 		var Dv = D.values;
-		var debug = D.debugmode;
 		var summary_w,secttitl_w;
 
-		/* inform chosen wikiprojects */
- 
 		if ( Dv.wikiproject.length == 0 ) {
-			D.success();
+			return;
 		}
 		else {
-			// chosen wikiprojects
-			D.wikiprojects.counter = 1; //declared again in case user wants to try nominating again the article without reloading (e.g. after an error)
 			secttitl_w = D.config.secttitl_w.replace('TITLE',D.wgTitle);
 			summary_w = D.config.summary_w.replace('TITLE',D.wgTitle);
 			var summary_w2 = D.config.summary_w2.replace('TITLE',D.wgTitle);
  
-			for (var i=0;i<Dv.wikiproject.length;i++) {
-				// błąd powodował wstawianie informacji tylko do jednego z wielu wybranych w formularzu Wikiprojektów
-				// http://stackoverflow.com/questions/1676362/javascript-variable-binding-and-loop
-				(function(i) {
-					var curWikiproject = Dv.wikiproject[i];
-
-					var wnr = -1;
-					//check if wikiproject wants to be informed other way than 'section=new'
-					//(wnr=) -1 means 'no' (the wikiproject is not on the list D.wikiprojects.list2), any other number means 'yes' and is a number of the wikiproject in D.wikiprojects.list2
-					$(D.wikiprojects.list2).each(function(n){
-						if (this.label == curWikiproject) wnr=n;
-					});
-					D.log('D.wikiprojects.list2',D.wikiprojects.list2);
-
-					var czy_talk;
-					var pageToEdit;
-					if (debug) {
-						pageToEdit = 'Wikipedysta:Kaligula/js/CzyWiesz.js/wikiprojekt';
-						D.wikiprojects.list2.push({
-							label : 'Wikipedysta:Kaligula/js/CzyWiesz.js/wikiprojekt',
-							page  : 'Wikipedysta:Kaligula/js/CzyWiesz.js/wikiprojekt',
-							type  : 'talk'
-						}); 
-						czy_talk = true;
-					} else if (wnr<0) {
-						pageToEdit = 'Wikiprojekt:'+curWikiproject;
-					} else if (D.wikiprojects.list2[wnr].type=='talk') {
-						pageToEdit = 'Dyskusja wikiprojektu:' + curWikiproject;
-						czy_talk = true;
-					} else {
-						pageToEdit = D.wikiprojects.list2[wnr].page;
-					}
-
-					D.log('czy_talk:',czy_talk,'D.wikiprojects.list2[wnr]:',D.wikiprojects.list2[wnr],'curWikiproject:',curWikiproject,'pageToEdit:',pageToEdit);
-
-					var obj;
-					if (czy_talk) {
-					//if report type is 'talk' (D.wikiprojects.list2[wnr].type=='talk' & czy_talk==true) just add new section
-					//DEBUG: debug page 'Wikipedysta:Kaligula/js/CzyWiesz.js/wikiprojekt' gets here, because now it's on list2
-						obj = {
-							url : '/w/api.php',
-							type : 'POST',
-							data : {
-								action : 'edit',
-								format : 'json',
-								title : pageToEdit,
-								section : 'new',
-								sectiontitle : secttitl_w,
-								text : '{' + '{Czy wiesz - wikiprojekt|' + D.wgTitle + '}} ~~' + '~~',
-								summary : summary_w,
-								watchlist : 'nochange',
-								token : D.edittoken
-							}
-						};
-					} else {
-					//if report type is not 'editsection' or 'subpage' then get page source [to edit]
-						obj = {
-							url : '/w/index.php?action=raw&title=' + encodeURIComponent(pageToEdit),
-							cache : false
-						};
-					}
-	 
-					D.log('obj:',obj);
-	 
-					$.ajax(obj)
-					.done(function(data){
-						D.log(pageToEdit+': komenda POST' + (czy_talk?'':'(cz. 1.)') + ' zakończona\nodpowiedź serwera:',data);
-						if (data.error) {
-							D.errors.push('Błąd informowania '+ pageToEdit + (czy_talk?'':'(cz. 1.)') + ': ' + data.error.info + '.');
-							D.errors[0]();
-							console.error('Błąd informowania '+ pageToEdit + (czy_talk?'':'(cz. 1.)') + ': ' + data.error.info + '.');
-							console.error(data);
-						}
-						else {
-							if (czy_talk) {
-							//if report type is 'talk' (needs to add new section) then this wikiproject is done
-								D.loadbar();
-								D.wikiprojects.counter++;
-								if (D.wikiprojects.counter>Dv.wikiproject.length) D.success();
-							}
-							else {
-							//if report type is not 'new section' then now we need to save the page
-								if (!data.match('<!-- Nowe zgłoszenia CzyWiesza wstawiaj poniżej tej linii. Nie zmieniaj i nie usuwaj tej linii -->')) {
-									data = data.replace('[[Kategoria:','== Czy wiesz ==\n<!-- Nowe zgłoszenia CzyWiesza wstawiaj poniżej tej linii. Nie zmieniaj i nie usuwaj tej linii -->\n\n[[Kategoria:');
-								}
-								data = data.replace('<!-- Nowe zgłoszenia CzyWiesza wstawiaj poniżej tej linii. Nie zmieniaj i nie usuwaj tej linii -->',
-									'<!-- Nowe zgłoszenia CzyWiesza wstawiaj poniżej tej linii. Nie zmieniaj i nie usuwaj tej linii -->\n'
-									+ '{' + '{Czy wiesz - wikiprojekt|' + D.wgTitle + '}}');
-
-								D.log('czy_talk (2):',czy_talk,'D.wikiprojects.list2[wnr] (2):',D.wikiprojects.list2[wnr],'curWikiproject (2):',curWikiproject,'pageToEdit (2):',pageToEdit);
-
-								$.ajax({
-									url : '/w/api.php',
-									type : 'POST',
-									data: {
-										action: 'edit',
-										format: 'json',
-										title:  pageToEdit,
-										text:   data,
-										summary: summary_w2,
-										watchlist: 'nochange',
-										token:  D.edittoken
-									}
-								})
-								.done(function(data2){
-									D.log(pageToEdit+': komenda POST' + (czy_talk?'':'(cz. 2.)') + ' zakończona\nodpowiedź serwera:',data2);
-									if (data2.error) {
-										D.errors.push('Błąd informowania '+ pageToEdit + (czy_talk?'':'(cz. 2.)') + ': ' + data2.error.info + '.');
-										D.errors[0]();
-										console.error('Błąd informowania '+ pageToEdit + (czy_talk?'':'(cz. 2.)') + ': ' + data2.error.info + '.');
-										console.error(data2);
-									}
-									else {
-										D.loadbar();
-										D.wikiprojects.counter++;
-										if (D.wikiprojects.counter>Dv.wikiproject.length)
-											D.success();
-									}
-								})
-								.fail(function(data2){
-									D.errors.push('Błąd informowania '+ pageToEdit + (czy_talk?'':'(cz. 2.)') + ': $.ajax.fail().');
-									D.errors[0]();
-									console.error('Błąd informowania '+ pageToEdit + (czy_talk?'':'(cz. 2.)') + ': $.ajax.fail().');
-									console.error('URI: ' + obj.url);
-									console.error(data2);
-								});
-							}
-						}
-					})
-					.fail(function(data){
-						D.errors.push('Błąd informowania '+ pageToEdit + (czy_talk?'':'(cz. 1.)') + ': $.ajax.fail().');
-						D.errors[0]();
-						console.error('Błąd informowania '+ pageToEdit + (czy_talk?'':'(cz. 1.)') + ': $.ajax.fail().');
-						console.error('URI: ' + obj.url);
-						console.error(data);
-					});
-				})(i);
+			// recursive inform loop
+			for (let i = 0; i < Dv.wikiproject.length; i++) {
+				const curWikiproject = Dv.wikiproject[i];
+				try {
+					await D.inform_wLoop(secttitl_w, summary_w, summary_w2, curWikiproject);
+				} catch (error) {
+					D.errors.push('Błąd informowania projektu: '+ curWikiproject + ': '+error.toString()+'.');
+					D.errors[0]();
+					console.error('Błąd informowania projektu: '+ curWikiproject + ': '+error.toString()+'.');
+					throw new Error(`Błąd informowania projektów (${i} / ${Dv.wikiproject.length}).`);
+				}
+				D.loadbar();
 			}
 		}
+	};
+
+	DYKnomination.inform_wLoop = async function (secttitl_w, summary_w, summary_w2, curWikiproject) {
+		var D = DYKnomination;
+		var debug = D.debugmode;
+		
+		var wnr = -1;
+		//check if wikiproject wants to be informed other way than 'section=new'
+		//(wnr=) -1 means 'no' (the wikiproject is not on the list D.wikiprojects.list2), any other number means 'yes' and is a number of the wikiproject in D.wikiprojects.list2
+		$(D.wikiprojects.list2).each(function(n){
+			if (this.label == curWikiproject) wnr=n;
+		});
+		D.log('D.wikiprojects.list2',D.wikiprojects.list2);
+
+		var czy_talk;
+		var pageToEdit;
+		if (wnr<0) {
+			pageToEdit = 'Wikiprojekt:'+curWikiproject;
+		} else if (D.wikiprojects.list2[wnr].type=='talk') {
+			pageToEdit = 'Dyskusja wikiprojektu:' + curWikiproject;
+			czy_talk = true;
+		} else {
+			pageToEdit = D.wikiprojects.list2[wnr].page;
+		}
+
+		D.log('czy_talk:',czy_talk,'D.wikiprojects.list2[wnr]:',D.wikiprojects.list2[wnr],'curWikiproject:',curWikiproject,'pageToEdit:',pageToEdit);
+
+		// force talk-page like flow so that we can edit single page multiple times
+		if (debug) {
+			czy_talk = true;
+		}
+
+		let mainCall;
+		if (czy_talk) {
+			//if report type is 'talk' (D.wikiprojects.list2[wnr].type=='talk' & czy_talk==true) just add new section
+			mainCall = {
+				url : '/w/api.php',
+				type : 'POST',
+				data : {
+					action : 'edit',
+					format : 'json',
+					title : (debug ? config.debugBase + '/wikiprojekt' : pageToEdit),
+					section : 'new',
+					sectiontitle : (debug ? secttitl_w + ' • ' + curWikiproject : secttitl_w),
+					text : (debug ? "debug: '''" + pageToEdit + "'''" : '') +  '{' + '{Czy wiesz - wikiprojekt|' + D.wgTitle + '}} ~~' + '~~',
+					summary : summary_w,
+					watchlist : 'nochange',
+					token : D.edittoken
+				}
+			};
+		}
+		//if report type is not 'editsection' or 'subpage' then
+		else {
+
+			// get page source [to edit]
+			let data;
+			try {
+				data = await apiAsync({
+					url : '/w/index.php?action=raw&title=' + encodeURIComponent(pageToEdit),
+					cache : false
+				});
+			} catch (error) {
+				throw new Error(`Nieudany odczyt strony '${pageToEdit}' (${error}).`);
+			}
+
+			// now we need to prepare data for page edit operation
+			let dykSectionIndicator = '<!-- Nowe zgłoszenia CzyWiesza wstawiaj poniżej tej linii. Nie zmieniaj i nie usuwaj tej linii -->';
+			if (!data.match(dykSectionIndicator)) {
+				data = data.replace('[[Kategoria:','== Czy wiesz ==\n' + dykSectionIndicator + '\n\n[[Kategoria:');
+			}
+			data = data.replace(dykSectionIndicator,
+				dykSectionIndicator + '\n'
+				+ '{' + '{Czy wiesz - wikiprojekt|' + D.wgTitle + '}}');
+
+			D.log('czy_talk (2):',czy_talk,'D.wikiprojects.list2[wnr] (2):',D.wikiprojects.list2[wnr],'curWikiproject (2):',curWikiproject,'pageToEdit (2):',pageToEdit);
+
+			mainCall = {
+				url : '/w/api.php',
+				type : 'POST',
+				data: {
+					action: 'edit',
+					format: 'json',
+					title:  pageToEdit,
+					text:   data,
+					summary: summary_w2,
+					watchlist: 'nochange',
+					token:  D.edittoken
+				}
+			};
+		}
+
+		// add section or modify page
+		await apiAsync(mainCall);
 	};
 
 	DYKnomination.success = function () {
 		var D = DYKnomination;
 		var Dv = D.values;
-		var debug = D.debugmode;
 		var SectionTitleForFinalLink = Dv.nr+' ('+D.wgTitle+')';
 
 		if (D.errors.length == 1) { //first element in errors is a nested function
@@ -1244,7 +1134,7 @@ function createFullDyk(DYKnomination) {
 			// end dialog: "Finished!"
 			$('<div id="CzyWieszSuccess"><div class="floatright">' + D.config.CWicon + '</div>'
 				+ '<p style="margin-left: 10px;">Dziękujemy za <a id="CzyWieszLinkAfter" href="//pl.wikipedia.org/wiki/' 
-				+ (debug ? 'Wikipedysta:Kaligula/js/CzyWiesz.js/test#' : 'Wikiprojekt:Czy_wiesz/propozycje#') + encodeURIComponent(SectionTitleForFinalLink.replace(/ /g,'_')).replace(/%/g,'.').replace(/\(/g,'.28').replace(/\)/g,'.29') + '" class="czywiesz-external" target="_blank">zgłoszenie</a>.<br /><br />'
+				+ encodeURIComponent(D.getBasePage()) + '#' + encodeURIComponent(SectionTitleForFinalLink.replace(/ /g,'_')).replace(/%/g,'.').replace(/\(/g,'.28').replace(/\)/g,'.29') + '" class="czywiesz-external" target="_blank">zgłoszenie</a>.<br /><br />'
 				+ 'Dla pewności możesz sprawdzić <a href="//pl.wikipedia.org/wiki/Specjalna:Wk%C5%82ad/'
 				+ encodeURIComponent(Dv.signature)
 				+ '" class="czywiesz-external" target="_blank">swój wkład</a> czy wszystko poszło zgodnie z planem.<br />'
@@ -1266,17 +1156,15 @@ function createFullDyk(DYKnomination) {
 			$('#CzyWieszSuccess a.CzyWieszEmailDoAutoraToggle').click( function() {
 				$('#CzyWieszSuccess .CzyWieszEmailDoAutoraInfo').toggle();
 			});
-			$('#CzyWieszSuccess a.CzyWieszEmailDoAutoraWyslij').click( DYKnomination.emailauthor );
+			$('#CzyWieszSuccess a.CzyWieszEmailDoAutoraWyslij').click( () => { D.emailauthor(); } );
 		}
 		else {
 			D.errors[0]();
 		}
 	};
 
-	DYKnomination.emailauthor = function () {
+	DYKnomination.emailauthor = async function () {
 		var D = DYKnomination;
-		// eslint-disable-next-line no-unused-vars
-		var debug = D.debugmode;
 
         var opis = prompt('Opisz co się stało. Bez tego twórca nie będzie wiedział co naprawiać.','');
         if (!opis) {
@@ -1290,42 +1178,28 @@ function createFullDyk(DYKnomination) {
 		$('.CzyWieszEmailDoAutoraWyslano').html('<img src="https://upload.wikimedia.org/wikipedia/commons/1/1a/Denken.gif" width="10" height="10">');
 		$('#CzyWieszErrorDialog, #CzyWieszSuccess').addClass('wait-im-sending-email');
 
-		$.ajax({
+		apiAsync({
 			url : '/w/api.php',
 			type: 'POST',
 			data : {
 				action : 'emailuser',
 				format : 'json',
-				target : 'Kaligula',
-				subject : 'Błąd w Gadżecie Czy wiesz',
+				target : config.debugMail,
+				subject : config.debugTopic,
 				text : emailbody,
 				token : D.edittoken
-			}
+			},
 		})
-		.done(function(data){
-			D.log('Sent e-mail to dev\nserver response:',data);
-			if (data.error) {
-				D.errors.push('Błąd wysyłania e-maila do twórcy: ' + data.error.info + '.');
-				D.errors[0]();
-				console.error('Błąd wysyłania e-maila do twórcy: ' + data.error.info + '.');
-				console.error(data);
-			}
-			else {
+			.then(function(){
 				$('#CzyWieszErrorDialog, #CzyWieszSuccess').removeClass('wait-im-sending-email');
 				$('.CzyWieszEmailDoAutoraWyslano').text(' Wysłano!');
-			}
-		})
-		.fail(function(data){
-			D.errors.push('Błąd wysyłania e-maila do twórcy: $.ajax.fail().');
-			D.errors[0]();
-			console.error('Błąd wysyłania e-maila do twórcy: $.ajax.fail().');
-			console.error('URI: /w/api.php?action=emailuser&format=json&target=Kaligula' 
-				+ '&subject=' + encodeURIComponent('Błąd w Gadżecie Czy wiesz') 
-				+ '&text=' + encodeURIComponent(emailbody)
-				+ '&token=' + encodeURIComponent(D.edittoken));
-			console.error(data);
-		});
-
+			})
+			.catch(function(info){
+				D.errors.push(`Błąd wysyłania e-maila do twórcy: ${info}.`);
+				D.errors[0]();
+				console.error('Błąd wysyłania e-maila do twórcy: ', info);
+			})
+		;
 	};
 
 }
