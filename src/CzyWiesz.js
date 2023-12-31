@@ -28,13 +28,12 @@ DYKnomination.about = {
 	credits    : 'Matma Rex (for HUGE help), Tomasz Wachowski (for testing)'
 }
 
-const { ErrorInfo } = require("./ErrorInfo");
-const { apiAsync } = require("./asyncAjax");
-const { config } = require("./config");
-
 /** Init the DYK object. */
 function createFullDyk(DYKnomination) {
-
+	const { ErrorInfo } = require("./ErrorInfo");
+	const { apiAsync } = require("./asyncAjax");
+	const { config } = require("./config");
+	
 	DYKnomination.config = config;
 
 	/** Base page for nominations. */

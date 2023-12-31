@@ -3,7 +3,8 @@ var config = {
 	miesiacArr:	['stycznia', 'lutego', 'marca', 'kwietnia', 'maja', 'czerwca', 'lipca', 'sierpnia', 'września', 'października', 'listopada', 'grudnia'],
 
 	/** Debug base page. */
-	debugBase: 'Wikipedysta:Kaligula/js/CzyWiesz.js',
+	// debugBase: 'Wikipedysta:Kaligula/js/CzyWiesz.js',
+	debugBase: 'Wikipedysta:Nux/CzyWieszTest',
 	/** E-mail debug info to this user. */
 	supportUser: 'Nux',
 	/** E-mail topic (debug info). */

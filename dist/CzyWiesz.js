@@ -29,13 +29,12 @@ DYKnomination.about = {
 	credits    : 'Matma Rex (for HUGE help), Tomasz Wachowski (for testing)'
 }
 
-const { ErrorInfo } = require("./ErrorInfo");
-const { apiAsync } = require("./asyncAjax");
-const { config } = require("./config");
-
 /** Init the DYK object. */
 function createFullDyk(DYKnomination) {
-
+	const { ErrorInfo } = require("./ErrorInfo");
+	const { apiAsync } = require("./asyncAjax");
+	const { config } = require("./config");
+	
 	DYKnomination.config = config;
 
 	/** Base page for nominations. */
@@ -1319,7 +1318,8 @@ var config = {
 	miesiacArr:	['stycznia', 'lutego', 'marca', 'kwietnia', 'maja', 'czerwca', 'lipca', 'sierpnia', 'września', 'października', 'listopada', 'grudnia'],
 
 	/** Debug base page. */
-	debugBase: 'Wikipedysta:Kaligula/js/CzyWiesz.js',
+	// debugBase: 'Wikipedysta:Kaligula/js/CzyWiesz.js',
+	debugBase: 'Wikipedysta:Nux/CzyWieszTest',
 	/** E-mail debug info to this user. */
 	supportUser: 'Nux',
 	/** E-mail topic (debug info). */
