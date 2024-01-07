@@ -852,7 +852,7 @@ function createFullDyk(DYKnomination) {
 					action : 'edit',
 					format : 'json',
 					title : D.getBaseNew(),
-					appendtext : '{'+'{' + subpageTitle + '}}',
+					appendtext : '\n{'+'{' + subpageTitle + '}}',
 					summary : summary,
 					watchlist : 'nochange',
 					token : D.edittoken
