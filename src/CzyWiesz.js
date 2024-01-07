@@ -793,6 +793,7 @@ function createFullDyk(DYKnomination) {
 		// making content
 		let input = '== [[' + D.wgTitle + ']] ==\n'
 			+ '<!-- artykuł zgłoszony za pomocą gadżetu CzyWiesz -->\n'
+			+ '{{licznik czasu|start={{subst:#timel:Y-m-d H:i:s}}|dni=30}}\n'
 			+ Dv.file         //FILE is already with \n at the end
 			+ Dv.question     //QUESTION is already with \n at the end
 			+ '{' + '{Wikiprojekt:Czy wiesz/weryfikacja|' + D.wgTitle + '|' + Dv.refs + '|' + Dv.images + '|' + Dv.author + '|' + Dv.signature + '|?|?|?}}\n'
@@ -819,18 +820,32 @@ function createFullDyk(DYKnomination) {
 
 		D.loadbar();
 
-
-		D.loadbar();
-		
 		try {
+			// create subpage
+			let subpageTitle = this.setupNominationPage();
 			await apiAsync({
 				url : '/w/api.php',
 				type: 'POST',
 				data : {
 					action : 'edit',
 					format : 'json',
-					title : (D.getBaseNew()),
-					section : Dv.section,
+					title : subpageTitle,
+					text : input,
+					summary : summary,
+					watchlist : 'watch',
+					token : D.edittoken
+				}
+			});
+			D.loadbar();
+
+			// append subpage
+			await apiAsync({
+				url : '/w/api.php',
+				type: 'POST',
+				data : {
+					action : 'edit',
+					format : 'json',
+					title : D.getBaseNew(),
 					appendtext : input,
 					summary : summary,
 					watchlist : 'nochange',
