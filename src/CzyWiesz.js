@@ -851,7 +851,7 @@ function createFullDyk(DYKnomination) {
 					action : 'edit',
 					format : 'json',
 					title : D.getBaseNew(),
-					appendtext : input,
+					appendtext : '{'+'{' + subpageTitle + '}}',
 					summary : summary,
 					watchlist : 'nochange',
 					token : D.edittoken
@@ -874,7 +874,6 @@ function createFullDyk(DYKnomination) {
 	DYKnomination.inform_r = async function () {
  
 		var D = DYKnomination;
-		var Dv = D.values;
 		var debug = D.debugmode;
 
 		let subpageTitle = this.setupNominationPage();
