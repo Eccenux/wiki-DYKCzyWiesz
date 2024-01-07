@@ -788,15 +788,15 @@ function createFullDyk(DYKnomination) {
 		var D = DYKnomination;
 		var Dv = D.values;
 
-		// NR ready, make summary
+		// make summary
 		let subpage = D.setupNominationPage();
-		let summary = D.config.summary.replace('NR (TITLE)', `[[${subpage}|${D.wgTitle}]]`);
+		let summary = D.config.summary.replace('TITLE', `[[${subpage}|${D.wgTitle}]]`);
 
 		/* making data ready */
 		D.loadbar();
 
 		// making content
-		let input = '== [[' + D.wgTitle + ']] ==\n'
+		let input = `== [[${subpage}|${D.wgTitle}]] ==\n`
 			+ '<!-- artykuł zgłoszony za pomocą gadżetu CzyWiesz -->\n'
 			+ '{{licznik czasu|start={{subst:#timel:Y-m-d H:i:s}}|dni=30}}\n'
 			+ Dv.file         //FILE is already with \n at the end

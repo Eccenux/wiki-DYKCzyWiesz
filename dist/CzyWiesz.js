@@ -791,13 +791,13 @@ function createFullDyk(DYKnomination) {
 
 		// NR ready, make summary
 		let subpage = D.setupNominationPage();
-		let summary = D.config.summary.replace('NR (TITLE)', `[[${subpage}|${D.wgTitle}]]`);
+		let summary = D.config.summary.replace('TITLE', `[[${subpage}|${D.wgTitle}]]`);
 
 		/* making data ready */
 		D.loadbar();
 
 		// making content
-		let input = '== [[' + D.wgTitle + ']] ==\n'
+		let input = `== [[${subpage}|${D.wgTitle}]] ==\n`
 			+ '<!-- artykuł zgłoszony za pomocą gadżetu CzyWiesz -->\n'
 			+ '{{licznik czasu|start={{subst:#timel:Y-m-d H:i:s}}|dni=30}}\n'
 			+ Dv.file         //FILE is already with \n at the end
@@ -1285,7 +1285,7 @@ var config = {
 
 	portlet_title: 'Zgłoś do „Czy wiesz…”',
 	/** summary template for nomination */
-	summary:	'/* NR (TITLE) */ nowe zgłoszenie za pomocą [[Wikipedia:Narzędzia/CzyWiesz|gadżetu CzyWiesz]]',
+	summary:	'TITLE nowe zgłoszenie za pomocą [[Wikipedia:Narzędzia/CzyWiesz|gadżetu CzyWiesz]]',
 	/** summary for template in the article */
 	summary_r:	'Artykuł ten został zgłoszony do umieszczenia na [[Wikipedia:Strona główna|stronie głównej]] w rubryce „[[Szablon:Czy wiesz|Czy wiesz]]” za pomocą [[Wikipedia:Narzędzia/CzyWiesz|gadżetu CzyWiesz]]',
 	/** summary for template on author's talk page */
