@@ -277,6 +277,11 @@ function createFullDyk(DYKnomination) {
 			return str;
 		});
 
+		// debug quicky
+		if (this.debugmode) {
+			$('#CzyWieszQuestion').val(`jak testować '''[[${D.wgTitle}]]'''?`);
+		}
+
 		//fill wikiprojects list
 		D.wikiprojects.load();
 

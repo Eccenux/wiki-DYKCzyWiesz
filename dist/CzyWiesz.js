@@ -38,8 +38,18 @@ function createFullDyk(DYKnomination) {
 	DYKnomination.config = config;
 
 	/** Base page for nominations. */
-	DYKnomination.getBasePage = function () {
-		return this.debugmode ? config.debugBase + '/test' : 'Wikiprojekt:Czy wiesz/propozycje';
+	DYKnomination.getBaseNew = function () {
+		return this.debugmode ? config.debugBase + '/propozycje' : 'Wikiprojekt:Czy wiesz/propozycje';
+	}
+	/** Page for rated. */
+	DYKnomination.getBaseDone = function () {
+		return this.debugmode ? config.debugBase + '/ocenione' : 'Wikiprojekt:Czy wiesz/ocenione';
+	}
+	/** Nomination subpage. */
+	DYKnomination.getNominationPage = function (currentDate, title) {
+		const formattedDate = `${currentDate.getFullYear()}-${(currentDate.getMonth() + 1).toString().padStart(2, '0')}`;
+		const base = this.getBaseNew();
+		return base + '/' + formattedDate + '/' + title;
 	}
 
 	/**
@@ -267,6 +277,10 @@ function createFullDyk(DYKnomination) {
 			var str = y + '-' + m + '-' + d;
 			return str;
 		});
+
+		if (this.debugmode) {
+			$('#CzyWieszQuestion').val(`jak testować '''[[${D.wgTitle}]]'''?`);
+		}
 
 		//fill wikiprojects list
 		D.wikiprojects.load();
@@ -685,183 +699,112 @@ function createFullDyk(DYKnomination) {
 	};
 
 	/** Prepare nomination. */
-	DYKnomination.prepare = function () {
-
-		var D = DYKnomination;
-		var Dv = D.values;
+	DYKnomination.prepare = async function () {
+		var Dv = this.values;
 
 		// clear errors
-		D.errors.clear();
+		this.errors.clear();
 
 		// main tasks count
-		D.tasks = 4 + Dv.wikiproject.length + (Dv.authorInf?1:0);
+		this.tasks = 4 + Dv.wikiproject.length + (Dv.authorInf?1:0);
 
 		// init progress
-		D.loadbar();
+		this.loadbar();
 
-			var miesiacArr = D.config.miesiacArr;
-			var DATE = Dv.date.match(/\d+/g);
-			var dzisiaj = DATE[2].replace(/^0/,'') + ' ' + miesiacArr[(+(DATE[1])-1)]; //reading localmonthnamegen, but DATE[1]is a string since we could've added leading zero before
-			D.log('dzisiaj: ' + dzisiaj);
-		var updatesection = false;
+		// init nomination date
+		this.setupNominationPage();
 
-		var sections,section,NR; // section must be 'undefined' at the beginning!!! (look at the end of function)
+		let nominated;	// already nominated
+		try {
+			nominated = await this.checkNominationExists();
+		} catch (error) {
+			this.errors.push('Błąd sprawdzania istniejących zgłoszeń: ' + error + '.');
+			this.errors.show();
+			console.error('Błąd sprawdzania istniejących zgłoszeń: ', error);
+		}
 
-		// search for section 'dd mmmm', because there may be a section like 'Białowieski megaczywiesz na koniec sierpnia (ew. pocz. września)'
-		$.ajax({
-			url: '/w/api.php?action=parse&format=json&page=' + encodeURIComponent(D.getBasePage()) + '&prop=sections',
+		if (nominated) {
+			this.errors.show();
+		} else {
+			await this.getEditToken(false);
+			await this.runNominate();
+		}
+	}
+
+	/** Setup or read name for the nomination page. */
+	DYKnomination.setupNominationPage = function () {
+		var Dv = this.values;
+
+		if (!Dv.nominationDate) {
+			Dv.nominationDate = new Date();
+		}
+		Dv.nominationPage = this.getNominationPage(Dv.nominationDate, this.wgTitle);
+
+		return Dv.nominationPage;
+	}
+
+	/** Check for active nominations and nominations this month. */
+	DYKnomination.checkNominationExists = async function () {
+
+		// search existing sections on nomination page
+		let data = await apiAsync({
+			url: '/w/api.php?action=parse&format=json&page=' + encodeURIComponent(this.getBaseNew()) + '&prop=sections',
 			cache: false
-		})
-		.done(function(data){
-			D.log(
-				'get sections: komenda GET zakończona',
-				'URI: /w/api.php?action=parse&format=json&page=' + encodeURIComponent(D.getBasePage()) + '&prop=sections',
-				'get sections: odpowiedź serwera:',
-				data
-			);
-			if (data.error) {
-				D.errors.push('Błąd sprawdzania sekcji na stronie zgłoszeń: ' + data.error.info + '.');
-				D.errors.show();
-				console.error('Błąd sprawdzania sekcji na stronie zgłoszeń: ' + data.error.info + '.');
-				console.error(data);
-			}
-			else {
-				sections = data.parse.sections;
-				D.log('Sekcje na stronie Wikiprojekt:Czy wiesz/propozycje:',sections);
-				var m0 = +(DATE[1]) - 1; //article's nomination month [0…11] //it was a string since we could've added leading zero
-				var d0 = +(DATE[2]); //article's nomination day //it was a string since we could've added leading zero
-				var mt = 99; //shorthand for 'Month - Temporary variable' - in January the previous months have bigger nr than one of the sections so if the nomination has a date that is earlier than the first date in this year then the script will go through all sections and save the nomination as last one
-				D.log('current month [m0]:',m0,', current day [d0]:',d0);
-				section = 0;
-				updatesection = -1; // treat it as a flag if the target section on nomination Wikiproject page is found; when found, its value is set to 0 or 1
-				NR = 1;
-				var nominated = false;
+		});
+		let sections = data.parse.sections;
+		this.log('Sekcje na stronie nominacji:', sections);
+		let exisiting = sections.filter(s => s.level==2 && s.line == this.wgTitle);
+		if (exisiting.length) {
+			const href = '/wiki/'+encodeURIComponent(this.setupNominationPage()) + '#' + exisiting[0].anchor;
+			this.errors.push(`
+				Podany artykuł jest zgłoszony do rubryki „Czy wiesz…”.<br />
+				<a href="${href}" class="czywiesz-external" target="_blank">Sprawdź</a>.
+			`);
+			return true;
+		}
 
-				$(sections).each(function(){
-					if ( this.level && (this.level == 1) && this.line && (updatesection < 0) ) { //conditions: lvl1 is a date heading (not an article heading) + has name + we still haven't found target section
-						var d = this.line.split(' ')[0];
-						var m = $.inArray(this.line.split(' ')[1],miesiacArr);
-						if ( d.match(/^\d+$/) && (m>-1) ) { //heading's is a date in format 'd mmmm'
-							if (m0 == m && d0 == d) { //found it! the article's nomination date is equal to this (newest) section
-								section = Number(this.index);
-								updatesection = 1;
-								//↑dla obecnej już sekcji updatesection==1 (yes) → edit section
-									
-								//find out what number should the nomination have (among this day's nominations)
-								/* old method
-								   always gave ([amount of present sections]+1)
-								   this resulted sometimes in a number equal/smaller than number of last nomination section in this day
-								   – happened when one (or more) nomination section was deleted (e.g. wrong or checked);
-								*/
-								/*
-								while (sections[section-1+NR] && sections[section-1+NR].level == 2) {
-									NR++;
-								}
-								*/
-								/* new method
-								   always a consecutive number
-								*/
-								var j = section;
-								var heading_number;
-								while (sections[j] && sections[j].level == 2) {
-									heading_number = sections[j].line.match(/^(\d+)\s/);
-									NR = +(heading_number ? heading_number[1] : 0) + 1;
-									j++;
-								}
-							
-							}
-							else if ( (m0==m && d0>d) || (m0>m && m0-11!=m) || m0+11==m ) { //article's nomination date is newer than this (newest) section; cases: 1) found target month in this section but earlier days, 2) found earlier month in section (but exclude: nominating December articles in January, when a few January articles were already nominated), 3) want to nominate first January article and found December as first section
-								section = Number(this.index)-1;
-								updatesection = 0;
-								//↑dla nieobecnej updatesection==0 (no) → append section
-							}
-							else if (mt<m) { //trying to nominate December article (or a January article from a not-yet-nominated-earlier date while latter nomination dates are present) we went back past January 1st to the previous year's dates
-								if (m0 < 6) { //if we need date in first half of the year (e.g. first days of January) then as above
-									section = Number(this.index)-1;
-									updatesection = 0;
-									//↑dla nieobecnej updatesection==0 (no) → append section
-								}
-								else { //then as below (=we go on and check next)
-									section = Number(this.index);
-									//↑dla nieobecnej najstarszej updatesection<0 (unset) → new section
-								}
-							}
-							else {
-							//if not above (=looking for a date older than this section) - continue (even until end)
-								section = Number(this.index);
-								//↑dla nieobecnej najstarszej updatesection<0 (unset) → new section
-							}
-							mt = m;
-						}
-						D.log('section:',section,', month [m]:',m,', day [d]:',+d,'("',d,'"), if this was the date, the new section number would be here [NR]:',NR,', updatesection:',updatesection);
-					}
-					if ( this.level && (this.level == 2) && this.line && this.line.match(/^\d+ \((.*?)\)$/) ) { //sekcja zgłoszenia (nie nagłówek) i ma nazwę z nr na początku
-						if ( this.line.match(/^\d+ \((.*?)\)$/)[1] == D.wgTitle ) {
-							nominated = true;
-							D.errors.push('Podany artykuł prawdopodobnie już jest zgłoszony do rubryki „Czy wiesz…”. <br />'
-								+ '<a href=\"/wiki/'+encodeURIComponent(D.getBasePage())+'#' + this.anchor + '\" class="czywiesz-external" target="_blank">Sprawdź</a>.');
-							D.errors.show();
-							console.error('Podany artykuł prawdopodobnie już jest zgłoszony do rubryki „Czy wiesz…”.\n'
-								+ 'Sprawdź: '+location.origin+'/wiki/'+encodeURIComponent(D.getBasePage())+'#' + this.anchor);
-						}
-					}
-				});
+		// check for existing nomination page
+		let subpageTitle = this.setupNominationPage();
+		let subpageData = await apiAsync({
+			url: '/w/api.php?action=query&format=json&prop=&titles=' + encodeURIComponent(subpageTitle) + '&formatversion=2',
+			cache: false
+		});
+		let pageInfo = subpageData.query.pages.pop();
+		if (!pageInfo.missing) {
+			const href = '/wiki/'+encodeURIComponent(subpageTitle);
+			this.errors.push(`
+				Podany artykuł był już zgłoszony do rubryki „Czy wiesz…” w tym miesiącu.<br />
+				<a href="${href}" class="czywiesz-external" target="_blank">Sprawdź</a>.
+			`);
+			return true;
+		}
 
-				if (nominated === false) {
-					Dv.nr = NR;
-					Dv.updatesection = updatesection;
-					Dv.dzisiaj = dzisiaj;
-					Dv.section = section;
-					D.getEditToken(false).then(function(){
-						D.runNominate();
-					});
-				}
-			}
-		})
-		.fail(function(data){
-			D.errors.push('Błąd pobierania listy sekcji: $.ajax.fail().');
-			D.errors.show();
-			console.error('Błąd pobierania listy sekcji: $.ajax.fail().');
-			console.error(data);
-		}); // returns sections and section
-		// we know the section to edit (section) and if it's up-to-date (updatesection:boolean)
-
+		// nomination doesn't exist yet
+		return false;
 	};
 
 	DYKnomination.runNominate = async function () {
 
 		var D = DYKnomination;
 		var Dv = D.values;
-		var summary,input;
 
 		// NR ready, make summary
-		summary = D.config.summary.replace('NR (TITLE)',Dv.nr+' ('+D.wgTitle+')');
+		let subpage = D.setupNominationPage();
+		let summary = D.config.summary.replace('NR (TITLE)', `[[${subpage}|${D.wgTitle}]]`);
 
 		/* making data ready */
 		D.loadbar();
 
 		// making content
-		
-		input = '== ' + Dv.nr + ' (' + D.wgTitle + ') ==\n'
+		let input = '== [[' + D.wgTitle + ']] ==\n'
 			+ '<!-- artykuł zgłoszony za pomocą gadżetu CzyWiesz -->\n'
+			+ '{{licznik czasu|start={{subst:#timel:Y-m-d H:i:s}}|dni=30}}\n'
 			+ Dv.file         //FILE is already with \n at the end
 			+ Dv.question     //QUESTION is already with \n at the end
 			+ '{' + '{Wikiprojekt:Czy wiesz/weryfikacja|' + D.wgTitle + '|' + Dv.refs + '|' + Dv.images + '|' + Dv.author + '|' + Dv.signature + '|?|?|?}}\n'
-			+ (Dv.comment ? Dv.comment + ' ' : '') + '~~' + '~~';
+			+ (Dv.comment ? Dv.comment + ' ' : '') + '~~' + '~~'
+		;
 
-		// text ready
-		// ↓ new section or not? if updatesection =
-		// =  1 then add only the nomination to a section (=update section)
-		// =  0 then add whole new section to a section (=append section)
-		// = -1 then add whole new section at the end (=new section)
-
-		if (Dv.updatesection == 1) { // if up-to-date → new subsection lvl2 inside date section
-			input = '\n\n' + input;
-		}
-		else if (Dv.updatesection < 1) { // if not up-to-date → new section lvl1 with date + new subsection lvl2 inside date section
-			input = '\n\n= ' + Dv.dzisiaj +' =\n' + input + '\n\n';
-		}
-		
 		D.log('input:',input);
 
 		await D.createNomination(input, summary);
@@ -882,18 +825,32 @@ function createFullDyk(DYKnomination) {
 
 		D.loadbar();
 
-
-		D.loadbar();
-		
 		try {
+			// create subpage
+			let subpageTitle = this.setupNominationPage();
 			await apiAsync({
 				url : '/w/api.php',
 				type: 'POST',
 				data : {
 					action : 'edit',
 					format : 'json',
-					title : (D.getBasePage()),
-					section : Dv.section,
+					title : subpageTitle,
+					text : input,
+					summary : summary,
+					watchlist : 'watch',
+					token : D.edittoken
+				}
+			});
+			D.loadbar();
+
+			// append subpage
+			await apiAsync({
+				url : '/w/api.php',
+				type: 'POST',
+				data : {
+					action : 'edit',
+					format : 'json',
+					title : D.getBaseNew(),
 					appendtext : input,
 					summary : summary,
 					watchlist : 'nochange',
@@ -920,8 +877,11 @@ function createFullDyk(DYKnomination) {
 		var Dv = D.values;
 		var debug = D.debugmode;
 
+		let subpageTitle = this.setupNominationPage();
+
 		// skip for debug
 		if ( debug ) {
+			D.log(`edit: ${D.wgTitle}, subpage: ${subpageTitle}`);
 			return;
 		}
 
@@ -933,7 +893,7 @@ function createFullDyk(DYKnomination) {
 					action : 'edit',
 					format : 'json',
 					title : D.wgTitle,
-					prependtext : '{' + '{Czy wiesz do artykułu|' + Dv.nr + '}' + '}\n',
+					prependtext : '{' + '{Czy wiesz do artykułu|p=' + subpageTitle + '}' + '}\n',
 					summary : D.config.summary_r,
 					watchlist : 'nochange',
 					token : D.edittoken
@@ -1110,7 +1070,7 @@ function createFullDyk(DYKnomination) {
 	DYKnomination.success = function () {
 		var D = DYKnomination;
 		var Dv = D.values;
-		var SectionTitleForFinalLink = Dv.nr+' ('+D.wgTitle+')';
+		var SectionTitleForFinalLink = '[['+D.wgTitle+']]';
 
 		if (!D.errors.isEmpty()) {
 			D.errors.show();
@@ -1123,7 +1083,7 @@ function createFullDyk(DYKnomination) {
 		// end dialog: "Finished!"
 		$('<div id="CzyWieszSuccess"><div class="floatright">' + D.config.CWicon + '</div>'
 			+ '<p style="margin-left: 10px;">Dziękujemy za <a id="CzyWieszLinkAfter" href="//pl.wikipedia.org/wiki/' 
-			+ encodeURIComponent(D.getBasePage()) + '#' + encodeURIComponent(SectionTitleForFinalLink.replace(/ /g,'_')).replace(/%/g,'.').replace(/\(/g,'.28').replace(/\)/g,'.29') + '" class="czywiesz-external" target="_blank">zgłoszenie</a>.<br /><br />'
+			+ encodeURIComponent(D.getBaseNew()) + '#' + encodeURIComponent(SectionTitleForFinalLink.replace(/ /g,'_')).replace(/%/g,'.').replace(/\(/g,'.28').replace(/\)/g,'.29') + '" class="czywiesz-external" target="_blank">zgłoszenie</a>.<br /><br />'
 			+ 'Dla pewności możesz sprawdzić <a href="//pl.wikipedia.org/wiki/Specjalna:Wk%C5%82ad/'
 			+ encodeURIComponent(Dv.signature)
 			+ '" class="czywiesz-external" target="_blank">swój wkład</a> czy wszystko poszło zgodnie z planem.<br />'
