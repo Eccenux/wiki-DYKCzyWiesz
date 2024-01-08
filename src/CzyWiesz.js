@@ -158,9 +158,19 @@ function createFullDyk(DYKnomination) {
 		var $title_paragraph = $('<p></p>')
 			.html('Tytuł artykułu: &nbsp;&nbsp;<input type="text" id="CzyWieszTitle" name="CzyWieszTitle" value="' + D.wgTitle + '" style="width: 476px;" disabled>');
 
-		var $question_paragraph = $('<p><strong>Dokończ pytanie: „Czy wiesz…”</strong></p>');
+		// Trzeba zasugerować zgłaszającym, żeby podać różne formy pytania, żeby dodający ekspozycję mieli więcej możliwości
+		var $question_paragraph = $(`<p><strong>Dokończ pytanie: „Czy wiesz…”</strong></p>
+			<p style="font-size:90%">Zalecamy zadanie 2-3 pytań, żeby łatwiej było wybrać ekspozycję (jedno pytanie per wiersz). 
+			Pytania zacznij od od „…ile”, „…kto”, „…jak”, „…co”, „…po co”, „…kiedy”, „…dlaczego”, „…gdzie”, „…skąd”, „…że” itp.</p>
+		`);
 		var $question_textarea_paragraph = $('<p></p>')
-			.html('<textarea id="CzyWieszQuestion" style="width: 570px;" rows="2" value="" placeholder="Możesz wpisać kilka pytań, każde w osobnej linijce – pamiętaj, żeby wtedy każde zacząć wielokropkiem i zakończyć pytajnikiem." autofocus></textarea>');
+			.html(`
+				<textarea id="CzyWieszQuestion" style="width: 570px;" rows="2" value="" 
+					placeholder="Możesz wpisać kilka pytań, każde w osobnej linijce. Pamiętaj, żeby w każdym dodać pogrubiony link."
+					autofocus
+				></textarea>
+			`)
+		;
 
 		var $ref_row = $('<tr id="CzyWieszRefs"></tr>')
 			.html('<td>Źródła: </td>'
@@ -507,27 +517,28 @@ function createFullDyk(DYKnomination) {
 	
 	DYKnomination.values = {};
 
-	DYKnomination.checkForm = function () {
+	/** Prepare and validate values. */
+	DYKnomination.prepareValues = function () {
 
 		var D = DYKnomination;
 
 		//get the question
-		var QUESTION = $('#CzyWieszQuestion').val().replace(/(.*?)(--)?~{3,5}\s*$/,'$1').replace(/^\s*(.*?)\s*$/,'$1').replace(/^([Cc]zy wiesz)?[\s,\.]*/,''); // remove signature, spaces on beginning and end, beginning of question ("Czy wiesz"), first dots
-		var FILE = ( $('#CzyWieszFile1').prop('checked') ? $('#CzyWieszFile2').val().replace(/^\s*(.*?)\s*$/,'$1') : '' ); // remove spaces on beginning and end
-		var IMAGES = $('#CzyWieszImages').val().replace(/^\s*(.*?)\s*$/,'$1'); // remove spaces on beginning and end
+		var QUESTION = $('#CzyWieszQuestion').val();
+		var FILE = ( $('#CzyWieszFile1').prop('checked') ? $('#CzyWieszFile2').val().trim() : '' );
+		var IMAGES = $('#CzyWieszImages').val().trim();
 		var REFS = (D.sourced ? '+' : ' ');
-		var AUTHOR = $('#CzyWieszAuthor').val().replace(/^\s*(.*?)\s*$/,'$1'); // remove spaces on beginning and end
+		var AUTHOR = $('#CzyWieszAuthor').val().trim();
 		var AUTHOR2 = [];
 			//get authors
 			$('.CzyWieszAuthor2').each( function() {
-				var val = $(this).val().replace(/^\s*(.*?)\s*$/,'$1'); // remove spaces on beginning and end
+				var val = $(this).val().trim();
 				if (val != '') {
 					AUTHOR2.push(val);
 				}
 			});
 		var AUTHOR_INF = ( $('#CzyWieszAuthorInf').prop('checked') ? true : false );
-		var DATE = $('#CzyWieszDate').val().replace(/^\s*(.*?)\s*$/,'$1'); // remove spaces on beginning and end
-		var SIGNATURE = $('#CzyWieszSignature').val().replace(/^\s*(.*?)\s*$/,'$1'); // remove spaces on beginning and end
+		var DATE = $('#CzyWieszDate').val().trim();
+		var SIGNATURE = $('#CzyWieszSignature').val().trim();
 		var WIKIPROJECT = [];
 		//get the wikiprojects
 		$('.czywiesz-wikiproject').each( function() {
@@ -536,31 +547,50 @@ function createFullDyk(DYKnomination) {
 				WIKIPROJECT.push(D.wikiprojects.list[val]);
 			}
 		});
-		var COMMENT = ( $('#CzyWieszCommentCheckbox').prop('checked') ? $('#CzyWieszComment').val().replace(/^\s*(.*?)\s*$/,'$1') : false );
+		var COMMENT = ( $('#CzyWieszCommentCheckbox').prop('checked') ? $('#CzyWieszComment').val().trim() : false );
 
 		//validate form
 		var invalid = {is: false, fields: [], alert: []};
+
+			const tITLE = D.wgTitle[0].toLowerCase()+D.wgTitle.substr(1); //title in link starting with lowercase
+			const egQuestion = 'Przykład:\n   \'\'\'[['+D.wgTitle+']]\'\'\' lub \'\'\'[['+tITLE+']]\'\'\'\n lub\n   \'\'\'[['+D.wgTitle+'|nazwa do wyświetlenia, jeśli inna niż tytuł]]\'\'\'.';
+
 			if (typeof QUESTION != 'string' || QUESTION === '') {
 				invalid.is = true;
 				invalid.fields.push('Question');
 				invalid.alert.push('Wpisz pytanie.');
 			}
 			else {
-				var tITLE = D.wgTitle[0].toLowerCase()+D.wgTitle.substr(1); //title in link starting with lowercase
+				QUESTION = QUESTION.trim()
+					.replace(/[\r\n]/g, '\n')		// normalize new lines
+					.replace(/\n\s+/g, '\n')		// remove extra spaces
+					.replace(/(--)?~{3,5}$/, '')	// remove signature
+					.trim()
+					.replace(/(^|\n)[.…]+/g, '$1')	// remove leading dots
+					.replace(/(^|\n)czy wiesz[\s,\.]*/ig, '$1')	// remove leading DYK
+					.replace(/\?($|\n)/g, '$1')		// remove?
+					.trim()
+				;
+
 				if (QUESTION.length < 10) {
 					invalid.is = true;
 					invalid.fields.push('Question');
-					invalid.alert.push('Zadaj poprawne pytanie – to jest za krótkie.');
+					invalid.alert.push('Zadaj poprawne pytanie – to jest za krótkie.\n'+egQuestion);
+
+					return invalid;
 				}
-				else if (!QUESTION.match(RegExp('\'\'\'\\s*\\[\\[('+D.strToRegExp(D.wgTitle)+'|'+D.strToRegExp(tITLE)+')(\\]\\]|\\|.*?\\]\\])\\s*\'\'\''))) {
+
 				// if there isn't any bold (a) link with title or (b) link with title starting with lowercase
+				const findQ = new RegExp('\'\'\'\\s*\\[\\[('+D.strToRegExp(D.wgTitle)+'|'+D.strToRegExp(tITLE)+')(\\]\\]|\\|.*?\\]\\])\\s*\'\'\'');
+				const missingQ = QUESTION.split('\n').some(q=>!q.match(findQ));
+				if (missingQ) {
 					invalid.is = true;
 					invalid.fields.push('Question');
-					invalid.alert.push('Pytanie musi zawierać link do artykułu. Pogrubiony.\n Przykład:\n   \'\'\'[['+D.wgTitle+']]\'\'\' lub \'\'\'[['+tITLE+']]\'\'\'\n lub\n   \'\'\'[['+D.wgTitle+'|nazwa do wyświetlenia, jeśli inna niż tytuł]]\'\'\'.');
+					invalid.alert.push('Pytanie musi zawierać link do artykułu. Pogrubiony.\n'+egQuestion);
 				}
 				else {
-					QUESTION = (QUESTION.match(/^(…|\.\.\.)/) ? '' : '…') + QUESTION.replace(/\.\.\./g,'…') + (QUESTION.match(/\?[\s]*$/) ? '' : '?');
-					QUESTION = QUESTION.replace(/\n+/g,'\n\n') + '\n';
+					// final prep
+					QUESTION = QUESTION.split('\n').map(q=>`…${q}?`).join('\n\n') + '\n';
 				}
 			}
 			if (typeof FILE == 'string' && FILE != '') {
@@ -592,6 +622,26 @@ function createFullDyk(DYKnomination) {
 				invalid.alert.push('Jeśli musisz podać jakiś komentarz to podaj jakiś sensowny, jeśli nie – wyłącz to pole. Nie wstawiaj w tym polu samego podpisu (lecz po komentarzu podpisz się).');
 			}
 
+		D.values = {
+			question:    QUESTION,
+			file:        FILE,
+			images:      IMAGES,
+			refs:        REFS,
+			author:      AUTHOR,
+			date:        DATE,
+			signature:   SIGNATURE,
+			comment:    COMMENT,
+			authorInf:   AUTHOR_INF,
+			wikiproject: WIKIPROJECT
+		};
+
+		return invalid;
+	};
+
+	/** Check form and continue with nomination. */
+	DYKnomination.checkForm = function () {
+		const invalid = this.prepareValues();
+
 		if (invalid.is) {
 			$(invalid.fields).each(function(){
 				$('#CzyWiesz'+this).css({border: 'solid 2px red'}).change(function(){
@@ -602,20 +652,8 @@ function createFullDyk(DYKnomination) {
 			$('#CzyWiesz'+invalid.fields[0]).focus();
 		}
 		else {
-			D.values = {
-				question:    QUESTION,
-				file:        FILE,
-				images:      IMAGES,
-				refs:        REFS,
-				author:      AUTHOR,
-				date:        DATE,
-				signature:   SIGNATURE,
-				comment:    COMMENT,
-				authorInf:   AUTHOR_INF,
-				wikiproject: WIKIPROJECT
-			};
 			// here is the call of editing/ajax function
-			D.prepare();
+			this.prepare();
 		}
 	};
 
