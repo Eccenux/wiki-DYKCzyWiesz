@@ -1107,7 +1107,6 @@ function createFullDyk(DYKnomination) {
 	DYKnomination.success = function () {
 		var D = DYKnomination;
 		var Dv = D.values;
-		var SectionTitleForFinalLink = '[['+D.wgTitle+']]';
 
 		if (!D.errors.isEmpty()) {
 			D.errors.show();
@@ -1117,10 +1116,12 @@ function createFullDyk(DYKnomination) {
 		D.loadbar('done');
 		D.log('Zgłoszenie zakończone sukcesem!');
 
+		let subpageTitle = this.setupNominationPage();
+
 		// end dialog: "Finished!"
 		$('<div id="CzyWieszSuccess"><div class="floatright">' + D.config.CWicon + '</div>'
 			+ '<p style="margin-left: 10px;">Dziękujemy za <a id="CzyWieszLinkAfter" href="//pl.wikipedia.org/wiki/' 
-			+ encodeURIComponent(D.getBaseNew()) + '#' + encodeURIComponent(SectionTitleForFinalLink.replace(/ /g,'_')).replace(/%/g,'.').replace(/\(/g,'.28').replace(/\)/g,'.29') + '" class="czywiesz-external" target="_blank">zgłoszenie</a>.<br /><br />'
+			+ encodeURIComponent(subpageTitle) + '" class="czywiesz-external" target="_blank">zgłoszenie</a>.<br /><br />'
 			+ 'Dla pewności możesz sprawdzić <a href="//pl.wikipedia.org/wiki/Specjalna:Wk%C5%82ad/'
 			+ encodeURIComponent(Dv.signature)
 			+ '" class="czywiesz-external" target="_blank">swój wkład</a> czy wszystko poszło zgodnie z planem.<br />'
