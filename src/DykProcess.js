@@ -2,6 +2,7 @@
 /* eslint-disable no-mixed-spaces-and-tabs */
 /* eslint-disable indent */
 /* eslint-disable array-bracket-newline */
+const { Loadbar } = require("./Loadbar");
 const { apiAsync } = require("./asyncAjax");
 const { config } = require("./config");
 
@@ -26,10 +27,10 @@ class DykProcess {
 		this.errors.clear();
 
 		// main tasks count
-		this.tasks = 4 + Dv.wikiproject.length + (Dv.authorInf?1:0);
+		this.loadbar = new Loadbar(4 + Dv.wikiproject.length + (Dv.authorInf?1:0));
 
 		// init progress
-		this.loadbar();
+		this.loadbar.next();
 
 		// init nomination date
 		this.setupNominationPage();
@@ -113,7 +114,7 @@ class DykProcess {
 		let summary = D.config.summary.replace('TITLE', `[[${subpage}|${D.wgTitle}]]`);
 
 		/* making data ready */
-		D.loadbar();
+		this.loadbar.next();
 
 		// making content
 		let input = `== [[${subpage}|${D.wgTitle}]] ==\n`
@@ -143,7 +144,7 @@ class DykProcess {
 		
 		D.log('DYKnomination.values:',Dv);
 
-		D.loadbar();
+		this.loadbar.next();
 
 		try {
 			// create subpage
@@ -161,7 +162,7 @@ class DykProcess {
 					token : D.edittoken
 				}
 			});
-			D.loadbar();
+			this.loadbar.next();
 
 			// append subpage
 			await apiAsync({
@@ -287,7 +288,7 @@ class DykProcess {
 					console.error('Błąd informowania projektu: '+ curWikiproject + ': '+error.toString()+'.');
 					throw new Error(`Błąd informowania projektów (${i} / ${Dv.wikiproject.length}).`);
 				}
-				D.loadbar();
+				this.loadbar.next();
 			}
 		}
 	}
@@ -395,7 +396,7 @@ class DykProcess {
 			return false;
 		}
 
-		D.loadbar('done');
+		this.loadbar.next('done');
 		D.log('Zgłoszenie zakończone sukcesem!');
 
 		let subpageTitle = this.setupNominationPage();

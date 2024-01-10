@@ -17,19 +17,19 @@
  * Wdrożone za pomocą: [[Wikipedia:Wikiploy]]
  */
 class Loadbar {
-	constructor() {
+	/**
+	 * @param {Number} tasks Expected number of tasks.
+	 */
+	constructor(tasks) {
 		this.task = -1;
+		this.tasks = tasks;
 	}
-	loadbar (task) {
-		if (task == false) {
-			D.task = -1;
-			return;
+	next (task) {
+		if (typeof task != 'string'){
+			this.task++;
+			task = Math.min(this.task,4);
 		}
-		else if (typeof task == 'undefined'){
-			D.task++;
-			task = Math.min(D.task,4);
-		}
-		var tasks = D.tasks;
+		var tasks = this.tasks;
 		
 		var txt;
 		switch (task) {
