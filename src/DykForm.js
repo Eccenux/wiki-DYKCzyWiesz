@@ -192,7 +192,7 @@ class DykForm {
 		D.wikiprojects.load();
 
 		// check size of article and make a tip for the possible author
-		D.pagerevs();
+		this.pagerevs();
 		
 		if ($('#CzyWieszStyleTag').length == 0) {
 			D.config.styletag.appendTo('head');

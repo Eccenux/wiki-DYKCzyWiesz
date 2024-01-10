@@ -75,6 +75,12 @@ function createFullDyk(DYKnomination) {
 	const dykForm = new DykForm(DYKnomination);
 	const { Wikiprojects } = require("./Wikiprojects");
 
+	// for main.js
+	DYKnomination.askuser = function () {
+		dykForm.askuser();
+	}
+
+	// backward-compatibility debug mode
 	DYKnomination.debug = function () {
 		DYKnomination.debugmode = true;
 		dykForm.askuser();
