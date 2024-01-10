@@ -7,6 +7,7 @@ const pageName = mw.config.get('wgPageName');
 // init in main namespace
 if (namespaceNumber === 0) {
 	createFullDyk(DYKnomination);
+	// this can be used to e.g. setup debugmode
 	mw.hook('userjs.DYKnomination.loaded').fire(DYKnomination);
 
 	mw.loader.using(["mediawiki.util"]).then(function() {
@@ -29,6 +30,9 @@ else if (pageName == 'Wikipedia:Narzędzia/CzyWiesz') {
 // zarządzanie propozycjami
 if (pageName.indexOf('/propozycje') > 0) {
 	createDyk(DYKnomination);
+	// this can be used to e.g. setup debugmode
+	mw.hook('userjs.DYKnomination.loaded').fire(DYKnomination);
+
 	const doneHandling = new DoneHandling(pageName, DYKnomination);
 	$(document).ready(function() {
 		doneHandling.init();
