@@ -69,8 +69,6 @@ function createDyk(DYKnomination) {
 
 	DYKnomination.debugmode = false;
 
-	const { Wikiprojects } = require("./Wikiprojects");
-
 	DYKnomination.getEditToken = async function (force) {
 		var D = DYKnomination;
 
@@ -141,10 +139,6 @@ function createDyk(DYKnomination) {
 	 * @type {ErrorInfo}
 	 */
 	DYKnomination.errors = new ErrorInfo(DYKnomination.emailauthor, config.supportUser);
-	/**
-	 * @type {Wikiprojects}
-	 */
-	DYKnomination.wikiprojects = new Wikiprojects();
 }
 
 function createFullDyk(DYKnomination) {
