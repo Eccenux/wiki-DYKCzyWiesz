@@ -152,7 +152,7 @@ class DykForm {
 		var buttons = {
 			"Zgłoś": function() {
 				if (D.sourced) {
-					D.checkForm();
+					D.main.checkForm();
 				}
 				else {
 					alert('Artykuł bez źródeł jest zdyskwalifikowany z nominacji. (Jeśli źródła są to zwróć uwagę czy tytuł sekcji jest prawidłowy, tzn. „Przypisy” lub „Bibliografia”.)');

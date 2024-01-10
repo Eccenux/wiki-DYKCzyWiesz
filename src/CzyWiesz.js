@@ -29,7 +29,7 @@ DYKnomination.about = {
 }
 
 /** Init the DYK object. */
-function createFullDyk(DYKnomination) {
+function createDyk(DYKnomination) {
 	const { ErrorInfo } = require("./ErrorInfo");
 	const { apiAsync } = require("./asyncAjax");
 	const { config } = require("./config");
@@ -69,41 +69,7 @@ function createFullDyk(DYKnomination) {
 
 	DYKnomination.debugmode = false;
 
-	const { DykProcess } = require("./DykProcess");
-	const { DykForm } = require("./DykForm");
-	const dykProcess = new DykProcess(DYKnomination);
-	const dykForm = new DykForm(DYKnomination);
 	const { Wikiprojects } = require("./Wikiprojects");
-
-	// for main.js
-	DYKnomination.askuser = function () {
-		dykForm.askuser();
-	}
-
-	// backward-compatibility debug mode
-	DYKnomination.debug = function () {
-		DYKnomination.debugmode = true;
-		dykForm.askuser();
-	};
-
-	/** Check form and continue with nomination. */
-	DYKnomination.checkForm = function () {
-		const {values, invalid} = dykForm.prepareValues();
-
-		if (invalid.is) {
-			$(invalid.fields).each(function(){
-				$('#CzyWiesz'+this).css({border: 'solid 2px red'}).change(function(){
-					$(this).css({border: 'none'});
-				});
-			});
-			alert(invalid.alert.join('\n'));
-			$('#CzyWiesz'+invalid.fields[0]).focus();
-		}
-		else {
-			// here is the call of editing/ajax function
-			dykProcess.prepare(values);
-		}
-	};
 
 	DYKnomination.getEditToken = async function (force) {
 		var D = DYKnomination;
@@ -181,4 +147,10 @@ function createFullDyk(DYKnomination) {
 	DYKnomination.wikiprojects = new Wikiprojects();
 }
 
-module.exports = { createFullDyk, DYKnomination };
+function createFullDyk(DYKnomination) {
+	createDyk(DYKnomination);
+	const { DykMain } = require("./DykMain");
+	DYKnomination.main = new DykMain(DYKnomination);
+}
+
+module.exports = { DYKnomination, createDyk, createFullDyk };
