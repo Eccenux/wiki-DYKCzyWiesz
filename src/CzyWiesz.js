@@ -106,58 +106,6 @@ function createFullDyk(DYKnomination) {
 		}
 	};
 
-	DYKnomination.task = -1;
-	DYKnomination.loadbar = function (task) {
-
-		var D = DYKnomination;
-		if (task == false) {
-			D.task = -1;
-			return;
-		}
-		else if (typeof task == 'undefined'){
-			D.task++;
-			task = Math.min(D.task,4);
-		}
-		var tasks = D.tasks;
-		
-		var txt;
-		switch (task) {
-			case 0:
-				txt = 'Sprawdzam stronę zgłoszeń…';
-				break;
-			case 1:
-				txt = 'Pobieram dane z formularza…';
-				break;
-			case 2:
-				txt = 'Przygotowuję dane do wysłania…';
-				break;
-			case 3:
-				txt = 'Zgłaszam propozycję…';
-				break;
-			case 4:
-				txt = 'Informuję o zgłoszeniu…';
-				break;
-			case 'done':
-				txt = 'Zakończono!';
-				task = tasks;
-				break;
-			case 'error':
-				txt = 'Wystąpił błąd!';
-				break;
-			default:
-				txt = '';
-		}
-
-		$('#CzyWieszLoaderBarParagraph').text(txt);
-		if (task != 'error') { // 'error' → task/tasks = NaN
-			$('#CzyWieszLoaderBarInner').css({width: 100*task/tasks + '%'});
-		}
-		else {
-			$('#CzyWieszLoaderBarInner').css({backgroundColor: 'red'});
-		}
-
-	};
-
 	DYKnomination.getEditToken = async function (force) {
 		var D = DYKnomination;
 
