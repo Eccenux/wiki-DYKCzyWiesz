@@ -3,6 +3,10 @@
 /* eslint-disable indent */
 /* eslint-disable array-bracket-newline */
 
+function strToRegExp (str) {
+	return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
+}
+
 /**
  * Nomination form (dialog).
  */
@@ -466,7 +470,7 @@ class DykForm {
 				}
 
 				// if there isn't any bold (a) link with title or (b) link with title starting with lowercase
-				const findQ = new RegExp('\'\'\'\\s*\\[\\[('+D.strToRegExp(D.wgTitle)+'|'+D.strToRegExp(tITLE)+')(\\]\\]|\\|.*?\\]\\])\\s*\'\'\'');
+				const findQ = new RegExp('\'\'\'\\s*\\[\\[('+strToRegExp(D.wgTitle)+'|'+strToRegExp(tITLE)+')(\\]\\]|\\|.*?\\]\\])\\s*\'\'\'');
 				const missingQ = QUESTION.split('\n').some(q=>!q.match(findQ));
 				if (missingQ) {
 					invalid.is = true;
@@ -507,7 +511,7 @@ class DykForm {
 				invalid.alert.push('Jeśli musisz podać jakiś komentarz to podaj jakiś sensowny, jeśli nie – wyłącz to pole. Nie wstawiaj w tym polu samego podpisu (lecz po komentarzu podpisz się).');
 			}
 
-		D.values = {
+		const values = {
 			question:    QUESTION,
 			file:        FILE,
 			images:      IMAGES,
@@ -520,7 +524,7 @@ class DykForm {
 			wikiproject: WIKIPROJECT
 		};
 
-		return invalid;
+		return {invalid, values};
 	}
 
 }

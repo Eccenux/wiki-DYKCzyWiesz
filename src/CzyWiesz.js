@@ -69,27 +69,20 @@ function createFullDyk(DYKnomination) {
 
 	DYKnomination.debugmode = false;
 
-	DYKnomination.debug = function () {
-		DYKnomination.debugmode = true;
-		DYKnomination.askuser();
-	};
-
-
-	DYKnomination.strToRegExp = function (str) {
-		return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
-	}
-	
-	DYKnomination.values = {};
-
 	const { DykProcess } = require("./DykProcess");
 	const { DykForm } = require("./DykForm");
 	const dykProcess = new DykProcess(DYKnomination);
 	const dykForm = new DykForm(DYKnomination);
 	const { Wikiprojects } = require("./Wikiprojects");
 
+	DYKnomination.debug = function () {
+		DYKnomination.debugmode = true;
+		dykForm.askuser();
+	};
+
 	/** Check form and continue with nomination. */
 	DYKnomination.checkForm = function () {
-		const invalid = dykForm.prepareValues();
+		const {values, invalid} = dykForm.prepareValues();
 
 		if (invalid.is) {
 			$(invalid.fields).each(function(){
@@ -102,7 +95,7 @@ function createFullDyk(DYKnomination) {
 		}
 		else {
 			// here is the call of editing/ajax function
-			dykProcess.prepare();
+			dykProcess.prepare(values);
 		}
 	};
 

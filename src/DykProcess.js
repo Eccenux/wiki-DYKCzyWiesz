@@ -16,11 +16,13 @@ class DykProcess {
 	 */
 	constructor(core) {
 		this.core = core;
+		this.values = {};	// values from DykForm
 	}
 
 	/** Prepare nomination. */
-	async prepare () {
-		var Dv = this.core.values;
+	async prepare (values) {
+		this.values = values;
+		var Dv = this.values;
 		this.errors = this.core.errors;
 
 		// clear errors
@@ -108,7 +110,7 @@ class DykProcess {
 	async runNominate () {
 
 		var D = this.core;
-		var Dv = D.values;
+		var Dv = this.values;
 
 		// make summary
 		let subpage = this.setupNominationPage();
@@ -141,7 +143,7 @@ class DykProcess {
 	async createNomination (input, summary) {
 
 		var D = this.core;
-		var Dv = D.values;
+		var Dv = this.values;
 		
 		D.log('DYKnomination.values:',Dv);
 
@@ -230,7 +232,7 @@ class DykProcess {
 	/** @private Inform author. */
 	async inform_a () {
 		var D = this.core;
-		var Dv = D.values;
+		var Dv = this.values;
 		var debug = D.debugmode;
 		var secttitl_a,summary_a;
 
@@ -267,7 +269,7 @@ class DykProcess {
 	/** @private Inform wikiprojects. */
 	async inform_w () {
 		var D = this.core;
-		var Dv = D.values;
+		var Dv = this.values;
 		var summary_w,secttitl_w;
 
 		if ( Dv.wikiproject.length == 0 ) {
@@ -391,7 +393,7 @@ class DykProcess {
 	/** Finalize nomination (might actually show errors if there were any). */
 	success () {
 		var D = this.core;
-		var Dv = D.values;
+		var Dv = this.values;
 
 		if (!D.errors.isEmpty()) {
 			D.errors.show();
