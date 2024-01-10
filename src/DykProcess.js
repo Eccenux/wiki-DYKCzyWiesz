@@ -52,7 +52,7 @@ class DykProcess {
 		}
 	}
 
-	/** Setup or read name for the nomination page. */
+	/** @private Setup or read name for the nomination page. */
 	setupNominationPage () {
 		var Dv = this.values;
 
@@ -64,7 +64,7 @@ class DykProcess {
 		return Dv.nominationPage;
 	}
 
-	/** Check for active nominations and nominations this month. */
+	/** @private Check for active nominations and nominations this month. */
 	async checkNominationExists () {
 
 		// search existing sections on nomination page
@@ -104,13 +104,14 @@ class DykProcess {
 		return false;
 	}
 
+	/** @private . */
 	async runNominate () {
 
 		var D = this.core;
 		var Dv = D.values;
 
 		// make summary
-		let subpage = D.setupNominationPage();
+		let subpage = this.setupNominationPage();
 		let summary = D.config.summary.replace('TITLE', `[[${subpage}|${D.wgTitle}]]`);
 
 		/* making data ready */
@@ -128,15 +129,15 @@ class DykProcess {
 
 		D.log('input:',input);
 
-		await D.createNomination(input, summary);
-		await D.inform_r();
-		await D.inform_a();
-		await D.inform_w();
+		await this.createNomination(input, summary);
+		await this.inform_r();
+		await this.inform_a();
+		await this.inform_w();
 
-		D.success();
+		this.success();
 	}
 
-	/* Add nomination. */
+	/** @private Add nomination. */
 	async createNomination (input, summary) {
 
 		var D = this.core;
@@ -186,7 +187,7 @@ class DykProcess {
 	}
 
 	/**
-	 * Inform readers.
+	 * @private Inform readers.
 	 * 
 	 * Inserts a template to the nominated article.
 	 * 
@@ -226,7 +227,7 @@ class DykProcess {
 		}
 	}
 
-	/** Inform author. */
+	/** @private Inform author. */
 	async inform_a () {
 		var D = this.core;
 		var Dv = D.values;
@@ -263,7 +264,7 @@ class DykProcess {
 
 	}
 
-	/** Inform wikiprojects. */
+	/** @private Inform wikiprojects. */
 	async inform_w () {
 		var D = this.core;
 		var Dv = D.values;
@@ -281,7 +282,7 @@ class DykProcess {
 			for (let i = 0; i < Dv.wikiproject.length; i++) {
 				const curWikiproject = Dv.wikiproject[i];
 				try {
-					await D.inform_wLoop(secttitl_w, summary_w, summary_w2, curWikiproject);
+					await this.inform_wLoop(secttitl_w, summary_w, summary_w2, curWikiproject);
 				} catch (error) {
 					D.errors.push('Błąd informowania projektu: '+ curWikiproject + ': '+error.toString()+'.');
 					D.errors.show();
@@ -293,6 +294,7 @@ class DykProcess {
 		}
 	}
 
+	/** @private . */
 	async inform_wLoop (secttitl_w, summary_w, summary_w2, curWikiproject) {
 		var D = this.core;
 		var debug = D.debugmode;
