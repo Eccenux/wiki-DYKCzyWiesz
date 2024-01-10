@@ -23,7 +23,7 @@ class DoneHandling {
 	init() {
 		const items = document.querySelectorAll(this.doneSelector);
 		if (items.length) {
-			mw.loader.using( 'oojs-ui-core' ).done( function () {
+			mw.loader.using( 'oojs-ui-core' ).done(() => {
 				for (const item of items) {
 					this.initItem(item);
 				}
@@ -133,10 +133,5 @@ Jeśli są wątpliwości, to możesz poczekać na więcej ocen.`)) {
 
 	}
 }
-
-/**
-- [ ] Test na stronie /propozycje.
-- [ ] Test na podstronie.
-/**/
 
 module.exports = { DoneHandling };
