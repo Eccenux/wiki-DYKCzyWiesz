@@ -30,7 +30,7 @@ DYKnomination.about = {
 }
 
 /** Init the DYK object. */
-function createFullDyk(DYKnomination) {
+function createDyk(DYKnomination) {
 	const { ErrorInfo } = require("./ErrorInfo");
 	const { apiAsync } = require("./asyncAjax");
 	const { config } = require("./config");
@@ -52,55 +52,6 @@ function createFullDyk(DYKnomination) {
 		return base + '/' + formattedDate + '/' + title;
 	}
 
-	/**
-	 * List of wikiprojects.
-	 */
-	DYKnomination.wikiprojects = {
-		list :  [], // populated on askuser() from [[Wikipedia:Wikiprojekt/Spis wikiprojektów]] by DYKnomination.wikiprojects.load() (see below)
-		list2 : [   /*****
-				 * List of wikiprojects which aren't on above list and should appear on the list of wikiprojects to be notified.
-				 *
-				 * Objects containing following fields:
-				 * label - text which will appear in the dropdown menu
-				 * page - location of the wikiproject. If type is 'talk', page should point to the
-				 *        wikiproject talk page
-				 * type - 'section' or 'talk'
-				 *        - 'section' - the template will be put on the wikiproject main page, after a line
-				 *                    "<!-- Nowe zgłoszenia CzyWiesza wstawiaj poniżej tej linii. Nie zmieniaj i nie usuwaj tej linii -->" (without quotes)
-				 *        - 'talk' - the template will be placed in a new section on the wikiproject talk page.
-				 */
-			],
-		load : function () {
-			var D = DYKnomination;
-			
-			// https://pl.wikipedia.org/wiki/MediaWiki:Gadget-lib-wikiprojects.js
-			// eslint-disable-next-line no-undef
-			gadget.getWikiprojects()
-			.then(function(data){
-
-					var list = data.wikiprojects.map(
-						function (wikiproject) {
-							return wikiproject.name;
-						}
-					);
-
-					D.wikiprojects.list = list;
-			        
-			        D.wikiproject_select = $('<select class="czywiesz-wikiproject"></select>').css('vertical-align', 'middle');
-			        D.wikiproject_select.append('<option value="none">-- (żaden) --</option>');
-
-			        for (var i=0;i<D.wikiprojects.list.length;i++) {
-			            if (typeof(D.wikiprojects.list[i]) == 'function') continue; //on IE wikibits adds indexOf method for arrays. skip it.
-			            $('<option>').attr('value',i).text(D.wikiprojects.list[i]).appendTo(D.wikiproject_select);
-			        }
-
-					$('#CzyWieszWikiprojectContainer small').remove();
-					$('#CzyWieszWikiprojectContainer').append(D.wikiproject_select.clone());
-				}
-			);
-		}
-	};
-
 	DYKnomination.logs = [];
 	DYKnomination.log = function (){
 		// could also ...spread, but that would require explicit ES6
@@ -119,17 +70,257 @@ function createFullDyk(DYKnomination) {
 
 	DYKnomination.debugmode = false;
 
-	DYKnomination.debug = function () {
-		DYKnomination.debugmode = true;
-		DYKnomination.askuser();
+	DYKnomination.getEditToken = async function (force) {
+		var D = DYKnomination;
+
+		var tmpToken = mw.user.tokens.get('csrfToken');
+		if (!force && typeof tmpToken === 'string' && tmpToken.length === 34) {
+			D.edittoken = tmpToken;
+			D.log('DYKnomination.edittoken :',D.edittoken);
+			return D.edittoken;
+		}
+
+		/* get edittoken */
+		try {
+			let data = await apiAsync({
+				url:'/w/api.php?action=query&meta=tokens&format=json&type=csrf',
+				cache: false
+			});
+			D.log('DYKnomination.edittoken :',D.edittoken,'data token :',data.query.tokens.csrftoken);
+			D.edittoken = data.query.tokens.csrftoken;
+		} catch (error) {
+			D.errors.push('Błąd pobierania tokena: '+error+'.');
+			D.errors.show();
+			console.error('Błąd pobierania tokena: ', error);
+		}
+
+		return D.edittoken;
 	};
+
+	DYKnomination.emailauthor = async function () {
+		var D = DYKnomination;
+
+        var opis = prompt('Opisz co się stało. Bez tego twórca nie będzie wiedział co naprawiać.','');
+        if (!opis) {
+            alert('Nic nie wyślę twórcy, dopóki nie opiszesz błędu swoimi słowami. Bez Twojego opisu twórca nie będzie wiedział co naprawiać.');
+            return;
+        }
+        D.log('DYKnomination.errors: ', D.errors); //add potential errors, before stringifying all logs
+        var emailbody = opis + '\n\n' + JSON.stringify(D.logs);
+		
+		//throbber and cursor-wait – until e-mail sent
+		$('.CzyWieszEmailDoAutoraWyslano').html('<img src="https://upload.wikimedia.org/wikipedia/commons/1/1a/Denken.gif" width="10" height="10">');
+		$('#CzyWieszErrorDialog, #CzyWieszSuccess').addClass('wait-im-sending-email');
+
+		apiAsync({
+			url : '/w/api.php',
+			type: 'POST',
+			data : {
+				action : 'emailuser',
+				format : 'json',
+				target : config.supportUser,
+				subject : config.supportEmailTopic,
+				text : emailbody,
+				token : D.edittoken
+			},
+		})
+			.then(function(){
+				$('#CzyWieszErrorDialog, #CzyWieszSuccess').removeClass('wait-im-sending-email');
+				$('.CzyWieszEmailDoAutoraWyslano').text(' Wysłano!');
+			})
+			.catch(function(info){
+				D.errors.push(`Błąd wysyłania e-maila do twórcy: ${info}.`);
+				D.errors.show();
+				console.error('Błąd wysyłania e-maila do twórcy: ', info);
+			})
+		;
+	};
+
+	/**
+	 * @type {ErrorInfo}
+	 */
+	DYKnomination.errors = new ErrorInfo(DYKnomination.emailauthor, config.supportUser);
+}
+
+function createFullDyk(DYKnomination) {
+	createDyk(DYKnomination);
+	const { DykMain } = require("./DykMain");
+	DYKnomination.main = new DykMain(DYKnomination);
+}
+
+module.exports = { DYKnomination, createDyk, createFullDyk };
+
+},{"./DykMain":4,"./ErrorInfo":6,"./asyncAjax":9,"./config":10}],2:[function(require,module,exports){
+const { apiAsync } = require("./asyncAjax");
+
+/**
+ * Przenoszenie do ocenionych.
+ * 
+ * Aktywuje się będąc na głównej stronie `/propozycje`, ale również na podstronach.
+ * 
+ * Pobiera zawartość /propozycje, usuwa nazwę podstrony, dodaje do this.getBaseDone().
+ */
+class DoneHandling {
+	/**
+	 * @param {String} pageName .
+	 * @param {DYKnomination} core .
+	 */
+	constructor(pageName, core) {
+		this.pageName = pageName;
+		this.core = core;
+		// jeśli są 3 oceny (lub więcej)
+		this.doneSelector = '.dyk-done';
+	}
+
+	/** Init when ready. */
+	init() {
+		const items = document.querySelectorAll(this.doneSelector);
+		if (items.length) {
+			mw.loader.using( 'oojs-ui-core' ).done( function () {
+				for (const item of items) {
+					this.initItem(item);
+				}
+				mw.hook('userjs.DYKnomination.DoneHandling.ready').fire(this);
+			});
+		} else {
+			mw.hook('userjs.DYKnomination.DoneHandling.ready').fire(this);
+		}
+	}
+
+	/**
+	 * Init done table.
+	 * [[Wikiprojekt:Czy wiesz/weryfikacja]]
+	 * @param {Element} item .
+	 */
+	initItem(item) {
+		const link = item.querySelector('a:not(.new)');
+		if (!link) {
+			return false;
+		}
+		let article = link.textContent;
+		this.createButton(item, 'Zakończ', () => {
+			this.handle(article);
+		});
+		return true;
+	}
+	/** Confirm and execute. */
+	handle(article) {
+		if (confirm(`Czy na pewno chcesz zakończyć dyskusję dla ${article}?
+Jeśli są wątpliwości, to możesz poczekać na więcej ocen.`)) {
+			this.move(article);
+		}
+	}
+	/** Done, move it. */
+	async move(article) {
+		const D = this.core;
+
+		// Pobranie /propozycje.
+		let nomTitle = D.getBaseNew();
+		let nomText = await apiAsync({
+			url : '/w/index.php?action=raw&title=' + encodeURIComponent(nomTitle),
+			cache : false
+		});
+		let subpageCode = '';
+		// Usunięcie artykułu.
+		nomText.replace(/\{\{.+\/propozycje\/[0-9-]+\/([^}]+)\}\}\s*/, (a, title) => {
+			if (title == article) {
+				subpageCode = a.trim();
+				return "";
+			}
+			return a;
+		});
+		if (!subpageCode.length) {
+			throw new Error(`Błąd usuwania nominacji. Już przeniesiona?`);
+		}
+		// Zapis zmian.
+		let summary_done = D.config.summary_done.replace('TITLE', article);
+		await apiAsync({
+			url : '/w/api.php',
+			type : 'POST',
+			data: {
+				action: 'edit',
+				format: 'json',
+				title:  nomTitle,
+				text:   nomText,
+				summary: summary_done,
+				watchlist: 'nochange',
+				token:  D.edittoken,
+			}
+		});
+
+		// Dopisanie na koniec /ocenione.
+		await apiAsync({
+			url : '/w/api.php',
+			type: 'POST',
+			data : {
+				action : 'edit',
+				format : 'json',
+				title : D.getBaseDone(),
+				appendtext : '\n'+subpageCode,
+				summary: summary_done,
+				watchlist : 'nochange',
+				token : D.edittoken
+			}
+		});
+	}
+	
+	/**
+	 * Create a button before item.
+	 * 
+	 * @param {Element} item .
+	 * @param {String} label .
+	 * @param {Function} handler .
+	 */
+	createButton(item, label, handler) {
+		// https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.ButtonWidget
+		const button = new OO.ui.ButtonWidget( {
+			label: label,
+			flags: [
+				'primary',
+				'progressive'
+			]
+		} );
+		const el = button.$element[0];
+		el.addEventListener('click', handler);
+		item.insertAdjacentElement('beforebegin', el);
+
+	}
+}
+
+/**
+- [ ] Test na stronie /propozycje.
+- [ ] Test na podstronie.
+/**/
+
+module.exports = { DoneHandling };
+},{"./asyncAjax":9}],3:[function(require,module,exports){
+/* eslint-disable no-useless-escape */
+/* eslint-disable no-mixed-spaces-and-tabs */
+/* eslint-disable indent */
+/* eslint-disable array-bracket-newline */
+
+function strToRegExp (str) {
+	return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
+}
+
+/**
+ * Nomination form (dialog).
+ */
+class DykForm {
+	/**
+	 * Setup deps.
+	 * @param {DYKnomination} core 
+	 */
+	constructor(core) {
+		this.core = core;
+	}
 
 	/**
 	 * Function called when user clicks the link of the gadget.
 	 */
-	DYKnomination.askuser = function () {
-
-		var D = DYKnomination;
+	askuser () {
+		var D = this.core;
+		
 		var debug = D.debugmode;
 		D.errors.clear();
 		//D.log(D); //creates circular structure when trying to stringify DYKnimination.logs at the end
@@ -257,7 +448,7 @@ function createFullDyk(DYKnomination) {
 		var buttons = {
 			"Zgłoś": function() {
 				if (D.sourced) {
-					D.checkForm();
+					D.main.checkForm();
 				}
 				else {
 					alert('Artykuł bez źródeł jest zdyskwalifikowany z nominacji. (Jeśli źródła są to zwróć uwagę czy tytuł sekcji jest prawidłowy, tzn. „Przypisy” lub „Bibliografia”.)');
@@ -289,7 +480,7 @@ function createFullDyk(DYKnomination) {
 		});
 
 		// debug quicky
-		if (this.debugmode) {
+		if (D.debugmode) {
 			$('#CzyWieszQuestion').val(`jak testować '''[[${D.wgTitle}]]'''?`);
 		}
 
@@ -297,7 +488,7 @@ function createFullDyk(DYKnomination) {
 		D.wikiprojects.load();
 
 		// check size of article and make a tip for the possible author
-		D.pagerevs();
+		this.pagerevs();
 		
 		if ($('#CzyWieszStyleTag').length == 0) {
 			D.config.styletag.appendTo('head');
@@ -367,7 +558,7 @@ function createFullDyk(DYKnomination) {
 
 		// click on (+) near wikiprojects combo box → add new combo box and enlarge the dialog window
 		$('#CzyWieszWikiprojectAdd').click(function(){
-			$('#CzyWieszWikiprojectContainer').append(D.wikiproject_select.clone());
+			$('#CzyWieszWikiprojectContainer').append(D.wikiprojects.$select.clone());
 			$('#CzyWieszLoaderBar').parent().css({height: '+=24'});
 		});
 
@@ -390,11 +581,11 @@ function createFullDyk(DYKnomination) {
 		//$('#CzyWieszQuestion').keyup();
 		$('#CzyWieszQuestion').focus();
 		
-	};
+	}
 
-	DYKnomination.pagerevs = function () {
+	pagerevs () {
+		var D = this.core;
 
-		var D = DYKnomination;
 		var a,b,d,aj0,revs0,aj,revs,str,maxdiffsize,maxdiffrev,maxdiffuser,maxdiffdate,g;
 
 		d = new Date();
@@ -510,18 +701,11 @@ function createFullDyk(DYKnomination) {
 			console.error('Błąd pobierania historii artykułu (funkcja zewnętrzna): $.ajax.fail().');
 			console.error(data);
 		});
-	};
-
-	DYKnomination.strToRegExp = function (str) {
-		return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
 	}
-	
-	DYKnomination.values = {};
 
 	/** Prepare and validate values. */
-	DYKnomination.prepareValues = function () {
-
-		var D = DYKnomination;
+	prepareValues () {
+		var D = this.core;
 
 		//get the question
 		var QUESTION = $('#CzyWieszQuestion').val();
@@ -582,7 +766,7 @@ function createFullDyk(DYKnomination) {
 				}
 
 				// if there isn't any bold (a) link with title or (b) link with title starting with lowercase
-				const findQ = new RegExp('\'\'\'\\s*\\[\\[('+D.strToRegExp(D.wgTitle)+'|'+D.strToRegExp(tITLE)+')(\\]\\]|\\|.*?\\]\\])\\s*\'\'\'');
+				const findQ = new RegExp('\'\'\'\\s*\\[\\[('+strToRegExp(D.wgTitle)+'|'+strToRegExp(tITLE)+')(\\]\\]|\\|.*?\\]\\])\\s*\'\'\'');
 				const missingQ = QUESTION.split('\n').some(q=>!q.match(findQ));
 				if (missingQ) {
 					invalid.is = true;
@@ -623,7 +807,7 @@ function createFullDyk(DYKnomination) {
 				invalid.alert.push('Jeśli musisz podać jakiś komentarz to podaj jakiś sensowny, jeśli nie – wyłącz to pole. Nie wstawiaj w tym polu samego podpisu (lecz po komentarzu podpisz się).');
 			}
 
-		D.values = {
+		const values = {
 			question:    QUESTION,
 			file:        FILE,
 			images:      IMAGES,
@@ -636,12 +820,57 @@ function createFullDyk(DYKnomination) {
 			wikiproject: WIKIPROJECT
 		};
 
-		return invalid;
-	};
+		return {invalid, values};
+	}
+
+}
+
+module.exports = { DykForm };
+
+},{}],4:[function(require,module,exports){
+/* eslint-disable no-useless-escape */
+/* eslint-disable no-mixed-spaces-and-tabs */
+/* eslint-disable indent */
+/* eslint-disable array-bracket-newline */
+const { DykProcess } = require("./DykProcess");
+const { DykForm } = require("./DykForm");
+const { Wikiprojects } = require("./Wikiprojects");
+
+/**
+ * Nominations main class (~controller).
+ * 
+ * Could be built and loaded separately... maybe.
+ */
+class DykMain {
+	/**
+	 * Setup deps.
+	 * @param {DYKnomination} core 
+	 */
+	constructor(core) {
+		this.core = core;
+		this.dykProcess = new DykProcess(core);
+		this.dykForm = new DykForm(core);
+		this.wikiprojects = new Wikiprojects();
+		// ~mixin
+		this.core.askuser = () => this.askuser();
+		this.core.debug = () => this.debug();
+		this.core.wikiprojects = this.wikiprojects;
+	}
+
+	// for main.js
+	askuser () {
+		this.dykForm.askuser();
+	}
+
+	// backward-compatibility debug mode
+	debug () {
+		this.core.debugmode = true;
+		this.dykForm.askuser();
+	}
 
 	/** Check form and continue with nomination. */
-	DYKnomination.checkForm = function () {
-		const invalid = this.prepareValues();
+	checkForm () {
+		const {values, invalid} = this.dykForm.prepareValues();
 
 		if (invalid.is) {
 			$(invalid.fields).each(function(){
@@ -654,101 +883,49 @@ function createFullDyk(DYKnomination) {
 		}
 		else {
 			// here is the call of editing/ajax function
-			this.prepare();
+			this.dykProcess.prepare(values);
 		}
-	};
+	}
+}
 
-	DYKnomination.task = -1;
-	DYKnomination.loadbar = function (task) {
+module.exports = { DykMain };
 
-		var D = DYKnomination;
-		if (task == false) {
-			D.task = -1;
-			return;
-		}
-		else if (typeof task == 'undefined'){
-			D.task++;
-			task = Math.min(D.task,4);
-		}
-		var tasks = D.tasks;
-		
-		var txt;
-		switch (task) {
-			case 0:
-				txt = 'Sprawdzam stronę zgłoszeń…';
-				break;
-			case 1:
-				txt = 'Pobieram dane z formularza…';
-				break;
-			case 2:
-				txt = 'Przygotowuję dane do wysłania…';
-				break;
-			case 3:
-				txt = 'Zgłaszam propozycję…';
-				break;
-			case 4:
-				txt = 'Informuję o zgłoszeniu…';
-				break;
-			case 'done':
-				txt = 'Zakończono!';
-				task = tasks;
-				break;
-			case 'error':
-				txt = 'Wystąpił błąd!';
-				break;
-			default:
-				txt = '';
-		}
+},{"./DykForm":3,"./DykProcess":5,"./Wikiprojects":8}],5:[function(require,module,exports){
+/* eslint-disable no-useless-escape */
+/* eslint-disable no-mixed-spaces-and-tabs */
+/* eslint-disable indent */
+/* eslint-disable array-bracket-newline */
+const { Loadbar } = require("./Loadbar");
+const { apiAsync } = require("./asyncAjax");
+const { config } = require("./config");
 
-		$('#CzyWieszLoaderBarParagraph').text(txt);
-		if (task != 'error') { // 'error' → task/tasks = NaN
-			$('#CzyWieszLoaderBarInner').css({width: 100*task/tasks + '%'});
-		}
-		else {
-			$('#CzyWieszLoaderBarInner').css({backgroundColor: 'red'});
-		}
-
-	};
-
-	DYKnomination.getEditToken = async function (force) {
-		var D = DYKnomination;
-
-		var tmpToken = mw.user.tokens.get('csrfToken');
-		if (!force && typeof tmpToken === 'string' && tmpToken.length === 34) {
-			D.edittoken = tmpToken;
-			D.log('DYKnomination.edittoken :',D.edittoken);
-			return D.edittoken;
-		}
-
-		/* get edittoken */
-		try {
-			let data = await apiAsync({
-				url:'/w/api.php?action=query&meta=tokens&format=json&type=csrf',
-				cache: false
-			});
-			D.log('DYKnomination.edittoken :',D.edittoken,'data token :',data.query.tokens.csrftoken);
-			D.edittoken = data.query.tokens.csrftoken;
-		} catch (error) {
-			D.errors.push('Błąd pobierania tokena: '+error+'.');
-			D.errors.show();
-			console.error('Błąd pobierania tokena: ', error);
-		}
-
-		return D.edittoken;
-	};
+/**
+ * Nomination process (after initial form check).
+ */
+class DykProcess {
+	/**
+	 * Setup deps.
+	 * @param {DYKnomination} core 
+	 */
+	constructor(core) {
+		this.core = core;
+		this.values = {};	// values from DykForm
+	}
 
 	/** Prepare nomination. */
-	DYKnomination.prepare = async function () {
+	async prepare (values) {
+		this.values = values;
 		var Dv = this.values;
+		this.errors = this.core.errors;
 
 		// clear errors
 		this.errors.clear();
 
 		// main tasks count
-		this.tasks = 4 + Dv.wikiproject.length + (Dv.authorInf?1:0);
+		this.loadbar = new Loadbar(4 + Dv.wikiproject.length + (Dv.authorInf?1:0));
 
 		// init progress
-		this.loadbar();
+		this.loadbar.next();
 
 		// init nomination date
 		this.setupNominationPage();
@@ -770,8 +947,8 @@ function createFullDyk(DYKnomination) {
 		}
 	}
 
-	/** Setup or read name for the nomination page. */
-	DYKnomination.setupNominationPage = function () {
+	/** @private Setup or read name for the nomination page. */
+	setupNominationPage () {
 		var Dv = this.values;
 
 		if (!Dv.nominationDate) {
@@ -782,8 +959,8 @@ function createFullDyk(DYKnomination) {
 		return Dv.nominationPage;
 	}
 
-	/** Check for active nominations and nominations this month. */
-	DYKnomination.checkNominationExists = async function () {
+	/** @private Check for active nominations and nominations this month. */
+	async checkNominationExists () {
 
 		// search existing sections on nomination page
 		let data = await apiAsync({
@@ -820,19 +997,20 @@ function createFullDyk(DYKnomination) {
 
 		// nomination doesn't exist yet
 		return false;
-	};
+	}
 
-	DYKnomination.runNominate = async function () {
+	/** @private . */
+	async runNominate () {
 
-		var D = DYKnomination;
-		var Dv = D.values;
+		var D = this.core;
+		var Dv = this.values;
 
 		// make summary
-		let subpage = D.setupNominationPage();
+		let subpage = this.setupNominationPage();
 		let summary = D.config.summary.replace('TITLE', `[[${subpage}|${D.wgTitle}]]`);
 
 		/* making data ready */
-		D.loadbar();
+		this.loadbar.next();
 
 		// making content
 		let input = `== [[${subpage}|${D.wgTitle}]] ==\n`
@@ -846,23 +1024,23 @@ function createFullDyk(DYKnomination) {
 
 		D.log('input:',input);
 
-		await D.createNomination(input, summary);
-		await D.inform_r();
-		await D.inform_a();
-		await D.inform_w();
+		await this.createNomination(input, summary);
+		await this.inform_r();
+		await this.inform_a();
+		await this.inform_w();
 
-		D.success();
-	};
+		this.success();
+	}
 
-	/* Add nomination. */
-	DYKnomination.createNomination = async function (input, summary) {
+	/** @private Add nomination. */
+	async createNomination (input, summary) {
 
-		var D = DYKnomination;
-		var Dv = D.values;
+		var D = this.core;
+		var Dv = this.values;
 		
 		D.log('DYKnomination.values:',Dv);
 
-		D.loadbar();
+		this.loadbar.next();
 
 		try {
 			// create subpage
@@ -880,7 +1058,7 @@ function createFullDyk(DYKnomination) {
 					token : D.edittoken
 				}
 			});
-			D.loadbar();
+			this.loadbar.next();
 
 			// append subpage
 			await apiAsync({
@@ -901,18 +1079,18 @@ function createFullDyk(DYKnomination) {
 			D.errors.show();
 			console.error('Błąd zgłaszania do rubryki: ', error);
 		}
-	};
+	}
 
 	/**
-	 * Inform readers.
+	 * @private Inform readers.
 	 * 
 	 * Inserts a template to the nominated article.
 	 * 
 	 * @returns Promise.
 	 */
-	DYKnomination.inform_r = async function () {
+	async inform_r () {
  
-		var D = DYKnomination;
+		var D = this.core;
 		var debug = D.debugmode;
 
 		let subpageTitle = this.setupNominationPage();
@@ -942,12 +1120,12 @@ function createFullDyk(DYKnomination) {
 			D.errors.show();
 			console.error('Błąd informowania w artykule:', info);
 		}
-	};
+	}
 
-	/** Inform author. */
-	DYKnomination.inform_a = async function () {
-		var D = DYKnomination;
-		var Dv = D.values;
+	/** @private Inform author. */
+	async inform_a () {
+		var D = this.core;
+		var Dv = this.values;
 		var debug = D.debugmode;
 		var secttitl_a,summary_a;
 
@@ -979,12 +1157,12 @@ function createFullDyk(DYKnomination) {
 			console.error('Błąd informowania autora:',  info);
 		}
 
-	};
+	}
 
-	/** Inform wikiprojects. */
-	DYKnomination.inform_w = async function () {
-		var D = DYKnomination;
-		var Dv = D.values;
+	/** @private Inform wikiprojects. */
+	async inform_w () {
+		var D = this.core;
+		var Dv = this.values;
 		var summary_w,secttitl_w;
 
 		if ( Dv.wikiproject.length == 0 ) {
@@ -999,20 +1177,21 @@ function createFullDyk(DYKnomination) {
 			for (let i = 0; i < Dv.wikiproject.length; i++) {
 				const curWikiproject = Dv.wikiproject[i];
 				try {
-					await D.inform_wLoop(secttitl_w, summary_w, summary_w2, curWikiproject);
+					await this.inform_wLoop(secttitl_w, summary_w, summary_w2, curWikiproject);
 				} catch (error) {
 					D.errors.push('Błąd informowania projektu: '+ curWikiproject + ': '+error.toString()+'.');
 					D.errors.show();
 					console.error('Błąd informowania projektu: '+ curWikiproject + ': '+error.toString()+'.');
 					throw new Error(`Błąd informowania projektów (${i} / ${Dv.wikiproject.length}).`);
 				}
-				D.loadbar();
+				this.loadbar.next();
 			}
 		}
-	};
+	}
 
-	DYKnomination.inform_wLoop = async function (secttitl_w, summary_w, summary_w2, curWikiproject) {
-		var D = DYKnomination;
+	/** @private . */
+	async inform_wLoop (secttitl_w, summary_w, summary_w2, curWikiproject) {
+		var D = this.core;
 		var debug = D.debugmode;
 		
 		var wnr = -1;
@@ -1102,19 +1281,19 @@ function createFullDyk(DYKnomination) {
 
 		// add section or modify page
 		await apiAsync(mainCall);
-	};
+	}
 
 	/** Finalize nomination (might actually show errors if there were any). */
-	DYKnomination.success = function () {
-		var D = DYKnomination;
-		var Dv = D.values;
+	success () {
+		var D = this.core;
+		var Dv = this.values;
 
 		if (!D.errors.isEmpty()) {
 			D.errors.show();
 			return false;
 		}
 
-		D.loadbar('done');
+		this.loadbar.next('done');
 		D.log('Zgłoszenie zakończone sukcesem!');
 
 		let subpageTitle = this.setupNominationPage();
@@ -1147,56 +1326,13 @@ function createFullDyk(DYKnomination) {
 		$('#CzyWieszSuccess a.CzyWieszEmailDoAutoraWyslij').click( () => { D.emailauthor(); } );
 
 		return true;
-	};
+	}
 
-	DYKnomination.emailauthor = async function () {
-		var D = DYKnomination;
-
-        var opis = prompt('Opisz co się stało. Bez tego twórca nie będzie wiedział co naprawiać.','');
-        if (!opis) {
-            alert('Nic nie wyślę twórcy, dopóki nie opiszesz błędu swoimi słowami. Bez Twojego opisu twórca nie będzie wiedział co naprawiać.');
-            return;
-        }
-        D.log('DYKnomination.errors: ', D.errors); //add potential errors, before stringifying all logs
-        var emailbody = opis + '\n\n' + JSON.stringify(DYKnomination.logs);
-		
-		//throbber and cursor-wait – until e-mail sent
-		$('.CzyWieszEmailDoAutoraWyslano').html('<img src="https://upload.wikimedia.org/wikipedia/commons/1/1a/Denken.gif" width="10" height="10">');
-		$('#CzyWieszErrorDialog, #CzyWieszSuccess').addClass('wait-im-sending-email');
-
-		apiAsync({
-			url : '/w/api.php',
-			type: 'POST',
-			data : {
-				action : 'emailuser',
-				format : 'json',
-				target : config.supportUser,
-				subject : config.supportEmailTopic,
-				text : emailbody,
-				token : D.edittoken
-			},
-		})
-			.then(function(){
-				$('#CzyWieszErrorDialog, #CzyWieszSuccess').removeClass('wait-im-sending-email');
-				$('.CzyWieszEmailDoAutoraWyslano').text(' Wysłano!');
-			})
-			.catch(function(info){
-				D.errors.push(`Błąd wysyłania e-maila do twórcy: ${info}.`);
-				D.errors.show();
-				console.error('Błąd wysyłania e-maila do twórcy: ', info);
-			})
-		;
-	};
-
-	/**
-	 * @type {ErrorInfo}
-	 */
-	DYKnomination.errors = new ErrorInfo(DYKnomination.emailauthor, config.supportUser);
 }
 
-module.exports = { createFullDyk, DYKnomination };
+module.exports = { DykProcess };
 
-},{"./ErrorInfo":2,"./asyncAjax":3,"./config":4}],2:[function(require,module,exports){
+},{"./Loadbar":7,"./asyncAjax":9,"./config":10}],6:[function(require,module,exports){
 /**
  * D.errors info.
  */
@@ -1256,7 +1392,135 @@ class ErrorInfo {
 
 module.exports = { ErrorInfo };
 
-},{}],3:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
+/* eslint-disable no-useless-escape */
+/* eslint-disable no-mixed-spaces-and-tabs */
+/* eslint-disable indent */
+/* eslint-disable array-bracket-newline */
+/**
+ * Nominacje do Czy-Wiesza aka DYKnomination (Did You Know).
+ * 
+ * Instrukcja:
+ * [[Wikipedia:Narzędzia/CzyWiesz]]
+ * 
+ * Historia zmian:
+ * https://pl.wikipedia.org/w/index.php?title=MediaWiki:Gadget-CzyWiesz.js&action=history
+ * 
+ * Repozytorium:
+ * https://github.com/Eccenux/wiki-DYKCzyWiesz
+ * 
+ * Wdrożone za pomocą: [[Wikipedia:Wikiploy]]
+ */
+class Loadbar {
+	/**
+	 * @param {Number} tasks Expected number of tasks.
+	 */
+	constructor(tasks) {
+		this.task = -1;
+		this.tasks = tasks;
+	}
+	next (task) {
+		if (typeof task != 'string'){
+			this.task++;
+			task = Math.min(this.task,4);
+		}
+		var tasks = this.tasks;
+		
+		var txt;
+		switch (task) {
+			case 0:
+				txt = 'Sprawdzam stronę zgłoszeń…';
+				break;
+			case 1:
+				txt = 'Pobieram dane z formularza…';
+				break;
+			case 2:
+				txt = 'Przygotowuję dane do wysłania…';
+				break;
+			case 3:
+				txt = 'Zgłaszam propozycję…';
+				break;
+			case 4:
+				txt = 'Informuję o zgłoszeniu…';
+				break;
+			case 'done':
+				txt = 'Zakończono!';
+				task = tasks;
+				break;
+			case 'error':
+				txt = 'Wystąpił błąd!';
+				break;
+			default:
+				txt = '';
+		}
+
+		$('#CzyWieszLoaderBarParagraph').text(txt);
+		if (task != 'error') { // 'error' → task/tasks = NaN
+			$('#CzyWieszLoaderBarInner').css({width: 100*task/tasks + '%'});
+		}
+		else {
+			$('#CzyWieszLoaderBarInner').css({backgroundColor: 'red'});
+		}
+	}
+}
+
+module.exports = { Loadbar };
+
+},{}],8:[function(require,module,exports){
+/* eslint-disable no-useless-escape */
+/* eslint-disable no-mixed-spaces-and-tabs */
+/* eslint-disable indent */
+/* eslint-disable array-bracket-newline */
+/**
+ * List of wikiprojects.
+ */
+class Wikiprojects {
+	constructor() {
+		this.list =  []; // populated by load() from [[Wikipedia:Wikiprojekt/Spis wikiprojektów]]
+		this.list2 = [   /*****
+				 * List of wikiprojects which aren't on above list and should appear on the list of wikiprojects to be notified.
+				 *
+				 * Objects containing following fields:
+				 * label - text which will appear in the dropdown menu
+				 * page - location of the wikiproject. If type is 'talk', page should point to the
+				 *        wikiproject talk page
+				 * type - 'section' or 'talk'
+				 *        - 'section' - the template will be put on the wikiproject main page, after a line
+				 *                    "<!-- Nowe zgłoszenia CzyWiesza wstawiaj poniżej tej linii. Nie zmieniaj i nie usuwaj tej linii -->" (without quotes)
+				 *        - 'talk' - the template will be placed in a new section on the wikiproject talk page.
+				 */
+		];
+		/** Dropdown menu (available after load). */
+		this.$select = null;
+	}
+	load () {
+		// https://pl.wikipedia.org/wiki/MediaWiki:Gadget-lib-wikiprojects.js
+		// eslint-disable-next-line no-undef
+		gadget.getWikiprojects()
+			.then((data) => {
+					const list = data.wikiprojects.map(w => w.name);
+
+					this.list = list;
+			        
+			        this.$select = $('<select class="czywiesz-wikiproject"></select>').css('vertical-align', 'middle');
+			        this.$select.append('<option value="none">-- (żaden) --</option>');
+
+			        for (var i=0; i<this.list.length; i++) {
+			            if (typeof(this.list[i]) == 'function') continue; //on IE wikibits adds indexOf method for arrays. skip it.
+			            $('<option>').attr('value',i).text(this.list[i]).appendTo(this.$select);
+			        }
+
+					$('#CzyWieszWikiprojectContainer small').remove();
+					$('#CzyWieszWikiprojectContainer').append(this.$select.clone());
+				}
+			)
+		;
+	}
+}
+
+module.exports = { Wikiprojects };
+
+},{}],9:[function(require,module,exports){
 /**
  * MW API call.
  * 
@@ -1309,7 +1573,7 @@ function apiAsync(call) {
 
 module.exports = { apiAjax, apiAsync };
 
-},{}],4:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 var config = {
 	interp:		'.,:;!?…-–—()[]{}⟨⟩\'"„”«»/\\', // [\s] must be added directly!; ['] & [\] escaped due to js limits, [\s] means [space]
 	miesiacArr:	['stycznia', 'lutego', 'marca', 'kwietnia', 'maja', 'czerwca', 'lipca', 'sierpnia', 'września', 'października', 'listopada', 'grudnia'],
@@ -1325,6 +1589,8 @@ var config = {
 	portlet_title: 'Zgłoś do „Czy wiesz…”',
 	/** summary template for nomination */
 	summary:	'TITLE nowe zgłoszenie za pomocą [[Wikipedia:Narzędzia/CzyWiesz|gadżetu CzyWiesz]]',
+	/** summary template for done */
+	summary_done:	'TITLE ozn. jako ocenione za pomocą [[Wikipedia:Narzędzia/CzyWiesz|gadżetu CzyWiesz]]',
 	/** summary for template in the article */
 	summary_r:	'Artykuł ten został zgłoszony do umieszczenia na [[Wikipedia:Strona główna|stronie głównej]] w rubryce „[[Szablon:Czy wiesz|Czy wiesz]]” za pomocą [[Wikipedia:Narzędzia/CzyWiesz|gadżetu CzyWiesz]]',
 	/** summary for template on author's talk page */
@@ -1363,11 +1629,15 @@ var config = {
 
 module.exports = { config };
 
-},{}],5:[function(require,module,exports){
-var { DYKnomination, createFullDyk } = require("./CzyWiesz");
+},{}],11:[function(require,module,exports){
+const { DYKnomination, createDyk, createFullDyk } = require("./CzyWiesz");
+const { DoneHandling } = require("./DoneHandling");
+
+const namespaceNumber = mw.config.get('wgNamespaceNumber');
+const pageName = mw.config.get('wgPageName');
 
 // init in main namespace
-if (mw.config.get('wgNamespaceNumber') === 0) {
+if (namespaceNumber === 0) {
 	createFullDyk(DYKnomination);
 	mw.hook('userjs.DYKnomination.loaded').fire(DYKnomination);
 
@@ -1384,11 +1654,20 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 	});
 }
 //insert current version number while on Wikipedia:Narzędzia/CzyWiesz
-else if (mw.config.get('wgPageName')=='Wikipedia:Narzędzia/CzyWiesz') {
+else if (pageName == 'Wikipedia:Narzędzia/CzyWiesz') {
 	$('.DYKnomination-version').html(DYKnomination.about.version);
+}
+
+// zarządzanie propozycjami
+if (pageName.indexOf('/propozycje') > 0) {
+	createDyk(DYKnomination);
+	const doneHandling = new DoneHandling(pageName, DYKnomination);
+	$(document).ready(function() {
+		doneHandling.init();
+	});
 }
 
 // expose to others
 window.DYKnomination = DYKnomination;
 
-},{"./CzyWiesz":1}]},{},[5]);
+},{"./CzyWiesz":1,"./DoneHandling":2}]},{},[11]);
