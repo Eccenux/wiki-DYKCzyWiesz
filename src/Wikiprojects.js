@@ -38,7 +38,7 @@ class Wikiprojects {
 
 			        for (var i=0; i<this.list.length; i++) {
 			            if (typeof(this.list[i]) == 'function') continue; //on IE wikibits adds indexOf method for arrays. skip it.
-			            $('<option>').attr('value',i).text(this.list[i]).appendTo($select);
+			            $('<option>').attr('value',i).text(this.list[i]).appendTo(this.$select);
 			        }
 
 					$('#CzyWieszWikiprojectContainer small').remove();
