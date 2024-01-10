@@ -16,10 +16,11 @@ class DykProcess {
 	constructor(core) {
 		this.core = core;
 	}
-	
+
 	/** Prepare nomination. */
 	async prepare () {
-		var Dv = this.values;
+		var Dv = this.core.values;
+		this.errors = this.core.errors;
 
 		// clear errors
 		this.errors.clear();
@@ -104,7 +105,7 @@ class DykProcess {
 
 	async runNominate () {
 
-		var D = DYKnomination;
+		var D = this.core;
 		var Dv = D.values;
 
 		// make summary
@@ -137,7 +138,7 @@ class DykProcess {
 	/* Add nomination. */
 	async createNomination (input, summary) {
 
-		var D = DYKnomination;
+		var D = this.core;
 		var Dv = D.values;
 		
 		D.log('DYKnomination.values:',Dv);
@@ -192,7 +193,7 @@ class DykProcess {
 	 */
 	async inform_r () {
  
-		var D = DYKnomination;
+		var D = this.core;
 		var debug = D.debugmode;
 
 		let subpageTitle = this.setupNominationPage();
@@ -226,7 +227,7 @@ class DykProcess {
 
 	/** Inform author. */
 	async inform_a () {
-		var D = DYKnomination;
+		var D = this.core;
 		var Dv = D.values;
 		var debug = D.debugmode;
 		var secttitl_a,summary_a;
@@ -263,7 +264,7 @@ class DykProcess {
 
 	/** Inform wikiprojects. */
 	async inform_w () {
-		var D = DYKnomination;
+		var D = this.core;
 		var Dv = D.values;
 		var summary_w,secttitl_w;
 
@@ -292,7 +293,7 @@ class DykProcess {
 	}
 
 	async inform_wLoop (secttitl_w, summary_w, summary_w2, curWikiproject) {
-		var D = DYKnomination;
+		var D = this.core;
 		var debug = D.debugmode;
 		
 		var wnr = -1;
@@ -386,7 +387,7 @@ class DykProcess {
 
 	/** Finalize nomination (might actually show errors if there were any). */
 	success () {
-		var D = DYKnomination;
+		var D = this.core;
 		var Dv = D.values;
 
 		if (!D.errors.isEmpty()) {
@@ -427,45 +428,6 @@ class DykProcess {
 		$('#CzyWieszSuccess a.CzyWieszEmailDoAutoraWyslij').click( () => { D.emailauthor(); } );
 
 		return true;
-	}
-
-	async emailauthor () {
-		var D = DYKnomination;
-
-        var opis = prompt('Opisz co się stało. Bez tego twórca nie będzie wiedział co naprawiać.','');
-        if (!opis) {
-            alert('Nic nie wyślę twórcy, dopóki nie opiszesz błędu swoimi słowami. Bez Twojego opisu twórca nie będzie wiedział co naprawiać.');
-            return;
-        }
-        D.log('DYKnomination.errors: ', D.errors); //add potential errors, before stringifying all logs
-        var emailbody = opis + '\n\n' + JSON.stringify(DYKnomination.logs);
-		
-		//throbber and cursor-wait – until e-mail sent
-		$('.CzyWieszEmailDoAutoraWyslano').html('<img src="https://upload.wikimedia.org/wikipedia/commons/1/1a/Denken.gif" width="10" height="10">');
-		$('#CzyWieszErrorDialog, #CzyWieszSuccess').addClass('wait-im-sending-email');
-
-		apiAsync({
-			url : '/w/api.php',
-			type: 'POST',
-			data : {
-				action : 'emailuser',
-				format : 'json',
-				target : config.supportUser,
-				subject : config.supportEmailTopic,
-				text : emailbody,
-				token : D.edittoken
-			},
-		})
-			.then(function(){
-				$('#CzyWieszErrorDialog, #CzyWieszSuccess').removeClass('wait-im-sending-email');
-				$('.CzyWieszEmailDoAutoraWyslano').text(' Wysłano!');
-			})
-			.catch(function(info){
-				D.errors.push(`Błąd wysyłania e-maila do twórcy: ${info}.`);
-				D.errors.show();
-				console.error('Błąd wysyłania e-maila do twórcy: ', info);
-			})
-		;
 	}
 
 }
