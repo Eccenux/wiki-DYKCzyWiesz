@@ -1,7 +1,11 @@
-var { DYKnomination, createFullDyk } = require("./CzyWiesz");
+const { DYKnomination, createDyk, createFullDyk } = require("./CzyWiesz");
+const { DoneHandling } = require("./DoneHandling");
+
+const namespaceNumber = mw.config.get('wgNamespaceNumber');
+const pageName = mw.config.get('wgPageName');
 
 // init in main namespace
-if (mw.config.get('wgNamespaceNumber') === 0) {
+if (namespaceNumber === 0) {
 	createFullDyk(DYKnomination);
 	mw.hook('userjs.DYKnomination.loaded').fire(DYKnomination);
 
@@ -18,8 +22,17 @@ if (mw.config.get('wgNamespaceNumber') === 0) {
 	});
 }
 //insert current version number while on Wikipedia:Narzędzia/CzyWiesz
-else if (mw.config.get('wgPageName')=='Wikipedia:Narzędzia/CzyWiesz') {
+else if (pageName == 'Wikipedia:Narzędzia/CzyWiesz') {
 	$('.DYKnomination-version').html(DYKnomination.about.version);
+}
+
+// zarządzanie propozycjami
+if (pageName.indexOf('/propozycje') > 0) {
+	createDyk(DYKnomination);
+	const doneHandling = new DoneHandling(pageName, DYKnomination);
+	$(document).ready(function() {
+		doneHandling.init();
+	});
 }
 
 // expose to others
