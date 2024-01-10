@@ -1,3 +1,5 @@
+/* global OO */
+
 const { apiAsync } = require("./asyncAjax");
 
 /**

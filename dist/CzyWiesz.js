@@ -151,6 +151,8 @@ function createFullDyk(DYKnomination) {
 module.exports = { DYKnomination, createDyk, createFullDyk };
 
 },{"./DykMain":4,"./ErrorInfo":6,"./asyncAjax":9,"./config":10}],2:[function(require,module,exports){
+/* global OO */
+
 const { apiAsync } = require("./asyncAjax");
 
 /**
@@ -910,6 +912,7 @@ class DykProcess {
 	/** Prepare nomination. */
 	async prepare (values) {
 		this.values = values;
+		this.wgTitle = this.core.wgTitle;
 		var Dv = this.values;
 		this.errors = this.core.errors;
 
@@ -937,21 +940,19 @@ class DykProcess {
 		if (nominated) {
 			this.errors.show();
 		} else {
-			await this.getEditToken(false);
+			await this.core.getEditToken(false);
 			await this.runNominate();
 		}
 	}
 
 	/** @private Setup or read name for the nomination page. */
 	setupNominationPage () {
-		var Dv = this.values;
-
-		if (!Dv.nominationDate) {
-			Dv.nominationDate = new Date();
+		if (!this.nominationDate) {
+			this.nominationDate = new Date();
 		}
-		Dv.nominationPage = this.getNominationPage(Dv.nominationDate, this.wgTitle);
+		this.nominationPage = this.core.getNominationPage(this.nominationDate, this.wgTitle);
 
-		return Dv.nominationPage;
+		return this.nominationPage;
 	}
 
 	/** @private Check for active nominations and nominations this month. */
