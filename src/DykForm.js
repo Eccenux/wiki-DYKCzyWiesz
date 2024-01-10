@@ -258,7 +258,7 @@ class DykForm {
 
 		// click on (+) near wikiprojects combo box → add new combo box and enlarge the dialog window
 		$('#CzyWieszWikiprojectAdd').click(function(){
-			$('#CzyWieszWikiprojectContainer').append(D.wikiproject_select.clone());
+			$('#CzyWieszWikiprojectContainer').append(D.wikiprojects.$select.clone());
 			$('#CzyWieszLoaderBar').parent().css({height: '+=24'});
 		});
 

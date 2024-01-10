@@ -7,7 +7,7 @@
  */
 class Wikiprojects {
 	constructor() {
-		this.list =  []; // populated on askuser() from [[Wikipedia:Wikiprojekt/Spis wikiprojektów]] by DYKnomination.wikiprojects.load() (see below)
+		this.list =  []; // populated by load() from [[Wikipedia:Wikiprojekt/Spis wikiprojektów]]
 		this.list2 = [   /*****
 				 * List of wikiprojects which aren't on above list and should appear on the list of wikiprojects to be notified.
 				 *
@@ -21,33 +21,28 @@ class Wikiprojects {
 				 *        - 'talk' - the template will be placed in a new section on the wikiproject talk page.
 				 */
 		];
+		/** Dropdown menu (available after load). */
+		this.$select = null;
 	}
 	load () {
-		var D = DYKnomination;
-			
 		// https://pl.wikipedia.org/wiki/MediaWiki:Gadget-lib-wikiprojects.js
 		// eslint-disable-next-line no-undef
 		gadget.getWikiprojects()
-			.then(function(data){
+			.then((data) => {
+					const list = data.wikiprojects.map(w => w.name);
 
-					var list = data.wikiprojects.map(
-						function (wikiproject) {
-							return wikiproject.name;
-						}
-					);
-
-					D.wikiprojects.list = list;
+					this.list = list;
 			        
-			        D.wikiproject_select = $('<select class="czywiesz-wikiproject"></select>').css('vertical-align', 'middle');
-			        D.wikiproject_select.append('<option value="none">-- (żaden) --</option>');
+			        this.$select = $('<select class="czywiesz-wikiproject"></select>').css('vertical-align', 'middle');
+			        this.$select.append('<option value="none">-- (żaden) --</option>');
 
-			        for (var i=0;i<D.wikiprojects.list.length;i++) {
-			            if (typeof(D.wikiprojects.list[i]) == 'function') continue; //on IE wikibits adds indexOf method for arrays. skip it.
-			            $('<option>').attr('value',i).text(D.wikiprojects.list[i]).appendTo(D.wikiproject_select);
+			        for (var i=0; i<this.list.length; i++) {
+			            if (typeof(this.list[i]) == 'function') continue; //on IE wikibits adds indexOf method for arrays. skip it.
+			            $('<option>').attr('value',i).text(this.list[i]).appendTo($select);
 			        }
 
 					$('#CzyWieszWikiprojectContainer small').remove();
-					$('#CzyWieszWikiprojectContainer').append(D.wikiproject_select.clone());
+					$('#CzyWieszWikiprojectContainer').append(this.$select.clone());
 				}
 			)
 		;

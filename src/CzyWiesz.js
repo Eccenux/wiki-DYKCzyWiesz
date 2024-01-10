@@ -85,6 +85,7 @@ function createFullDyk(DYKnomination) {
 	const { DykForm } = require("./DykForm");
 	const dykProcess = new DykProcess(DYKnomination);
 	const dykForm = new DykForm(DYKnomination);
+	const { Wikiprojects } = require("./Wikiprojects");
 
 	/** Check form and continue with nomination. */
 	DYKnomination.checkForm = function () {
@@ -227,6 +228,10 @@ function createFullDyk(DYKnomination) {
 	 * @type {ErrorInfo}
 	 */
 	DYKnomination.errors = new ErrorInfo(DYKnomination.emailauthor, config.supportUser);
+	/**
+	 * @type {Wikiprojects}
+	 */
+	DYKnomination.wikiprojects = new Wikiprojects();
 }
 
 module.exports = { createFullDyk, DYKnomination };
