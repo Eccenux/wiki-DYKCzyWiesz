@@ -160,7 +160,7 @@ const { apiAsync } = require("./asyncAjax");
  * 
  * Aktywuje się będąc na głównej stronie `/propozycje`, ale również na podstronach.
  * 
- * Pobiera zawartość /propozycje, usuwa nazwę podstrony, dodaje do this.getBaseDone().
+ * Pobiera zawartość /propozycje, usuwa nazwę podstrony, dodaje do /ocenione.
  */
 class DoneHandling {
 	/**
@@ -960,11 +960,11 @@ class DykProcess {
 
 		// search existing sections on nomination page
 		let data = await apiAsync({
-			url: '/w/api.php?action=parse&format=json&page=' + encodeURIComponent(this.getBaseNew()) + '&prop=sections',
+			url: '/w/api.php?action=parse&format=json&page=' + encodeURIComponent(this.core.getBaseNew()) + '&prop=sections',
 			cache: false
 		});
 		let sections = data.parse.sections;
-		this.log('Sekcje na stronie nominacji:', sections);
+		this.core.log('Sekcje na stronie nominacji:', sections);
 		let exisiting = sections.filter(s => s.level==2 && s.line == this.wgTitle);
 		if (exisiting.length) {
 			const href = '/wiki/'+encodeURIComponent(this.setupNominationPage()) + '#' + exisiting[0].anchor;

@@ -7,7 +7,7 @@ const { apiAsync } = require("./asyncAjax");
  * 
  * Aktywuje się będąc na głównej stronie `/propozycje`, ale również na podstronach.
  * 
- * Pobiera zawartość /propozycje, usuwa nazwę podstrony, dodaje do this.getBaseDone().
+ * Pobiera zawartość /propozycje, usuwa nazwę podstrony, dodaje do /ocenione.
  */
 class DoneHandling {
 	/**
