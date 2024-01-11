@@ -1,5 +1,6 @@
 /* global OO */
 
+const { DoneDialog } = require("./DoneDialog");
 const { apiAsync } = require("./asyncAjax");
 
 /**
@@ -53,18 +54,41 @@ class DoneHandling {
 		return true;
 	}
 	/** Confirm and execute. */
-	handle(article) {
-		if (confirm(`Czy na pewno chcesz zakończyć dyskusję dla ${article}?
+	async handle(article) {
+		if (confirm(`Czy na pewno chcesz zakończyć dyskusję dla ${article}?	
 Jeśli są wątpliwości, to możesz poczekać na więcej ocen.`)) {
-			this.move(article);
+
+			const dd = new DoneDialog('Przenoszenie wpisu', 'Start...');
+			const currentUser = mw.config.get('wgUserName');
+			const contribHref = '/wiki/Special:Contributions/'+encodeURIComponent(currentUser);
+			try {
+				await this.move(article, dd);
+			} catch (error) {
+				console.error(error);
+				dd.update(`
+					<p>❌ Przenoszenie nie udało się: ${error}.</p>
+					<p><a href="${contribHref}" class="czywiesz-external" target="_blank">Sprawdź swój wkład</a>.
+						W konsoli przeglądarki mogą znajdować się dodatkowe infomacji, które możesz przekazać twórcy lub w <em>WP:BAR:TE</em>.
+				`, true);
+				return;
+			}
+			dd.update(`Przenoszenie zakończone. Dla pewności możesz sprawdzić 
+				<a href="${contribHref}" class="czywiesz-external" target="_blank">swój wkład</a>.`)
 		}
 	}
-	/** Done, move it. */
-	async move(article) {
+	/**
+	 * Done, move it.
+	 * @param {String} article Article title.
+	 * @param {DoneDialog} dd Dialog for progress info.
+	 */
+	async move(article, dd) {
 		const D = this.core;
 
+		// okienko informacyjne
+		dd.open();
+		
 		// Pobranie /propozycje.
-		D.log('Pobranie wikitekstu propozycji.');
+		dd.update('Pobranie wikitekstu propozycji.');
 		let nomsTitle = D.getBaseNew();
 		let nomsText = await apiAsync({
 			url : '/w/index.php?action=raw&title=' + encodeURIComponent(nomsTitle),
@@ -72,6 +96,7 @@ Jeśli są wątpliwości, to możesz poczekać na więcej ocen.`)) {
 		});
 		let subpageCode = '';
 		// Usunięcie wpisu z wikitekstu.
+		D.log('Usunięcie wpisu z wikitekstu.');
 		let modifiedNomsText = nomsText.replace(/\{\{.+\/propozycje\/[0-9-]+\/([^}]+)\}\}\s*/, (a, title) => {
 			if (title == article) {
 				subpageCode = a.trim();
@@ -88,7 +113,7 @@ Jeśli są wątpliwości, to możesz poczekać na więcej ocen.`)) {
 			await this.core.getEditToken(false);
 		}
 		// Zapis zmian.
-		D.log('Usunięcie wpisu z propozycji.');
+		dd.update('Usunięcie wpisu z propozycji.');
 		let summary_done = D.config.summary_done.replace('TITLE', article);
 		await apiAsync({
 			url : '/w/api.php',
@@ -105,7 +130,7 @@ Jeśli są wątpliwości, to możesz poczekać na więcej ocen.`)) {
 		});
 
 		// Dopisanie na koniec /ocenione.
-		D.log('Dopisanie na koniec ocenionych.');
+		dd.update('Dopisanie na koniec ocenionych.');
 		await apiAsync({
 			url : '/w/api.php',
 			type: 'POST',

@@ -150,9 +150,98 @@ function createFullDyk(DYKnomination) {
 
 module.exports = { DYKnomination, createDyk, createFullDyk };
 
-},{"./DykMain":4,"./ErrorInfo":6,"./asyncAjax":9,"./config":10}],2:[function(require,module,exports){
+},{"./DykMain":5,"./ErrorInfo":7,"./asyncAjax":10,"./config":11}],2:[function(require,module,exports){
 /* global OO */
 
+/**
+ * Done-move progress info dialog.
+ */
+class DoneDialog {
+	/**
+	 * @param {String} title Title.
+	 * @param {String} content Startup HTML.
+	 */
+	constructor(title, info) {
+		this.title = title;
+		this.info = info;
+		/** @private OO.ui.Dialog placeholder. */
+		this.doneDialogInternal = false;
+	}
+	open() {
+		if (!this.doneDialogInternal) {
+			this.init();
+		}
+		this.windowManager.openWindow( this.doneDialogInternal );
+	}
+	/**
+	 * 
+	 * @param {String} info HTML info.
+	 * @param {Boolean} append Option to append info (e.g. to append errors).
+	 */
+	update(info, append) {
+		if (append) {
+			info = `<div>${this.elInfo.innerHTML}</div>` + info;
+		}
+		this.elInfo.innerHTML = info;
+	}
+
+	/** @private init OO cruft.*/
+	init() {
+		const me = this;
+
+		function DoneDialogInternal( config ) {
+			DoneDialogInternal.super.call( this, config );
+		}
+		OO.inheritClass( DoneDialogInternal, OO.ui.Dialog ); 
+	
+		// Name for .addWindows()
+		DoneDialogInternal.static.name = 'doneDialogInternal';
+		// Startup title.
+		DoneDialogInternal.static.title = this.title;
+	
+		// Add content to the dialog body.
+		DoneDialogInternal.prototype.initialize = function () {
+			DoneDialogInternal.super.prototype.initialize.call( this );
+
+			// base layout
+			this.content = new OO.ui.PanelLayout( { 
+				padded: true,
+				expanded: false 
+			} );
+			this.content.$element.append( `<h2 class="title">${me.title}</h2>` );
+			this.content.$element.append( `<div class="info">${me.info}</div>` );
+			this.$body.append( this.content.$element );
+
+			// cache
+			me.elTitle = this.content.$element[0].querySelector('.title');
+			me.elInfo = this.content.$element[0].querySelector('.info');
+		};
+
+		// Setup height
+		// DoneDialogInternal.prototype.getBodyHeight = function () {
+		// 	return this.content.$element.outerHeight( true );
+		// };
+	
+		var doneDialogInternal = new DoneDialogInternal( {
+			size: 'medium'
+		} );
+	
+		// Setup OO.oo window manager.
+		var windowManager = new OO.ui.WindowManager();
+		$( document.body ).append( windowManager.$element );
+		windowManager.addWindows( [ doneDialogInternal ] );
+	
+		// Keep internals
+		this.windowManager = windowManager;
+		this.doneDialogInternal = doneDialogInternal;
+	}
+}
+
+module.exports = { DoneDialog };
+},{}],3:[function(require,module,exports){
+/* global OO */
+
+const { DoneDialog } = require("./DoneDialog");
 const { apiAsync } = require("./asyncAjax");
 
 /**
@@ -206,18 +295,41 @@ class DoneHandling {
 		return true;
 	}
 	/** Confirm and execute. */
-	handle(article) {
-		if (confirm(`Czy na pewno chcesz zakończyć dyskusję dla ${article}?
+	async handle(article) {
+		if (confirm(`Czy na pewno chcesz zakończyć dyskusję dla ${article}?	
 Jeśli są wątpliwości, to możesz poczekać na więcej ocen.`)) {
-			this.move(article);
+
+			const dd = new DoneDialog('Przenoszenie wpisu', 'Start...');
+			const currentUser = mw.config.get('wgUserName');
+			const contribHref = '/wiki/Special:Contributions/'+encodeURIComponent(currentUser);
+			try {
+				await this.move(article, dd);
+			} catch (error) {
+				console.error(error);
+				dd.update(`
+					<p>❌ Przenoszenie nie udało się: ${error}.</p>
+					<p><a href="${contribHref}" class="czywiesz-external" target="_blank">Sprawdź swój wkład</a>.
+						W konsoli przeglądarki mogą znajdować się dodatkowe infomacji, które możesz przekazać twórcy lub w <em>WP:BAR:TE</em>.
+				`, true);
+				return;
+			}
+			dd.update(`Przenoszenie zakończone. Dla pewności możesz sprawdzić 
+				<a href="${contribHref}" class="czywiesz-external" target="_blank">swój wkład</a>.`)
 		}
 	}
-	/** Done, move it. */
-	async move(article) {
+	/**
+	 * Done, move it.
+	 * @param {String} article Article title.
+	 * @param {DoneDialog} dd Dialog for progress info.
+	 */
+	async move(article, dd) {
 		const D = this.core;
 
+		// okienko informacyjne
+		dd.open();
+		
 		// Pobranie /propozycje.
-		D.log('Pobranie wikitekstu propozycji.');
+		dd.update('Pobranie wikitekstu propozycji.');
 		let nomsTitle = D.getBaseNew();
 		let nomsText = await apiAsync({
 			url : '/w/index.php?action=raw&title=' + encodeURIComponent(nomsTitle),
@@ -225,6 +337,7 @@ Jeśli są wątpliwości, to możesz poczekać na więcej ocen.`)) {
 		});
 		let subpageCode = '';
 		// Usunięcie wpisu z wikitekstu.
+		D.log('Usunięcie wpisu z wikitekstu.');
 		let modifiedNomsText = nomsText.replace(/\{\{.+\/propozycje\/[0-9-]+\/([^}]+)\}\}\s*/, (a, title) => {
 			if (title == article) {
 				subpageCode = a.trim();
@@ -241,7 +354,7 @@ Jeśli są wątpliwości, to możesz poczekać na więcej ocen.`)) {
 			await this.core.getEditToken(false);
 		}
 		// Zapis zmian.
-		D.log('Usunięcie wpisu z propozycji.');
+		dd.update('Usunięcie wpisu z propozycji.');
 		let summary_done = D.config.summary_done.replace('TITLE', article);
 		await apiAsync({
 			url : '/w/api.php',
@@ -258,7 +371,7 @@ Jeśli są wątpliwości, to możesz poczekać na więcej ocen.`)) {
 		});
 
 		// Dopisanie na koniec /ocenione.
-		D.log('Dopisanie na koniec ocenionych.');
+		dd.update('Dopisanie na koniec ocenionych.');
 		await apiAsync({
 			url : '/w/api.php',
 			type: 'POST',
@@ -298,7 +411,7 @@ Jeśli są wątpliwości, to możesz poczekać na więcej ocen.`)) {
 }
 
 module.exports = { DoneHandling };
-},{"./asyncAjax":9}],3:[function(require,module,exports){
+},{"./DoneDialog":2,"./asyncAjax":10}],4:[function(require,module,exports){
 /* eslint-disable no-useless-escape */
 /* eslint-disable no-mixed-spaces-and-tabs */
 /* eslint-disable indent */
@@ -832,7 +945,7 @@ class DykForm {
 
 module.exports = { DykForm };
 
-},{}],4:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 /* eslint-disable no-useless-escape */
 /* eslint-disable no-mixed-spaces-and-tabs */
 /* eslint-disable indent */
@@ -895,7 +1008,7 @@ class DykMain {
 
 module.exports = { DykMain };
 
-},{"./DykForm":3,"./DykProcess":5,"./Wikiprojects":8}],5:[function(require,module,exports){
+},{"./DykForm":4,"./DykProcess":6,"./Wikiprojects":9}],6:[function(require,module,exports){
 /* eslint-disable no-useless-escape */
 /* eslint-disable no-mixed-spaces-and-tabs */
 /* eslint-disable indent */
@@ -1336,7 +1449,7 @@ class DykProcess {
 
 module.exports = { DykProcess };
 
-},{"./Loadbar":7,"./asyncAjax":9,"./config":10}],6:[function(require,module,exports){
+},{"./Loadbar":8,"./asyncAjax":10,"./config":11}],7:[function(require,module,exports){
 /**
  * D.errors info.
  */
@@ -1396,7 +1509,7 @@ class ErrorInfo {
 
 module.exports = { ErrorInfo };
 
-},{}],7:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 /* eslint-disable no-useless-escape */
 /* eslint-disable no-mixed-spaces-and-tabs */
 /* eslint-disable indent */
@@ -1470,7 +1583,7 @@ class Loadbar {
 
 module.exports = { Loadbar };
 
-},{}],8:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 /* eslint-disable no-useless-escape */
 /* eslint-disable no-mixed-spaces-and-tabs */
 /* eslint-disable indent */
@@ -1524,7 +1637,7 @@ class Wikiprojects {
 
 module.exports = { Wikiprojects };
 
-},{}],9:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 /**
  * MW API call.
  * 
@@ -1577,7 +1690,7 @@ function apiAsync(call) {
 
 module.exports = { apiAjax, apiAsync };
 
-},{}],10:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 var config = {
 	interp:		'.,:;!?…-–—()[]{}⟨⟩\'"„”«»/\\', // [\s] must be added directly!; ['] & [\] escaped due to js limits, [\s] means [space]
 	miesiacArr:	['stycznia', 'lutego', 'marca', 'kwietnia', 'maja', 'czerwca', 'lipca', 'sierpnia', 'września', 'października', 'listopada', 'grudnia'],
@@ -1633,7 +1746,7 @@ var config = {
 
 module.exports = { config };
 
-},{}],11:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 const { DYKnomination, createDyk, createFullDyk } = require("./CzyWiesz");
 const { DoneHandling } = require("./DoneHandling");
 
@@ -1678,4 +1791,4 @@ if (pageName.indexOf('/propozycje') > 0) {
 // expose to others
 window.DYKnomination = DYKnomination;
 
-},{"./CzyWiesz":1,"./DoneHandling":2}]},{},[11]);
+},{"./CzyWiesz":1,"./DoneHandling":3}]},{},[12]);
