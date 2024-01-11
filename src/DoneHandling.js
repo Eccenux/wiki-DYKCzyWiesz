@@ -64,13 +64,14 @@ Jeśli są wątpliwości, to możesz poczekać na więcej ocen.`)) {
 		const D = this.core;
 
 		// Pobranie /propozycje.
+		D.log('Pobranie wikitekstu propozycji.');
 		let nomTitle = D.getBaseNew();
 		let nomText = await apiAsync({
 			url : '/w/index.php?action=raw&title=' + encodeURIComponent(nomTitle),
 			cache : false
 		});
 		let subpageCode = '';
-		// Usunięcie artykułu.
+		// Usunięcie wpisu z wikitekstu.
 		nomText.replace(/\{\{.+\/propozycje\/[0-9-]+\/([^}]+)\}\}\s*/, (a, title) => {
 			if (title == article) {
 				subpageCode = a.trim();
@@ -81,7 +82,13 @@ Jeśli są wątpliwości, to możesz poczekać na więcej ocen.`)) {
 		if (!subpageCode.length) {
 			throw new Error(`Błąd usuwania nominacji. Już przeniesiona?`);
 		}
+		// Przygotwanie zapisów.
+		if (!D.edittoken) {
+			D.log('Pobranie tokena.');
+			await this.core.getEditToken(false);
+		}
 		// Zapis zmian.
+		D.log('Usunięcie wpisu z propozycji.');
 		let summary_done = D.config.summary_done.replace('TITLE', article);
 		await apiAsync({
 			url : '/w/api.php',
@@ -98,6 +105,7 @@ Jeśli są wątpliwości, to możesz poczekać na więcej ocen.`)) {
 		});
 
 		// Dopisanie na koniec /ocenione.
+		D.log('Dopisanie na koniec ocenionych.');
 		await apiAsync({
 			url : '/w/api.php',
 			type: 'POST',
