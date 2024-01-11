@@ -30,21 +30,33 @@ class DoneDialog {
 			info = `<div>${this.elInfo.innerHTML}</div>` + info;
 		}
 		this.elInfo.innerHTML = info;
+		if (append) {
+			this.forceResize();
+		}
+	}
+	/** Force resize (e.g. after update). */
+	forceResize() {
+		this.doneDialogInternal.close();
+		this.doneDialogInternal.open();
 	}
 
-	/** @private init OO cruft.*/
+	/** @private init OO boilerplate.*/
 	init() {
 		const me = this;
 
 		function DoneDialogInternal( config ) {
 			DoneDialogInternal.super.call( this, config );
 		}
-		OO.inheritClass( DoneDialogInternal, OO.ui.Dialog ); 
+		OO.inheritClass( DoneDialogInternal, OO.ui.ProcessDialog ); 
 	
 		// Name for .addWindows()
 		DoneDialogInternal.static.name = 'doneDialogInternal';
 		// Startup title.
 		DoneDialogInternal.static.title = this.title;
+		// Button(s).
+		DoneDialogInternal.static.actions = [
+			{ action: 'save', label: 'Zamknij', flags: 'primary' },
+		];
 	
 		// Add content to the dialog body.
 		DoneDialogInternal.prototype.initialize = function () {
@@ -55,23 +67,24 @@ class DoneDialog {
 				padded: true,
 				expanded: false 
 			} );
-			this.content.$element.append( `<h2 class="title">${me.title}</h2>` );
 			this.content.$element.append( `<div class="info">${me.info}</div>` );
 			this.$body.append( this.content.$element );
 
 			// cache
-			me.elTitle = this.content.$element[0].querySelector('.title');
 			me.elInfo = this.content.$element[0].querySelector('.info');
 		};
 
-		// Setup height
-		// DoneDialogInternal.prototype.getBodyHeight = function () {
-		// 	return this.content.$element.outerHeight( true );
-		// };
+		DoneDialogInternal.prototype.getActionProcess = function ( action ) {
+			var dialog = this;
+			if ( action ) {
+				return new OO.ui.Process( function () {
+					dialog.close( { action: action } );
+				} );
+			}
+			return DoneDialogInternal.super.prototype.getActionProcess.call( this, action );
+		};		
 	
-		var doneDialogInternal = new DoneDialogInternal( {
-			size: 'medium'
-		} );
+		var doneDialogInternal = new DoneDialogInternal();
 	
 		// Setup OO.oo window manager.
 		var windowManager = new OO.ui.WindowManager();
