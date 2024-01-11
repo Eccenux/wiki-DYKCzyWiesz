@@ -65,21 +65,21 @@ Jeśli są wątpliwości, to możesz poczekać na więcej ocen.`)) {
 
 		// Pobranie /propozycje.
 		D.log('Pobranie wikitekstu propozycji.');
-		let nomTitle = D.getBaseNew();
-		let nomText = await apiAsync({
-			url : '/w/index.php?action=raw&title=' + encodeURIComponent(nomTitle),
+		let nomsTitle = D.getBaseNew();
+		let nomsText = await apiAsync({
+			url : '/w/index.php?action=raw&title=' + encodeURIComponent(nomsTitle),
 			cache : false
 		});
 		let subpageCode = '';
 		// Usunięcie wpisu z wikitekstu.
-		nomText.replace(/\{\{.+\/propozycje\/[0-9-]+\/([^}]+)\}\}\s*/, (a, title) => {
+		let modifiedNomsText = nomsText.replace(/\{\{.+\/propozycje\/[0-9-]+\/([^}]+)\}\}\s*/, (a, title) => {
 			if (title == article) {
 				subpageCode = a.trim();
 				return "";
 			}
 			return a;
 		});
-		if (!subpageCode.length) {
+		if (!subpageCode.length || modifiedNomsText === nomsText) {
 			throw new Error(`Błąd usuwania nominacji. Już przeniesiona?`);
 		}
 		// Przygotwanie zapisów.
@@ -96,8 +96,8 @@ Jeśli są wątpliwości, to możesz poczekać na więcej ocen.`)) {
 			data: {
 				action: 'edit',
 				format: 'json',
-				title:  nomTitle,
-				text:   nomText,
+				title:  nomsTitle,
+				text:   modifiedNomsText,
 				summary: summary_done,
 				watchlist: 'nochange',
 				token:  D.edittoken,
