@@ -1,7 +1,7 @@
 /* global OO */
 
 /**
- * Done-move progress info dialog.
+ * Done-move progress and info dialog.
  */
 class DoneDialog {
 	/**
@@ -14,6 +14,7 @@ class DoneDialog {
 		/** @private OO.ui.Dialog placeholder. */
 		this.doneDialogInternal = false;
 	}
+	/** Show dialog. */
 	open() {
 		if (!this.doneDialogInternal) {
 			this.init();
@@ -21,7 +22,7 @@ class DoneDialog {
 		this.windowManager.openWindow( this.doneDialogInternal );
 	}
 	/**
-	 * 
+	 * Update main content.
 	 * @param {String} info HTML info.
 	 * @param {Boolean} append Option to append info (e.g. to append errors).
 	 */
@@ -36,8 +37,9 @@ class DoneDialog {
 	}
 	/** Force resize (e.g. after update). */
 	forceResize() {
-		this.doneDialogInternal.close();
-		this.doneDialogInternal.open();
+		// this.doneDialogInternal.close();
+		// this.doneDialogInternal.open();
+		this.windowManager.updateWindowSize(this.doneDialogInternal);
 	}
 
 	/** @private init OO boilerplate.*/
