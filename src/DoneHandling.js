@@ -197,7 +197,8 @@ Jeśli są wątpliwości, to możesz poczekać na więcej ocen.`)) {
 		} );
 		const el = button.$element[0];
 		el.addEventListener('click', handler);
-		item.insertAdjacentElement('beforebegin', el);
+		// note that adding after is better because it jumps less
+		item.insertAdjacentElement('afterend', el);
 
 	}
 }
