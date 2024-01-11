@@ -49,6 +49,8 @@ Można też przełączyć się na debug wpisując w konsoli przeglądarki `DYKno
 
 W trybie debug:
 - aktualne informacje pokażą się w konsoli przeglądarki;
-- zgłoszenie pójdzie na testową podstronę [[Wikipedysta:Kaligula/js/CzyWiesz.js/test]] (a nie na [[Wikiprojekt:Czy wiesz/propozycje]]);
+- zgłoszenie pójdzie na testową podstronę […/test](https://pl.wikipedia.org/wiki/Wikipedysta:Kaligula/js/CzyWiesz.js/test) (a nie na [[Wikiprojekt:Czy wiesz/propozycje]]);
 - informowanie autora – na analogiczną podstronę "…/autor";
 - informowanie wikiprojektu – na "…/wikiprojekt".
+
+Bazowa strona do zgłoszeń w trybie debug jest ustawiona w `config.js` (`config.debugBase`).

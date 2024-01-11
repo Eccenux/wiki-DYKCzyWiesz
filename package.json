@@ -8,7 +8,7 @@
 		"build-full": "npm run build-less && npm run build-js && node -e \"console.log('Build done');\" ",
 		"build": "npm run build-js && node -e \"console.log('Build done');\" ",
 		"deploy-dev": "node wikiploy-dev.mjs",
-		"deploy": "node wikiploy.mjs",
+		"-off--deploy": "node wikiploy.mjs",
 		"rollout-dev": "npm run build && npm run deploy-dev",
 		"rollout": "npm run build && npm run deploy"
 	},
