@@ -276,15 +276,17 @@ class DoneHandling {
 		this.core = core;
 		// jeśli są 3 oceny (lub więcej)
 		this.doneSelector = '.dyk-done';
+		this.movedSelector = '.template-done';
 	}
 
 	/** Init when ready. */
 	init() {
 		const items = document.querySelectorAll(this.doneSelector);
 		if (items.length) {
+			const isSubpage = items.length == 1;
 			mw.loader.using( 'oojs-ui-core' ).done(() => {
 				for (const item of items) {
-					this.initItem(item);
+					this.initItem(item, isSubpage);
 				}
 				mw.hook('userjs.DYKnomination.DoneHandling.ready').fire(this);
 			});
@@ -297,10 +299,20 @@ class DoneHandling {
 	 * Init done table.
 	 * [[Wikiprojekt:Czy wiesz/weryfikacja]]
 	 * @param {Element} item .
+	 * @param {Boolean} isSubpage .
 	 */
-	initItem(item) {
+	initItem(item, isSubpage) {
+		if (isSubpage) {
+			// already moved
+			const movedEl = document.querySelector(this.movedSelector);
+			if (movedEl) {
+				return false;
+			}
+		}
+		// no article link
 		const link = item.querySelector('a:not(.new)');
 		if (!link) {
+			this.core.log('No article link.');
 			return false;
 		}
 		let article = link.textContent;
@@ -353,7 +365,8 @@ Jeśli są wątpliwości, to możesz poczekać na więcej ocen.`)) {
 		let subpageCode = '';
 		// Usunięcie wpisu z wikitekstu.
 		D.log('Usunięcie wpisu z wikitekstu.');
-		let modifiedNomsText = nomsText.replace(/\{\{.+\/propozycje\/[0-9-]+\/([^}]+)\}\}\s*/, (a, title) => {
+		let modifiedNomsText = nomsText.replace(/\{\{.+\/propozycje\/[0-9-]+\/([^}]+)\}\}\s*/g, (a, title) => {
+			// console.log(a, title)
 			if (title == article) {
 				subpageCode = a.trim();
 				return "";
@@ -361,6 +374,9 @@ Jeśli są wątpliwości, to możesz poczekać na więcej ocen.`)) {
 			return a;
 		});
 		if (!subpageCode.length || modifiedNomsText === nomsText) {
+			console.log('article:', article);
+			console.log('before:', nomsText);
+			console.log('after:', modifiedNomsText);
 			throw new Error(`Błąd usuwania nominacji. Już przeniesiona?`);
 		}
 		// Przygotwanie zapisów.
@@ -368,7 +384,7 @@ Jeśli są wątpliwości, to możesz poczekać na więcej ocen.`)) {
 			D.log('Pobranie tokena.');
 			await this.core.getEditToken(false);
 		}
-		// Zapis zmian.
+		// Zapis zmian w propozycjach.
 		dd.update('Usunięcie wpisu z propozycji.');
 		let summary_done = D.config.summary_done.replace('TITLE', article);
 		await apiAsync({
@@ -382,6 +398,23 @@ Jeśli są wątpliwości, to możesz poczekać na więcej ocen.`)) {
 				summary: summary_done,
 				watchlist: 'nochange',
 				token:  D.edittoken,
+			}
+		});
+
+		// Oznaczenie jako załatwione.
+		dd.update('Oznaczenie jako załatwione.');
+		const subpageTitle = subpageCode.replace('{{', '').replace('}}', '').trim();
+		await apiAsync({
+			url : '/w/api.php',
+			type: 'POST',
+			data : {
+				action : 'edit',
+				format : 'json',
+				title : subpageTitle,
+				appendtext : '\n\n{{Załatwione}} artykuł oceniony ~~~~.',
+				summary: summary_done,
+				watchlist : 'nochange',
+				token : D.edittoken
 			}
 		});
 
