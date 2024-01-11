@@ -428,14 +428,16 @@ class DykForm {
 		var AUTHOR_INF = ( $('#CzyWieszAuthorInf').prop('checked') ? true : false );
 		var DATE = $('#CzyWieszDate').val().trim();
 		var SIGNATURE = $('#CzyWieszSignature').val().trim();
-		var WIKIPROJECT = [];
 		//get the wikiprojects
+		var wikiprojectSet = new Set();
 		$('.czywiesz-wikiproject').each( function() {
 			var val = $(this).val();
 			if (val != 'none') {
-				WIKIPROJECT.push(D.wikiprojects.list[val]);
+				wikiprojectSet.add(val);
 			}
 		});
+		var WIKIPROJECT = Array.from(wikiprojectSet).map(v=>D.wikiprojects.list[v]);
+
 		var COMMENT = ( $('#CzyWieszCommentCheckbox').prop('checked') ? $('#CzyWieszComment').val().trim() : false );
 
 		//validate form
