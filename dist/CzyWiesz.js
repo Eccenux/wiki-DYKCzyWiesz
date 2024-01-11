@@ -258,6 +258,7 @@ module.exports = { DoneDialog };
 
 const { DoneDialog } = require("./DoneDialog");
 const { apiAsync } = require("./asyncAjax");
+const { endCounter } = require("./timeCounter");
 
 /**
  * Przenoszenie do ocenionych.
@@ -386,7 +387,7 @@ Jeśli są wątpliwości, to możesz poczekać na więcej ocen.`)) {
 		}
 		// Zapis zmian w propozycjach.
 		dd.update('Usunięcie wpisu z propozycji.');
-		let summary_done = D.config.summary_done.replace('TITLE', article);
+		let summaryDone = D.config.summary_done.replace('TITLE', article);
 		await apiAsync({
 			url : '/w/api.php',
 			type : 'POST',
@@ -395,7 +396,7 @@ Jeśli są wątpliwości, to możesz poczekać na więcej ocen.`)) {
 				format: 'json',
 				title:  nomsTitle,
 				text:   modifiedNomsText,
-				summary: summary_done,
+				summary: summaryDone,
 				watchlist: 'nochange',
 				token:  D.edittoken,
 			}
@@ -403,20 +404,7 @@ Jeśli są wątpliwości, to możesz poczekać na więcej ocen.`)) {
 
 		// Oznaczenie jako załatwione.
 		dd.update('Oznaczenie jako załatwione.');
-		const subpageTitle = subpageCode.replace('{{', '').replace('}}', '').trim();
-		await apiAsync({
-			url : '/w/api.php',
-			type: 'POST',
-			data : {
-				action : 'edit',
-				format : 'json',
-				title : subpageTitle,
-				appendtext : '\n\n{{Załatwione}} artykuł oceniony ~~~~.',
-				summary: summary_done,
-				watchlist : 'nochange',
-				token : D.edittoken
-			}
-		});
+		await this.markDone(subpageCode, summaryDone);
 
 		// Dopisanie na koniec /ocenione.
 		dd.update('Dopisanie na koniec ocenionych.');
@@ -428,7 +416,46 @@ Jeśli są wątpliwości, to możesz poczekać na więcej ocen.`)) {
 				format : 'json',
 				title : D.getBaseDone(),
 				appendtext : '\n'+subpageCode,
-				summary: summary_done,
+				summary: summaryDone,
+				watchlist : 'nochange',
+				token : D.edittoken
+			}
+		});
+	}
+
+	/**
+	 * Mark subpage as done.
+	 * @param {String} subpageCode Subpage wikicode (template style).
+	 * @param {String} summaryDone Done info.
+	 */
+	async markDone(subpageCode, summaryDone) {
+		const D = this.core;
+
+		const subpageTitle = subpageCode.replace('{{', '').replace('}}', '').trim();
+
+		// pobranie tekstu
+		let wiki = await apiAsync({
+			url : '/w/index.php?action=raw&title=' + encodeURIComponent(subpageTitle),
+			cache : false
+		});
+
+		// zatrzymanie czasu
+		wiki = wiki.replace(/\{\{licznik czasu[^}]+\}\}/, (tpl) => {
+			return endCounter(tpl);
+		});
+
+		// dodanie oznaczenia
+		wiki += '\n\n{{Załatwione}} artykuł oceniony ~~~~.';
+
+		await apiAsync({
+			url : '/w/api.php',
+			type: 'POST',
+			data : {
+				action : 'edit',
+				format : 'json',
+				title : subpageTitle,
+				text : wiki,
+				summary: summaryDone,
 				watchlist : 'nochange',
 				token : D.edittoken
 			}
@@ -460,7 +487,7 @@ Jeśli są wątpliwości, to możesz poczekać na więcej ocen.`)) {
 }
 
 module.exports = { DoneHandling };
-},{"./DoneDialog":2,"./asyncAjax":10}],4:[function(require,module,exports){
+},{"./DoneDialog":2,"./asyncAjax":10,"./timeCounter":13}],4:[function(require,module,exports){
 /* eslint-disable no-useless-escape */
 /* eslint-disable no-mixed-spaces-and-tabs */
 /* eslint-disable indent */
@@ -1840,4 +1867,59 @@ if (pageName.indexOf('/propozycje') > 0) {
 // expose to others
 window.DYKnomination = DYKnomination;
 
-},{"./CzyWiesz":1,"./DoneHandling":3}]},{},[12]);
+},{"./CzyWiesz":1,"./DoneHandling":3}],13:[function(require,module,exports){
+/**
+ * ISO-like date interpreter.
+ * 
+ * Mostly for dates created like this:
+ * {{licznik czasu|start={{subst:#timel:Y-m-d H:i:s}}|dni=...}}
+ * 
+ * @param {String} startDateString Y-m-d H:i:s or Y-m-dTH:i:s... or similar.
+ * @param {Date} now (optional) Fake "now".
+ * @returns Days since now or since dt.
+ */
+function timeCounter(startDateString, now) {
+	if (!(now instanceof Date)) {
+		now = new Date();
+	}
+	const d = startDateString.split(/[^0-9]+/).map(d=>parseInt(d,10));
+	const startDate = new Date(d[0], d[1]-1, d[2], d[3], d[4], d[5]); // d[1] is month
+	const diffInMs = now - startDate;
+	const daysPassed = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+
+	return daysPassed;
+}
+
+/**
+ * End the counter tpl.
+ * 
+ * End the count now (today).
+ * {{licznik czasu|start=2024-01-08 00:58:00|dni=30}}
+ * 
+ * @param {String} tpl The template call.
+ * @param {Date} now (optional) Fake "now".
+ */
+function endCounter(tpl, now) {
+	let body = tpl.replace('{{', '').replace('}}', '').trim();
+	// remove days
+	body = body.replace(/\| *dni *= *[0-9]+/, '');
+	const nvalues = body.split(/ *\| */);
+	let days = -1;
+	// 0 is tpl name
+	for (let i = 1; i < nvalues.length; i++) {
+		const param = nvalues[i];
+		const [name,val] = param.split(/ *= */);
+		if (name == 'start') {
+			days = timeCounter(val, now);
+			break;
+		}
+	}
+	if (days < 0) {
+		return tpl;
+	}
+	return `{{${body}|dni=${days}}}`;
+}
+
+module.exports = { timeCounter, endCounter };
+
+},{}]},{},[12]);

@@ -2,6 +2,7 @@
 
 const { DoneDialog } = require("./DoneDialog");
 const { apiAsync } = require("./asyncAjax");
+const { endCounter } = require("./timeCounter");
 
 /**
  * Przenoszenie do ocenionych.
@@ -130,7 +131,7 @@ Jeśli są wątpliwości, to możesz poczekać na więcej ocen.`)) {
 		}
 		// Zapis zmian w propozycjach.
 		dd.update('Usunięcie wpisu z propozycji.');
-		let summary_done = D.config.summary_done.replace('TITLE', article);
+		let summaryDone = D.config.summary_done.replace('TITLE', article);
 		await apiAsync({
 			url : '/w/api.php',
 			type : 'POST',
@@ -139,7 +140,7 @@ Jeśli są wątpliwości, to możesz poczekać na więcej ocen.`)) {
 				format: 'json',
 				title:  nomsTitle,
 				text:   modifiedNomsText,
-				summary: summary_done,
+				summary: summaryDone,
 				watchlist: 'nochange',
 				token:  D.edittoken,
 			}
@@ -147,20 +148,7 @@ Jeśli są wątpliwości, to możesz poczekać na więcej ocen.`)) {
 
 		// Oznaczenie jako załatwione.
 		dd.update('Oznaczenie jako załatwione.');
-		const subpageTitle = subpageCode.replace('{{', '').replace('}}', '').trim();
-		await apiAsync({
-			url : '/w/api.php',
-			type: 'POST',
-			data : {
-				action : 'edit',
-				format : 'json',
-				title : subpageTitle,
-				appendtext : '\n\n{{Załatwione}} artykuł oceniony ~~~~.',
-				summary: summary_done,
-				watchlist : 'nochange',
-				token : D.edittoken
-			}
-		});
+		await this.markDone(subpageCode, summaryDone);
 
 		// Dopisanie na koniec /ocenione.
 		dd.update('Dopisanie na koniec ocenionych.');
@@ -172,7 +160,46 @@ Jeśli są wątpliwości, to możesz poczekać na więcej ocen.`)) {
 				format : 'json',
 				title : D.getBaseDone(),
 				appendtext : '\n'+subpageCode,
-				summary: summary_done,
+				summary: summaryDone,
+				watchlist : 'nochange',
+				token : D.edittoken
+			}
+		});
+	}
+
+	/**
+	 * Mark subpage as done.
+	 * @param {String} subpageCode Subpage wikicode (template style).
+	 * @param {String} summaryDone Done info.
+	 */
+	async markDone(subpageCode, summaryDone) {
+		const D = this.core;
+
+		const subpageTitle = subpageCode.replace('{{', '').replace('}}', '').trim();
+
+		// pobranie tekstu
+		let wiki = await apiAsync({
+			url : '/w/index.php?action=raw&title=' + encodeURIComponent(subpageTitle),
+			cache : false
+		});
+
+		// zatrzymanie czasu
+		wiki = wiki.replace(/\{\{licznik czasu[^}]+\}\}/, (tpl) => {
+			return endCounter(tpl);
+		});
+
+		// dodanie oznaczenia
+		wiki += '\n\n{{Załatwione}} artykuł oceniony ~~~~.';
+
+		await apiAsync({
+			url : '/w/api.php',
+			type: 'POST',
+			data : {
+				action : 'edit',
+				format : 'json',
+				title : subpageTitle,
+				text : wiki,
+				summary: summaryDone,
 				watchlist : 'nochange',
 				token : D.edittoken
 			}
