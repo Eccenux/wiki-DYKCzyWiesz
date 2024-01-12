@@ -121,7 +121,7 @@ class DykProcess {
 		// making content
 		let input = `== [[${subpage}|${D.wgTitle}]] ==\n`
 			+ '<!-- artykuł zgłoszony za pomocą gadżetu CzyWiesz -->\n'
-			+ '{{licznik czasu|start={{subst:#timel:Y-m-d H:i:s}}|dni=30}}\n'
+			+ '{{licznik czasu|start={{subst:#timel:Y-m-d H:i:s}}|zdarzenie=Dyskusja|rgz=ż|dni=30}}\n'
 			+ Dv.file         //FILE is already with \n at the end
 			+ Dv.question     //QUESTION is already with \n at the end
 			+ '{' + '{Wikiprojekt:Czy wiesz/weryfikacja|' + D.wgTitle + '|' + Dv.refs + '|' + Dv.images + '|' + Dv.author + '|' + Dv.signature + '|?|?|?}}\n'
