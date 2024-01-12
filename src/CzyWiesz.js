@@ -99,7 +99,7 @@ function createDyk(DYKnomination) {
 	DYKnomination.emailauthor = async function () {
 		var D = DYKnomination;
 
-        var opis = prompt('Opisz co się stało. Bez tego twórca nie będzie wiedział co naprawiać.','');
+        var opis = prompt('Opisz, co się stało. Bez tego twórca nie będzie wiedział, co naprawiać.','');
         if (!opis) {
             alert('Nic nie wyślę twórcy, dopóki nie opiszesz błędu swoimi słowami. Bez Twojego opisu twórca nie będzie wiedział co naprawiać.');
             return;
