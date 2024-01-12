@@ -12,12 +12,16 @@ if (namespaceNumber === 0) {
 
 	mw.loader.using(["mediawiki.util"]).then(function() {
 		$(document).ready(function() {
-			mw.util.addPortletLink(
+			const link = mw.util.addPortletLink(
 				'p-tb',
-				'javascript:DYKnomination.askuser()',
+				'#',
 				(window.DYKnomination_is_beta===true?'BETA: ':'') + DYKnomination.config.portlet_title,
 				't-DYKnomination'
 			);
+			$(link).click((e) => {
+				e.preventDefault();
+				DYKnomination.askuser();
+			});
 			mw.hook('userjs.DYKnomination.ready').fire(DYKnomination);
 		});
 	});

@@ -258,6 +258,8 @@ module.exports = { DoneDialog };
 
 const { DoneDialog } = require("./DoneDialog");
 const { apiAsync } = require("./asyncAjax");
+const { stdConfirm } = require("./simpleDialogs");
+const { htmlspecialchars } = require("./stringOps");
 const { endCounter } = require("./timeCounter");
 
 /**
@@ -324,8 +326,12 @@ class DoneHandling {
 	}
 	/** Confirm and execute. */
 	async handle(article) {
-		if (confirm(`Czy na pewno chcesz zakończyć dyskusję dla ${article}?	
-Jeśli są wątpliwości, to możesz poczekać na więcej ocen.`)) {
+		let confirmInfo = `
+			<p>Czy na pewno chcesz zakończyć dyskusję dla ${htmlspecialchars(article)}?
+			<p>Jeśli są wątpliwości, to możesz poczekać na więcej ocen.
+		`;
+
+		if (await stdConfirm(confirmInfo)) {
 
 			const dd = new DoneDialog('Przenoszenie wpisu', 'Start...');
 			const currentUser = mw.config.get('wgUserName');
@@ -335,7 +341,7 @@ Jeśli są wątpliwości, to możesz poczekać na więcej ocen.`)) {
 			} catch (error) {
 				console.error(error);
 				dd.update(`
-					<p>❌ Przenoszenie nie udało się: ${error}.</p>
+					<p>❌ Przenoszenie nie udało się: ${htmlspecialchars(error)}.</p>
 					<p><a href="${contribHref}" class="czywiesz-external" target="_blank">Sprawdź swój wkład</a>.
 						W konsoli przeglądarki mogą znajdować się dodatkowe infomacji, które możesz przekazać twórcy lub w <em>WP:BAR:TE</em>.
 				`, true);
@@ -487,7 +493,7 @@ Jeśli są wątpliwości, to możesz poczekać na więcej ocen.`)) {
 }
 
 module.exports = { DoneHandling };
-},{"./DoneDialog":2,"./asyncAjax":10,"./timeCounter":13}],4:[function(require,module,exports){
+},{"./DoneDialog":2,"./asyncAjax":10,"./simpleDialogs":13,"./stringOps":14,"./timeCounter":15}],4:[function(require,module,exports){
 /* eslint-disable no-useless-escape */
 /* eslint-disable no-mixed-spaces-and-tabs */
 /* eslint-disable indent */
@@ -1839,12 +1845,16 @@ if (namespaceNumber === 0) {
 
 	mw.loader.using(["mediawiki.util"]).then(function() {
 		$(document).ready(function() {
-			mw.util.addPortletLink(
+			const link = mw.util.addPortletLink(
 				'p-tb',
-				'javascript:DYKnomination.askuser()',
+				'#',
 				(window.DYKnomination_is_beta===true?'BETA: ':'') + DYKnomination.config.portlet_title,
 				't-DYKnomination'
 			);
+			$(link).click((e) => {
+				e.preventDefault();
+				DYKnomination.askuser();
+			});
 			mw.hook('userjs.DYKnomination.ready').fire(DYKnomination);
 		});
 	});
@@ -1870,6 +1880,37 @@ if (pageName.indexOf('/propozycje') > 0) {
 window.DYKnomination = DYKnomination;
 
 },{"./CzyWiesz":1,"./DoneHandling":3}],13:[function(require,module,exports){
+/* global OO */
+
+/**
+ * OOui dialogs in async flavour.
+ * 
+ * Usage (in async function):
+ * if (await stdConfirm('<p>test?')) { console.log('confirmed') }
+ */
+function stdConfirm(html) {
+	return new Promise((resolve) => {
+		OO.ui.confirm(html).done(function (confirmed) {
+			resolve(confirmed)
+		});
+	})
+}
+
+module.exports = { stdConfirm };
+},{}],14:[function(require,module,exports){
+/** Encode user string for JS. */
+function htmlspecialchars(text) {
+	return text
+		.replace(/&/g, "&amp;")
+		.replace(/</g, "&lt;")
+		.replace(/>/g, "&gt;")
+		.replace(/"/g, "&quot;")
+		.replace(/'/g, "&#039;")
+	;
+}
+
+module.exports = { htmlspecialchars };
+},{}],15:[function(require,module,exports){
 /**
  * ISO-like date interpreter.
  * 

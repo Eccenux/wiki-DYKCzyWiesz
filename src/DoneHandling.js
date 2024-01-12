@@ -2,6 +2,8 @@
 
 const { DoneDialog } = require("./DoneDialog");
 const { apiAsync } = require("./asyncAjax");
+const { stdConfirm } = require("./simpleDialogs");
+const { htmlspecialchars } = require("./stringOps");
 const { endCounter } = require("./timeCounter");
 
 /**
@@ -68,8 +70,12 @@ class DoneHandling {
 	}
 	/** Confirm and execute. */
 	async handle(article) {
-		if (confirm(`Czy na pewno chcesz zakończyć dyskusję dla ${article}?	
-Jeśli są wątpliwości, to możesz poczekać na więcej ocen.`)) {
+		let confirmInfo = `
+			<p>Czy na pewno chcesz zakończyć dyskusję dla ${htmlspecialchars(article)}?
+			<p>Jeśli są wątpliwości, to możesz poczekać na więcej ocen.
+		`;
+
+		if (await stdConfirm(confirmInfo)) {
 
 			const dd = new DoneDialog('Przenoszenie wpisu', 'Start...');
 			const currentUser = mw.config.get('wgUserName');
@@ -79,7 +85,7 @@ Jeśli są wątpliwości, to możesz poczekać na więcej ocen.`)) {
 			} catch (error) {
 				console.error(error);
 				dd.update(`
-					<p>❌ Przenoszenie nie udało się: ${error}.</p>
+					<p>❌ Przenoszenie nie udało się: ${htmlspecialchars(error)}.</p>
 					<p><a href="${contribHref}" class="czywiesz-external" target="_blank">Sprawdź swój wkład</a>.
 						W konsoli przeglądarki mogą znajdować się dodatkowe infomacji, które możesz przekazać twórcy lub w <em>WP:BAR:TE</em>.
 				`, true);
