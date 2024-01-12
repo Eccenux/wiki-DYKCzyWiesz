@@ -363,7 +363,7 @@ class DykForm {
 					$('#CzyWieszDate').val(maxdiffdate);
 					$('#CzyWieszDate').after('&nbsp;<small id="CzyWieszDateTip"><span class="czywiesz-external" title="To jest data największej edycji (' + maxdiffsize + ' znaków) w ciągu ostatnich 10 dni. Upewnij się, czy to o tę datę chodzi!">&nbsp;(!)&nbsp;</span></small>&nbsp;');
 					if (D.debugmode) {
-						$('#CzyWieszAuthor').val(D.wgUserName);
+						$('#CzyWieszAuthor').width('25%').val(D.wgUserName);
 						$('#CzyWieszAuthor').after(maxdiffuser);
 					}
 				}
