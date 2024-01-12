@@ -280,6 +280,8 @@ class DoneHandling {
 		// jeśli są 3 oceny (lub więcej)
 		this.doneSelector = '.dyk-done';
 		this.movedSelector = '.template-done';
+		this.statusSelector = '.dyk-status';
+		this.statusMovedRe = /zako.{1,2}czone/;
 	}
 
 	/** Init when ready. */
@@ -312,6 +314,12 @@ class DoneHandling {
 				return false;
 			}
 		}
+		// already moved (by inner status)
+		const itemStatus = item.querySelector(this.statusSelector);
+		if (itemStatus && itemStatus.textContent.search(this.statusMovedRe) >= 0) {
+			return false;
+		}
+
 		// no article link
 		const link = item.querySelector('a:not(.new)');
 		if (!link) {
@@ -449,8 +457,13 @@ class DoneHandling {
 		wiki = wiki.replace(/\{\{licznik czasu[^}]+\}\}/, (tpl) => {
 			return endCounter(tpl);
 		});
+		// oznaczenie zakończenia w tabeli
+		wiki = wiki.replace(/(\{\{Wikiprojekt:Czy wiesz\/weryfikacja)([^}]+)(\}\})/g, (a, start, body, end) => {
+			body = body.replace(/ *\| *status *=[^|}]+/g, '');
+			return `${start}|status=zakończone${body}${end}`;
+		});
 
-		// dodanie oznaczenia
+		// dodanie oznaczenia dyskusji
 		wiki += '\n\n{{Załatwione}} artykuł oceniony ~~~~.';
 
 		await apiAsync({
