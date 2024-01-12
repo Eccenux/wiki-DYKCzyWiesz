@@ -695,6 +695,12 @@ class DykForm {
 		// debug quicky
 		if (D.debugmode) {
 			$('#CzyWieszQuestion').val(`jak testować '''[[${D.wgTitle}]]'''?`);
+			$('#CzyWieszAuthor').parent().append(`
+				<p style="padding:2px;margin:0;font-size:80%;background:wheat"
+						title="Autor dostanie powiadomienie o utworzonej podstronie." 
+					>Uwaga! Dla testów lepiej wpisz siebie (autor dostanie pinga).
+				</p>
+			`);
 		}
 
 		//fill wikiprojects list
@@ -859,28 +865,16 @@ class DykForm {
 
 					D.log('\"[str,maxdiffrev,maxdiffsize,maxdiffuser]\":',[str,maxdiffrev,maxdiffsize,maxdiffuser]);
 
-/* OLD VER |START|
-					// add a tip about possible author…
-					$('#CzyWieszAuthor').after('&nbsp;<small id="CzyWieszAuthorTip">(<a class="czywiesz-external">sugestia?</a>)</small>&nbsp;');
-					$('#CzyWieszAuthorTip a').click(function(){
-						prompt('Autor największej edycji (' + maxdiffsize + ') w ciągu ostatnich 10 dni (skopiuj wciskając Ctrl+C):',maxdiffuser);
-						$('#CzyWieszAuthor').select();
-					});
-					// …and about date
-					$('#CzyWieszDate').after('&nbsp;<small id="CzyWieszDateTip">(<a class="czywiesz-external">sugestia?</a>)</small>&nbsp;');
-					$('#CzyWieszDateTip a').click(function(){
-						prompt('Data największej edycji (' + maxdiffsize + ') w ciągu ostatnich 10 dni (skopiuj wciskając Ctrl+C):',maxdiffdate);
-						$('#CzyWieszDate').select();
-					});
-   OLD VER |END| */
-/* NEW VER |START| */
 					// add a possible author…
 					$('#CzyWieszAuthor').val(maxdiffuser);
 					$('#CzyWieszAuthor').after('&nbsp;<small id="CzyWieszAuthorTip"><span class="czywiesz-external" title="Autor największej edycji (' + maxdiffsize + ' znaków) w ciągu ostatnich 10 dni. Upewnij się, że to jest główny autor artykułu!">&nbsp;(!)&nbsp;</span></small>&nbsp;');
 					// …and date
 					$('#CzyWieszDate').val(maxdiffdate);
 					$('#CzyWieszDate').after('&nbsp;<small id="CzyWieszDateTip"><span class="czywiesz-external" title="To jest data największej edycji (' + maxdiffsize + ' znaków) w ciągu ostatnich 10 dni. Upewnij się, czy to o tę datę chodzi!">&nbsp;(!)&nbsp;</span></small>&nbsp;');
-/* NEW VER |END| */
+					if (D.debugmode) {
+						$('#CzyWieszAuthor').val(D.wgUserName);
+						$('#CzyWieszAuthor').after(maxdiffuser);
+					}
 				}
 				else {
 				// there are no edits in last 10 days
