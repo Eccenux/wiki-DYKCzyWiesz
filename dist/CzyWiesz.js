@@ -150,7 +150,7 @@ function createFullDyk(DYKnomination) {
 
 module.exports = { DYKnomination, createDyk, createFullDyk };
 
-},{"./DykMain":5,"./ErrorInfo":7,"./asyncAjax":10,"./config":11}],2:[function(require,module,exports){
+},{"./DykMain":5,"./ErrorInfo":7,"./asyncAjax":11,"./config":12}],2:[function(require,module,exports){
 /* global OO */
 
 /**
@@ -506,11 +506,13 @@ class DoneHandling {
 }
 
 module.exports = { DoneHandling };
-},{"./DoneDialog":2,"./asyncAjax":10,"./simpleDialogs":13,"./stringOps":14,"./timeCounter":15}],4:[function(require,module,exports){
+},{"./DoneDialog":2,"./asyncAjax":11,"./simpleDialogs":14,"./stringOps":15,"./timeCounter":16}],4:[function(require,module,exports){
 /* eslint-disable no-useless-escape */
 /* eslint-disable no-mixed-spaces-and-tabs */
 /* eslint-disable indent */
 /* eslint-disable array-bracket-newline */
+
+const { RevisionList } = require("./RevisionList");
 
 function strToRegExp (str) {
 	return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
@@ -526,6 +528,7 @@ class DykForm {
 	 */
 	constructor(core) {
 		this.core = core;
+		this.revisionList = new RevisionList();
 	}
 
 	/**
@@ -802,112 +805,54 @@ class DykForm {
 		
 	}
 
-	pagerevs () {
-		var D = this.core;
+	async pagerevs () {
+		const D = this.core;
+		const bigEdit = 2048; // big/min edit
 
-		var a,b,d,aj0,revs0,aj,revs,str,maxdiffsize,maxdiffrev,maxdiffuser,maxdiffdate,g;
+		const {revisions, records} = await this.revisionList.readRevs(D.wgTitle, 10);
+		D.log('revisions in last 10 days + 1 edit:', revisions.length);
+		D.log('day-users in last 10 days:', records.length);
+		let editSize = 0;
+		// found edits
+		if (records.length > 0) {
+			// find a winner edit/author
+			let {record:winner, size} = this.revisionList.findWinner(records, bigEdit);
+			D.log(JSON.stringify(winner));
 
-		d = new Date();
-		a = d.toISOString(); // '2012-08-14T17:43:33Z' OR '2012-08-14T17:43:33.324Z'
-			//date after toISOString() is in UTC = without TimezoneOffset
-		d.setDate(d.getDate()-10); // 10 days before and from 00:00:00 on that day
-		d.setHours(0); d.setMinutes(0); d.setSeconds(0); d.setMilliseconds(0);
-		b = d.toISOString();
+			// find size on the day of edit
+			editSize = size;
 
-		$.ajax('/w/api.php?action=query&prop=revisions&format=json&rvprop=timestamp%7Cuser%7Csize&redirects=&indexpageids='
-				+ '&rvlimit=max'
-				+ '&rvstart=' + encodeURIComponent(a)
-				+ '&rvend=' + encodeURIComponent(b)
-				+ '&titles=' + encodeURIComponent(D.wgTitle)
-		)
-		.done(function(d0){
-			// number of edits in last 10 days
-			revs0 = (d0.query.pages[d0.query.pageids[0]].revisions ? d0.query.pages[d0.query.pageids[0]].revisions.length : 0);
+			// add a possible author…
+			$('#CzyWieszAuthor').val(winner.user);
+			$('#CzyWieszAuthor').after('&nbsp;<small id="CzyWieszAuthorTip"><span class="czywiesz-external" title="Autor największej lub najnowszej dużej edycji (' + winner.added + ' znaków) w ciągu ostatnich 10 dni.">&nbsp;(!)&nbsp;</span></small>&nbsp;');
+			// …and date
+			$('#CzyWieszDate').val(winner.day);
+			$('#CzyWieszDate').after('&nbsp;<small id="CzyWieszDateTip"><span class="czywiesz-external" title="To jest data edycji spełniającej limit znaków, znalezionej w ciągu ostatnich 10 dni.">&nbsp;(!)&nbsp;</span></small>&nbsp;');
+			if (D.debugmode) {
+				$('#CzyWieszAuthor').width('25%').val(D.wgUserName);
+				$('#CzyWieszAuthor').after(winner.user);
+			}
+		}
+		// there are no edits in last 10 days
+		else {
+			// we should still get one revision
+			D.log(JSON.stringify(revisions));
+			alert('W ciągu ostatnich 10 dni nie dokonano wystarczająco dużych zmian. Jeszcze raz rozważ zgłaszanie tego artykułu, gdyż może to być niezgodne z regulaminem.');
+			editSize = revisions[0].size;
+		}
 
-			// get one more revision to check current size and diffsize of last one in 10 days period
-			$.ajax('/w/api.php?action=query&prop=revisions&format=json&rvprop=timestamp%7Cuser%7Csize&redirects=&indexpageids='
-					+ '&rvlimit=' + (revs0+1)
-					+ '&titles=' + encodeURIComponent(D.wgTitle)
-			)
-			.done(function(d){
-				aj = d.query.pages[d.query.pageids[0]].revisions;
-				revs = aj.length;
-				D.log('edits in last 10 days:',aj);
+		D.articlesize = {
+			size:	editSize,
+			enough:	(editSize >= bigEdit),
+			warn:	(editSize >= bigEdit ? '' : (D.config.no + '&nbsp;&nbsp;<strong style="color: red;">Rozmiar ' + editSize + ' b dyskwalifikuje artykuł ze zgłoszenia!</strong> <!--small>(<a class="czywiesz-external">info</a>)</small-->') )
+		};
 
-				if (revs0 > 0) {
-				// there are edits in last 10 days
-					aj0 = d0.query.pages[d0.query.pageids[0]].revisions;
-					//revs0 = aj0.length;
-					D.log('edits in last 10 days, plus one more:',aj0);
-
-					// check the author of the biggest edit in last 10 days
-					str=[];
-					for (var i=0;i<aj.length;i++){
-						if (aj[i+1]) {
-							str.push(aj[i].size-aj[i+1].size);
-						}
-						else {
-							// (revs0 == revs) means the article was *created* in last 10 days so last edit really diffs from 0
-							if (revs0 == revs) {str.push(aj[i].size);}
-						}
-					}
-
-					maxdiffsize = Math.max.apply(Math,str);
-					maxdiffrev = $.inArray(maxdiffsize,str); //if the same size is more than once it brings the most recent revision!
-					if (maxdiffsize > 0) maxdiffsize = '+' + maxdiffsize;
-					maxdiffuser = aj[maxdiffrev].user;
-					//maxdiffdate; get this in format YYYY-MM-DD but in local time (with TimezoneOffset)
-					//this way is quicker than converting (g.getFullYear() +'-'+ g.getMonth() +'-'+ g.getDate()) from YYYY-M-D into YYYY-MM-DD
-					//toISOString converts time to UTC for display so if we remove TimezoneOffset then the result after toISOString is good
-						g = new Date(Date.parse( aj[maxdiffrev].timestamp ));
-						g.setMinutes(g.getMinutes()-g.getTimezoneOffset());
-						maxdiffdate = g.toISOString().split('T')[0];
-
-					D.log('\"[str,maxdiffrev,maxdiffsize,maxdiffuser]\":',[str,maxdiffrev,maxdiffsize,maxdiffuser]);
-
-					// add a possible author…
-					$('#CzyWieszAuthor').val(maxdiffuser);
-					$('#CzyWieszAuthor').after('&nbsp;<small id="CzyWieszAuthorTip"><span class="czywiesz-external" title="Autor największej edycji (' + maxdiffsize + ' znaków) w ciągu ostatnich 10 dni. Upewnij się, że to jest główny autor artykułu!">&nbsp;(!)&nbsp;</span></small>&nbsp;');
-					// …and date
-					$('#CzyWieszDate').val(maxdiffdate);
-					$('#CzyWieszDate').after('&nbsp;<small id="CzyWieszDateTip"><span class="czywiesz-external" title="To jest data największej edycji (' + maxdiffsize + ' znaków) w ciągu ostatnich 10 dni. Upewnij się, czy to o tę datę chodzi!">&nbsp;(!)&nbsp;</span></small>&nbsp;');
-					if (D.debugmode) {
-						$('#CzyWieszAuthor').width('25%').val(D.wgUserName);
-						$('#CzyWieszAuthor').after(maxdiffuser);
-					}
-				}
-				else {
-				// there are no edits in last 10 days
-					//revs0 = 0;
-					D.log(d.query.pages[d.query.pageids[0]]);
-					alert('W ciągu ostatnich 10 dni nie dokonano żadnej edycji. Jeszcze raz rozważ zgłaszanie tego artykułu, gdyż może to być niezgodne z regulaminem.');
-				}
-		
-				D.articlesize = {
-					size:	aj[0].size,
-					enough:	(aj[0].size > 2047),
-					warn:	( (aj[0].size > 2047) ? '' : (D.config.no + '&nbsp;&nbsp;<strong style="color: red;">Rozmiar ' + aj[0].size + ' b dyskwalifikuje artykuł ze zgłoszenia!</strong> <!--small>(<a class="czywiesz-external">info</a>)</small-->') )
-				};
-
-				$('<tr id="CzyWieszSize"></tr>')
-					.insertAfter($('#CzyWieszRefs'))
-					.html('<td>Rozmiar (>2 kb): </td>'
-						+ '<td>' + (D.articlesize.enough ? D.config.yes : D.articlesize.warn) + '</td>')
-					.css( D.articlesize.enough ? {display: 'none'} : {});
-			})
-			.fail(function(data){
-				D.errors.push('Błąd pobierania historii artykułu (funkcja wewnętrzna): $.ajax.fail().');
-				D.errors.show();
-				console.error('Błąd pobierania historii artykułu (funkcja wewnętrzna): $.ajax.fail().');
-				console.error(data);
-			});
-		})
-		.fail(function(data){
-			D.errors.push('Błąd pobierania historii artykułu (funkcja zewnętrzna): $.ajax.fail().');
-			D.errors.show();
-			console.error('Błąd pobierania historii artykułu (funkcja zewnętrzna): $.ajax.fail().');
-			console.error(data);
-		});
+		$('<tr id="CzyWieszSize"></tr>')
+			.insertAfter($('#CzyWieszRefs'))
+			.html('<td>Rozmiar (>2 kb): </td>'
+				+ '<td>' + (D.articlesize.enough ? D.config.yes : D.articlesize.warn) + '</td>')
+			.css( D.articlesize.enough ? {display: 'none'} : {})
+		;
 	}
 
 	/** Prepare and validate values. */
@@ -1036,7 +981,7 @@ class DykForm {
 
 module.exports = { DykForm };
 
-},{}],5:[function(require,module,exports){
+},{"./RevisionList":9}],5:[function(require,module,exports){
 /* eslint-disable no-useless-escape */
 /* eslint-disable no-mixed-spaces-and-tabs */
 /* eslint-disable indent */
@@ -1099,7 +1044,7 @@ class DykMain {
 
 module.exports = { DykMain };
 
-},{"./DykForm":4,"./DykProcess":6,"./Wikiprojects":9}],6:[function(require,module,exports){
+},{"./DykForm":4,"./DykProcess":6,"./Wikiprojects":10}],6:[function(require,module,exports){
 /* eslint-disable no-useless-escape */
 /* eslint-disable no-mixed-spaces-and-tabs */
 /* eslint-disable indent */
@@ -1540,7 +1485,7 @@ class DykProcess {
 
 module.exports = { DykProcess };
 
-},{"./Loadbar":8,"./asyncAjax":10,"./config":11}],7:[function(require,module,exports){
+},{"./Loadbar":8,"./asyncAjax":11,"./config":12}],7:[function(require,module,exports){
 /**
  * D.errors info.
  */
@@ -1675,6 +1620,171 @@ class Loadbar {
 module.exports = { Loadbar };
 
 },{}],9:[function(require,module,exports){
+/**
+ * Revision list reader and parser.
+ */
+class RevisionList {
+	constructor() {
+		this.api = false;
+		this.readLimit = 100; // number of records to read
+	}
+
+	/** @private */
+	getApi() {
+		if (!this.api) {
+			this.api = new mw.Api();
+		}
+		return this.api;
+	}
+	/** @private */
+	firstPage(data) {
+		let id;
+		for (id in data.query.pages) {
+			break;
+		}
+		return data.query.pages[id];
+	}
+
+	/**
+	 * Read revisions data.
+	 * @param {String} title Article.
+	 * @param {Number} days Number of days.
+	 */
+	async readRevs(title, days) {
+		const dt = new Date();
+		dt.setDate(dt.getDate() - days);
+		const from = dt.toISOString();
+		console.log({from});
+	
+		let data;
+		// get ids to figure out correct limit
+		data = await this.getApi().get({
+			action: 'query',
+			prop: "revisions",
+			format: "json",
+			rvprop: ['ids'],
+			rvend: from,
+			rvlimit: 'max',
+			titles: title,
+		});
+		const ids = this.firstPage(data).revisions;
+	
+		// get data of +1 edits (need one more edit to get size)
+		data = await this.getApi().get({
+			action: 'query',
+			prop: "revisions",
+			format: "json",
+			rvprop: ['timestamp', 'user', 'size'],
+			rvlimit: ids.length + 1,
+			titles: title,
+		});
+		const revisions = this.firstPage(data).revisions;
+		// let isNew = (revisions.length === ids.length);
+		const records = this.prepareData(revisions, dt);
+		console.log({data, revisions, records});
+		return {revisions, records};
+	}
+
+	/**
+	 * Prepare revision records.
+	 * 
+	 * @param {Array} revisions prepare data.
+	 * @param {Date|Number} limit Limit in days from now or sepcific date.
+	 * @returns Daily edit stats by each user.
+	 */
+	prepareData(revisions, limit) {
+		// Sort revisions by date (latest first)
+		revisions.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+	
+		// Keep all revisions or within the last X days
+		let dtLimit = 0;
+		if (limit) {
+			if (limit instanceof Date) {
+				dtLimit = limit;
+			} else {
+				dtLimit = new Date();
+				dtLimit.setDate(dtLimit.getDate() - limit);
+			}
+		}
+	
+		const records = {};
+	
+		let limitReached = false;
+		let futureRev = false; // revision in future
+		let futureRecord = false; // record in future
+		revisions.some(rev => {
+			const dt = new Date(rev.timestamp);
+	
+			// now we can calculate size for the record in future
+			if (futureRev) {
+				const diffSize = futureRev.size - rev.size;
+				if (diffSize > 0) {
+					futureRecord.added += diffSize;
+				} else {
+					futureRecord.removed += Math.abs(diffSize);
+				}
+				futureRecord.edits++;
+			}
+	
+			// date limit overflow, break
+			if (futureRev && dt < dtLimit) {
+				limitReached = true;
+				return true; // break
+			}
+	
+			// prepare record
+			const day = rev.timestamp.split('T')[0];
+			const key = `${day}:${rev.user}`;
+			if (!records[key]) {
+				records[key] = { day, user: rev.user, added: 0, removed: 0, edits: 0 };
+			}
+			const record = records[key];
+			
+			// save for next loop
+			futureRev = rev;
+			futureRecord = record;
+		});
+		// add for last record
+		if (!limitReached) {
+			futureRecord.added += futureRev.size;
+		}
+	
+		// Convert records object to an array
+		const recordsArray = Object.values(records);
+	
+		return recordsArray;
+	}
+
+	/** Find a winner record. */
+	findWinner(records, bigEdit) {
+		// check for the latest, big edit
+		for (const record of records) {
+			if (record.added >= bigEdit) {
+				return {record, size:record.added};
+			}
+		}
+		// check acumulated edits
+		let biggestRecord;
+		let biggestSize = 0;
+		let size = 0;
+		for (const record of records) {
+			if (record.added > 0) {
+				if (record.added > biggestSize) {
+					biggestSize = record.added;
+					biggestRecord = record;
+				}
+				size += record.added;
+				if (size >= bigEdit) {
+					return {record:biggestRecord, size};
+				}
+			}
+		}
+		return false;
+	}
+}
+
+module.exports = { RevisionList };
+},{}],10:[function(require,module,exports){
 /* eslint-disable no-useless-escape */
 /* eslint-disable no-mixed-spaces-and-tabs */
 /* eslint-disable indent */
@@ -1728,7 +1838,7 @@ class Wikiprojects {
 
 module.exports = { Wikiprojects };
 
-},{}],10:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 /**
  * MW API call.
  * 
@@ -1781,7 +1891,7 @@ function apiAsync(call) {
 
 module.exports = { apiAjax, apiAsync };
 
-},{}],11:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 var config = {
 	interp:		'.,:;!?…-–—()[]{}⟨⟩\'"„”«»/\\', // [\s] must be added directly!; ['] & [\] escaped due to js limits, [\s] means [space]
 	miesiacArr:	['stycznia', 'lutego', 'marca', 'kwietnia', 'maja', 'czerwca', 'lipca', 'sierpnia', 'września', 'października', 'listopada', 'grudnia'],
@@ -1837,7 +1947,7 @@ var config = {
 
 module.exports = { config };
 
-},{}],12:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 const { DYKnomination, createDyk, createFullDyk } = require("./CzyWiesz");
 const { DoneHandling } = require("./DoneHandling");
 
@@ -1886,7 +1996,7 @@ if (pageName.indexOf('/propozycje') > 0) {
 // expose to others
 window.DYKnomination = DYKnomination;
 
-},{"./CzyWiesz":1,"./DoneHandling":3}],13:[function(require,module,exports){
+},{"./CzyWiesz":1,"./DoneHandling":3}],14:[function(require,module,exports){
 /* global OO */
 
 /**
@@ -1905,7 +2015,7 @@ function stdConfirm(html, isText) {
 }
 
 module.exports = { stdConfirm };
-},{}],14:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 /** Encode user string for JS. */
 function htmlspecialchars(text) {
 	return text
@@ -1918,7 +2028,7 @@ function htmlspecialchars(text) {
 }
 
 module.exports = { htmlspecialchars };
-},{}],15:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 /**
  * ISO-like date interpreter.
  * 
@@ -1973,4 +2083,4 @@ function endCounter(tpl, now) {
 
 module.exports = { timeCounter, endCounter };
 
-},{}]},{},[12]);
+},{}]},{},[13]);

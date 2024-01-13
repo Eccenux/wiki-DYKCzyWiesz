@@ -3,6 +3,8 @@
 /* eslint-disable indent */
 /* eslint-disable array-bracket-newline */
 
+const { RevisionList } = require("./RevisionList");
+
 function strToRegExp (str) {
 	return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
 }
@@ -17,6 +19,7 @@ class DykForm {
 	 */
 	constructor(core) {
 		this.core = core;
+		this.revisionList = new RevisionList();
 	}
 
 	/**
@@ -293,112 +296,54 @@ class DykForm {
 		
 	}
 
-	pagerevs () {
-		var D = this.core;
+	async pagerevs () {
+		const D = this.core;
+		const bigEdit = 2048; // big/min edit
 
-		var a,b,d,aj0,revs0,aj,revs,str,maxdiffsize,maxdiffrev,maxdiffuser,maxdiffdate,g;
+		const {revisions, records} = await this.revisionList.readRevs(D.wgTitle, 10);
+		D.log('revisions in last 10 days + 1 edit:', revisions.length);
+		D.log('day-users in last 10 days:', records.length);
+		let editSize = 0;
+		// found edits
+		if (records.length > 0) {
+			// find a winner edit/author
+			let {record:winner, size} = this.revisionList.findWinner(records, bigEdit);
+			D.log(JSON.stringify(winner));
 
-		d = new Date();
-		a = d.toISOString(); // '2012-08-14T17:43:33Z' OR '2012-08-14T17:43:33.324Z'
-			//date after toISOString() is in UTC = without TimezoneOffset
-		d.setDate(d.getDate()-10); // 10 days before and from 00:00:00 on that day
-		d.setHours(0); d.setMinutes(0); d.setSeconds(0); d.setMilliseconds(0);
-		b = d.toISOString();
+			// find size on the day of edit
+			editSize = size;
 
-		$.ajax('/w/api.php?action=query&prop=revisions&format=json&rvprop=timestamp%7Cuser%7Csize&redirects=&indexpageids='
-				+ '&rvlimit=max'
-				+ '&rvstart=' + encodeURIComponent(a)
-				+ '&rvend=' + encodeURIComponent(b)
-				+ '&titles=' + encodeURIComponent(D.wgTitle)
-		)
-		.done(function(d0){
-			// number of edits in last 10 days
-			revs0 = (d0.query.pages[d0.query.pageids[0]].revisions ? d0.query.pages[d0.query.pageids[0]].revisions.length : 0);
+			// add a possible author…
+			$('#CzyWieszAuthor').val(winner.user);
+			$('#CzyWieszAuthor').after('&nbsp;<small id="CzyWieszAuthorTip"><span class="czywiesz-external" title="Autor największej lub najnowszej dużej edycji (' + winner.added + ' znaków) w ciągu ostatnich 10 dni.">&nbsp;(!)&nbsp;</span></small>&nbsp;');
+			// …and date
+			$('#CzyWieszDate').val(winner.day);
+			$('#CzyWieszDate').after('&nbsp;<small id="CzyWieszDateTip"><span class="czywiesz-external" title="To jest data edycji spełniającej limit znaków, znalezionej w ciągu ostatnich 10 dni.">&nbsp;(!)&nbsp;</span></small>&nbsp;');
+			if (D.debugmode) {
+				$('#CzyWieszAuthor').width('25%').val(D.wgUserName);
+				$('#CzyWieszAuthor').after(winner.user);
+			}
+		}
+		// there are no edits in last 10 days
+		else {
+			// we should still get one revision
+			D.log(JSON.stringify(revisions));
+			alert('W ciągu ostatnich 10 dni nie dokonano wystarczająco dużych zmian. Jeszcze raz rozważ zgłaszanie tego artykułu, gdyż może to być niezgodne z regulaminem.');
+			editSize = revisions[0].size;
+		}
 
-			// get one more revision to check current size and diffsize of last one in 10 days period
-			$.ajax('/w/api.php?action=query&prop=revisions&format=json&rvprop=timestamp%7Cuser%7Csize&redirects=&indexpageids='
-					+ '&rvlimit=' + (revs0+1)
-					+ '&titles=' + encodeURIComponent(D.wgTitle)
-			)
-			.done(function(d){
-				aj = d.query.pages[d.query.pageids[0]].revisions;
-				revs = aj.length;
-				D.log('edits in last 10 days:',aj);
+		D.articlesize = {
+			size:	editSize,
+			enough:	(editSize >= bigEdit),
+			warn:	(editSize >= bigEdit ? '' : (D.config.no + '&nbsp;&nbsp;<strong style="color: red;">Rozmiar ' + editSize + ' b dyskwalifikuje artykuł ze zgłoszenia!</strong> <!--small>(<a class="czywiesz-external">info</a>)</small-->') )
+		};
 
-				if (revs0 > 0) {
-				// there are edits in last 10 days
-					aj0 = d0.query.pages[d0.query.pageids[0]].revisions;
-					//revs0 = aj0.length;
-					D.log('edits in last 10 days, plus one more:',aj0);
-
-					// check the author of the biggest edit in last 10 days
-					str=[];
-					for (var i=0;i<aj.length;i++){
-						if (aj[i+1]) {
-							str.push(aj[i].size-aj[i+1].size);
-						}
-						else {
-							// (revs0 == revs) means the article was *created* in last 10 days so last edit really diffs from 0
-							if (revs0 == revs) {str.push(aj[i].size);}
-						}
-					}
-
-					maxdiffsize = Math.max.apply(Math,str);
-					maxdiffrev = $.inArray(maxdiffsize,str); //if the same size is more than once it brings the most recent revision!
-					if (maxdiffsize > 0) maxdiffsize = '+' + maxdiffsize;
-					maxdiffuser = aj[maxdiffrev].user;
-					//maxdiffdate; get this in format YYYY-MM-DD but in local time (with TimezoneOffset)
-					//this way is quicker than converting (g.getFullYear() +'-'+ g.getMonth() +'-'+ g.getDate()) from YYYY-M-D into YYYY-MM-DD
-					//toISOString converts time to UTC for display so if we remove TimezoneOffset then the result after toISOString is good
-						g = new Date(Date.parse( aj[maxdiffrev].timestamp ));
-						g.setMinutes(g.getMinutes()-g.getTimezoneOffset());
-						maxdiffdate = g.toISOString().split('T')[0];
-
-					D.log('\"[str,maxdiffrev,maxdiffsize,maxdiffuser]\":',[str,maxdiffrev,maxdiffsize,maxdiffuser]);
-
-					// add a possible author…
-					$('#CzyWieszAuthor').val(maxdiffuser);
-					$('#CzyWieszAuthor').after('&nbsp;<small id="CzyWieszAuthorTip"><span class="czywiesz-external" title="Autor największej edycji (' + maxdiffsize + ' znaków) w ciągu ostatnich 10 dni. Upewnij się, że to jest główny autor artykułu!">&nbsp;(!)&nbsp;</span></small>&nbsp;');
-					// …and date
-					$('#CzyWieszDate').val(maxdiffdate);
-					$('#CzyWieszDate').after('&nbsp;<small id="CzyWieszDateTip"><span class="czywiesz-external" title="To jest data największej edycji (' + maxdiffsize + ' znaków) w ciągu ostatnich 10 dni. Upewnij się, czy to o tę datę chodzi!">&nbsp;(!)&nbsp;</span></small>&nbsp;');
-					if (D.debugmode) {
-						$('#CzyWieszAuthor').width('25%').val(D.wgUserName);
-						$('#CzyWieszAuthor').after(maxdiffuser);
-					}
-				}
-				else {
-				// there are no edits in last 10 days
-					//revs0 = 0;
-					D.log(d.query.pages[d.query.pageids[0]]);
-					alert('W ciągu ostatnich 10 dni nie dokonano żadnej edycji. Jeszcze raz rozważ zgłaszanie tego artykułu, gdyż może to być niezgodne z regulaminem.');
-				}
-		
-				D.articlesize = {
-					size:	aj[0].size,
-					enough:	(aj[0].size > 2047),
-					warn:	( (aj[0].size > 2047) ? '' : (D.config.no + '&nbsp;&nbsp;<strong style="color: red;">Rozmiar ' + aj[0].size + ' b dyskwalifikuje artykuł ze zgłoszenia!</strong> <!--small>(<a class="czywiesz-external">info</a>)</small-->') )
-				};
-
-				$('<tr id="CzyWieszSize"></tr>')
-					.insertAfter($('#CzyWieszRefs'))
-					.html('<td>Rozmiar (>2 kb): </td>'
-						+ '<td>' + (D.articlesize.enough ? D.config.yes : D.articlesize.warn) + '</td>')
-					.css( D.articlesize.enough ? {display: 'none'} : {});
-			})
-			.fail(function(data){
-				D.errors.push('Błąd pobierania historii artykułu (funkcja wewnętrzna): $.ajax.fail().');
-				D.errors.show();
-				console.error('Błąd pobierania historii artykułu (funkcja wewnętrzna): $.ajax.fail().');
-				console.error(data);
-			});
-		})
-		.fail(function(data){
-			D.errors.push('Błąd pobierania historii artykułu (funkcja zewnętrzna): $.ajax.fail().');
-			D.errors.show();
-			console.error('Błąd pobierania historii artykułu (funkcja zewnętrzna): $.ajax.fail().');
-			console.error(data);
-		});
+		$('<tr id="CzyWieszSize"></tr>')
+			.insertAfter($('#CzyWieszRefs'))
+			.html('<td>Rozmiar (>2 kb): </td>'
+				+ '<td>' + (D.articlesize.enough ? D.config.yes : D.articlesize.warn) + '</td>')
+			.css( D.articlesize.enough ? {display: 'none'} : {})
+		;
 	}
 
 	/** Prepare and validate values. */
