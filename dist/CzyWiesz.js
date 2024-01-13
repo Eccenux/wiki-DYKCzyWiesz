@@ -3,6 +3,7 @@
 /* eslint-disable no-mixed-spaces-and-tabs */
 /* eslint-disable indent */
 /* eslint-disable array-bracket-newline */
+
 /**
  * Nominacje do Czy-Wiesza aka DYKnomination (Did You Know).
  * 
@@ -19,9 +20,11 @@
  */
 var DYKnomination = {};
 
+const { versionInfo } = require("./build/version");
+
 /** About (meta). */
 DYKnomination.about = {
-	version    : '6.0.0' + (window.DYKnomination_is_beta===true?'beta':''),
+	version    : `${versionInfo.version}-${versionInfo.buildDay}` + (window.DYKnomination_is_beta===true?'beta':''),
 	beta	   : (window.DYKnomination_is_beta===true?true:false),
 	author     : 'Kaligula',
 	authorlink : '[[w:pl:user:Kaligula]]',
@@ -150,7 +153,7 @@ function createFullDyk(DYKnomination) {
 
 module.exports = { DYKnomination, createDyk, createFullDyk };
 
-},{"./DykMain":5,"./ErrorInfo":7,"./asyncAjax":11,"./config":12}],2:[function(require,module,exports){
+},{"./DykMain":5,"./ErrorInfo":7,"./asyncAjax":11,"./build/version":12,"./config":13}],2:[function(require,module,exports){
 /* global OO */
 
 /**
@@ -506,7 +509,7 @@ class DoneHandling {
 }
 
 module.exports = { DoneHandling };
-},{"./DoneDialog":2,"./asyncAjax":11,"./simpleDialogs":14,"./stringOps":15,"./timeCounter":16}],4:[function(require,module,exports){
+},{"./DoneDialog":2,"./asyncAjax":11,"./simpleDialogs":15,"./stringOps":16,"./timeCounter":17}],4:[function(require,module,exports){
 /* eslint-disable no-useless-escape */
 /* eslint-disable no-mixed-spaces-and-tabs */
 /* eslint-disable indent */
@@ -1512,7 +1515,7 @@ class DykProcess {
 
 module.exports = { DykProcess };
 
-},{"./Loadbar":8,"./asyncAjax":11,"./config":12}],7:[function(require,module,exports){
+},{"./Loadbar":8,"./asyncAjax":11,"./config":13}],7:[function(require,module,exports){
 /**
  * D.errors info.
  */
@@ -1925,6 +1928,14 @@ function apiAsync(call) {
 module.exports = { apiAjax, apiAsync };
 
 },{}],12:[function(require,module,exports){
+let versionInfo = {
+	version:'6.0.0',
+	buildDay:'2024-01-13',
+}
+
+module.exports = { versionInfo };
+
+},{}],13:[function(require,module,exports){
 var config = {
 	interp:		'.,:;!?…-–—()[]{}⟨⟩\'"„”«»/\\', // [\s] must be added directly!; ['] & [\] escaped due to js limits, [\s] means [space]
 	miesiacArr:	['stycznia', 'lutego', 'marca', 'kwietnia', 'maja', 'czerwca', 'lipca', 'sierpnia', 'września', 'października', 'listopada', 'grudnia'],
@@ -1980,7 +1991,7 @@ var config = {
 
 module.exports = { config };
 
-},{}],13:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 const { DYKnomination, createDyk, createFullDyk } = require("./CzyWiesz");
 const { DoneHandling } = require("./DoneHandling");
 
@@ -2004,7 +2015,7 @@ if (namespaceNumber === 0) {
 			$(link).click((e) => {
 				e.preventDefault();
 				DYKnomination.askuser();
-			});
+			}).attr('title', `Nominacje do WP:CW v${DYKnomination.about.version}`);
 			mw.hook('userjs.DYKnomination.ready').fire(DYKnomination);
 		});
 	});
@@ -2029,7 +2040,7 @@ if (pageName.indexOf('/propozycje') > 0) {
 // expose to others
 window.DYKnomination = DYKnomination;
 
-},{"./CzyWiesz":1,"./DoneHandling":3}],14:[function(require,module,exports){
+},{"./CzyWiesz":1,"./DoneHandling":3}],15:[function(require,module,exports){
 /* global OO */
 
 /**
@@ -2048,7 +2059,7 @@ function stdConfirm(html, isText) {
 }
 
 module.exports = { stdConfirm };
-},{}],15:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 /** Encode user string for JS. */
 function htmlspecialchars(text) {
 	return text
@@ -2061,7 +2072,7 @@ function htmlspecialchars(text) {
 }
 
 module.exports = { htmlspecialchars };
-},{}],16:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 /**
  * ISO-like date interpreter.
  * 
@@ -2116,4 +2127,4 @@ function endCounter(tpl, now) {
 
 module.exports = { timeCounter, endCounter };
 
-},{}]},{},[13]);
+},{}]},{},[14]);

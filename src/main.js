@@ -21,7 +21,7 @@ if (namespaceNumber === 0) {
 			$(link).click((e) => {
 				e.preventDefault();
 				DYKnomination.askuser();
-			});
+			}).attr('title', `Nominacje do WP:CW v${DYKnomination.about.version}`);
 			mw.hook('userjs.DYKnomination.ready').fire(DYKnomination);
 		});
 	});

@@ -2,6 +2,7 @@
 /* eslint-disable no-mixed-spaces-and-tabs */
 /* eslint-disable indent */
 /* eslint-disable array-bracket-newline */
+
 /**
  * Nominacje do Czy-Wiesza aka DYKnomination (Did You Know).
  * 
@@ -18,9 +19,11 @@
  */
 var DYKnomination = {};
 
+const { versionInfo } = require("./build/version");
+
 /** About (meta). */
 DYKnomination.about = {
-	version    : '6.0.0' + (window.DYKnomination_is_beta===true?'beta':''),
+	version    : `${versionInfo.version}-${versionInfo.buildDay}` + (window.DYKnomination_is_beta===true?'beta':''),
 	beta	   : (window.DYKnomination_is_beta===true?true:false),
 	author     : 'Kaligula',
 	authorlink : '[[w:pl:user:Kaligula]]',
