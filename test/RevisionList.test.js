@@ -100,5 +100,19 @@ describe('RevisionList', () => {
 			assert.equal(size, 2400);
 			assert.deepEqual(result, expected);
 		});
+		it('should calculate acumulated size', () => {
+			// the key req here is that none is larger then 2000
+			let records = [
+				{"day":"2024-01-12","user":"Nux","added":200,"removed":10,"edits":2},
+				{"day":"2023-12-24","user":"MalarzBOT","added":100,"removed":100,"edits":1},
+				{"day":"2023-12-12","user":"Nux","added":100,"removed":10,"edits":1},
+				{"day":"2023-12-09","user":"Czupirek","added":400,"removed":5,"edits":2},
+			];
+			let {record:result, size} = revisionList.findWinner(records, 2000);
+
+			assert.equal(result, false);
+			assert.equal(size, 800);
+		});
+
 	});
 });

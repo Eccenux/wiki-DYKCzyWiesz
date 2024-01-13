@@ -157,7 +157,7 @@ class RevisionList {
 				}
 			}
 		}
-		return false;
+		return {record:false, size};
 	}
 }
 

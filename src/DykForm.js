@@ -2,7 +2,6 @@
 /* eslint-disable no-mixed-spaces-and-tabs */
 /* eslint-disable indent */
 /* eslint-disable array-bracket-newline */
-
 const { RevisionList } = require("./RevisionList");
 
 function strToRegExp (str) {
@@ -308,28 +307,41 @@ class DykForm {
 		if (records.length > 0) {
 			// find a winner edit/author
 			let {record:winner, size} = this.revisionList.findWinner(records, bigEdit);
-			D.log(JSON.stringify(winner));
+			D.log(JSON.stringify(winner), size);
 
 			// find size on the day of edit
 			editSize = size;
 
 			// add a possible author…
-			$('#CzyWieszAuthor').val(winner.user);
-			$('#CzyWieszAuthor').after('&nbsp;<small id="CzyWieszAuthorTip"><span class="czywiesz-external" title="Autor największej lub najnowszej dużej edycji (' + winner.added + ' znaków) w ciągu ostatnich 10 dni.">&nbsp;(!)&nbsp;</span></small>&nbsp;');
-			// …and date
-			$('#CzyWieszDate').val(winner.day);
-			$('#CzyWieszDate').after('&nbsp;<small id="CzyWieszDateTip"><span class="czywiesz-external" title="To jest data edycji spełniającej limit znaków, znalezionej w ciągu ostatnich 10 dni.">&nbsp;(!)&nbsp;</span></small>&nbsp;');
-			if (D.debugmode) {
-				$('#CzyWieszAuthor').width('25%').val(D.wgUserName);
-				$('#CzyWieszAuthor').after(winner.user);
+			if (winner) {
+				$('#CzyWieszAuthor').val(winner.user);
+				$('#CzyWieszAuthor').after('&nbsp;<small id="CzyWieszAuthorTip"><span class="czywiesz-external" title="Autor największej lub najnowszej dużej edycji (' + winner.added + ' znaków) w ciągu ostatnich 10 dni.">&nbsp;(!)&nbsp;</span></small>&nbsp;');
+				// …and date
+				$('#CzyWieszDate').val(winner.day);
+				$('#CzyWieszDate').after('&nbsp;<small id="CzyWieszDateTip"><span class="czywiesz-external" title="To jest data edycji spełniającej limit znaków, znalezionej w ciągu ostatnich 10 dni.">&nbsp;(!)&nbsp;</span></small>&nbsp;');
+				if (D.debugmode) {
+					$('#CzyWieszAuthor').width('25%').val(D.wgUserName);
+					$('#CzyWieszAuthor').after(winner.user);
+				}
+			} else {
+				alert(`
+					⚠️ W ciągu ostatnich 10 dni ''nie dokonano wystarczająco dużych zmian''.
+					Skumulowany rozmiar: ${editSize} bajtów, edycje: ${revisions.length-1}.
+
+					Jeszcze raz rozważ zgłaszanie tego artykułu, gdyż może to być niezgodne z regulaminem.
+				`.replace(/\n\t+/g, '\n'));
 			}
 		}
 		// there are no edits in last 10 days
 		else {
 			// we should still get one revision
 			D.log(JSON.stringify(revisions));
-			alert('W ciągu ostatnich 10 dni nie dokonano wystarczająco dużych zmian. Jeszcze raz rozważ zgłaszanie tego artykułu, gdyż może to być niezgodne z regulaminem.');
 			editSize = revisions[0].size;
+			alert(`
+				⚠️ W ciągu ostatnich 10 dni ''nie wykonano żadnych zmian''.
+
+				Jeszcze raz rozważ zgłaszanie tego artykułu, gdyż może to być niezgodne z regulaminem.
+			`.replace(/\n\t+/g, '\n'));
 		}
 
 		D.articlesize = {
