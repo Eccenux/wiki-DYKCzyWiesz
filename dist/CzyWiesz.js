@@ -1287,7 +1287,7 @@ class DykProcess {
 					action : 'edit',
 					format : 'json',
 					title : D.wgTitle,
-					prependtext : '{' + '{Czy wiesz do artykułu|p=' + subpageTitle + '}' + '}\n',
+					prependtext : '{' + '{Czy wiesz do artykułu|s=' + subpageTitle + '}' + '}\n',
 					summary : D.config.summary_r,
 					watchlist : 'nochange',
 					token : D.edittoken
@@ -1311,6 +1311,7 @@ class DykProcess {
 			return;
 		}
 
+		let subpageTitle = this.setupNominationPage();
 		try {
 			secttitl_a = D.config.secttitl_a.replace('TITLE',D.wgTitle);
 			summary_a = D.config.summary_a.replace('TITLE',D.wgTitle);
@@ -1323,7 +1324,7 @@ class DykProcess {
 					title : (debug ? config.debugBase + '/autor' : 'Dyskusja wikipedysty:' + Dv.author),
 					section : 'new',
 					sectiontitle : secttitl_a,
-					text : (debug ? "debug: '''" + Dv.author + "'''\n" : '') + '{' + '{subst:Czy wiesz - autor0|tytuł strony='+D.wgTitle+'}} ~~' + '~~',
+					text : (debug ? "debug: '''" + Dv.author + "'''\n" : '') + '{' + '{subst:Czy wiesz - autor0|tytuł strony='+D.wgTitle+'|s='+subpageTitle+'}} ~~' + '~~',
 					summary : summary_a,
 					watchlist : 'nochange',
 					token : D.edittoken
@@ -1399,6 +1400,7 @@ class DykProcess {
 		}
 
 		let mainCall;
+		let subpageTitle = this.setupNominationPage();
 		if (czy_talk) {
 			//if report type is 'talk' (D.wikiprojects.list2[wnr].type=='talk' & czy_talk==true) just add new section
 			mainCall = {
@@ -1410,7 +1412,7 @@ class DykProcess {
 					title : (debug ? config.debugBase + '/wikiprojekt' : pageToEdit),
 					section : 'new',
 					sectiontitle : (debug ? secttitl_w + ' • ' + curWikiproject : secttitl_w),
-					text : (debug ? "debug: '''" + pageToEdit + "'''\n" : '') +  '{' + '{Czy wiesz - wikiprojekt|' + D.wgTitle + '}} ~~' + '~~',
+					text : (debug ? "debug: '''" + pageToEdit + "'''\n" : '') +  `{{Czy wiesz - wikiprojekt|${D.wgTitle}|s=${subpageTitle} }} ~~` + '~~',
 					summary : summary_w,
 					watchlist : 'nochange',
 					token : D.edittoken
