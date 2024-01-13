@@ -53,14 +53,18 @@ class RevisionList {
 			prop: "revisions",
 			format: "json",
 			rvprop: ['timestamp', 'user', 'size'],
-			rvlimit: ids.length + 1,
+			rvlimit: !ids ? 1 : ids.length + 1,
 			titles: title,
 		});
 		const revisions = this.firstPage(data).revisions;
-		// let isNew = (revisions.length === ids.length);
-		const records = this.prepareData(revisions, dt);
-		console.log({data, revisions, records});
-		return {revisions, records};
+		if (ids && ids.length) {
+			const records = this.prepareData(revisions, dt);
+			console.log({data, revisions, records});
+			return {revisions, records};
+		} else {
+			// no recent edits, old article
+			return {revisions, records:[]};
+		}
 	}
 
 	/**
@@ -125,6 +129,8 @@ class RevisionList {
 		// add for last record
 		if (!limitReached) {
 			futureRecord.added += futureRev.size;
+			futureRecord.edits++;
+			futureRecord.isNew = true;
 		}
 	
 		// Convert records object to an array

@@ -19,7 +19,7 @@ describe('RevisionList', () => {
 		{"day":"2024-01-12","user":"Nux","added":4100,"removed":4000,"edits":2},
 		{"day":"2023-12-24","user":"MalarzBOT","added":0,"removed":100,"edits":1},
 		{"day":"2023-12-09","user":"Czupirek","added":55,"removed":5,"edits":2},
-		{"day":"2023-12-09","user":"Nux","added":6150,"removed":0,"edits":0}
+		{"day":"2023-12-09","user":"Nux","added":6150,"removed":0,"edits":1,"isNew":true}
 	];
 	// helper log
 	function formatedJson(data) {
@@ -64,6 +64,21 @@ describe('RevisionList', () => {
 			let last = result.pop();
 			const expected = expectedList[0];
 			assert.deepEqual(last, expected);
+		});
+		it('should sum first edits', () => {
+			let revisions = [
+				{"user": "Freixav","timestamp": "2024-01-13T14:44:45Z","size": 6123},
+				{"user": "Freixav","timestamp": "2024-01-13T14:38:10Z","size": 6078},
+			];
+			result = prepareData(revisions, new Date('2023-12-30T10:00:00Z'));
+			console.log(formatedJson(result));
+
+			assert.equal(result.length, 1);
+			let record = result.pop();
+			assert.equal(record.edits, 2);
+			assert.equal(record.isNew, true);
+			assert.equal(record.added, 6123);
+			assert.equal(record.user, 'Freixav');
 		});
 	});
 

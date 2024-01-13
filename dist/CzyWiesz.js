@@ -597,18 +597,12 @@ class DykForm {
 				+ '<td><tt>[[Plik:</tt><input type="text" id="CzyWieszFile2" name="CzyWieszFile2" style="width: 52%; vertical-align: middle;" disabled><tt>|100px|right]]</tt></td>');
 
 		//author row
-		var $author_row = $('<tr></tr>')
+		var $author_row = $('<tr id="CzyWieszAuthorRow"></tr>')
 			.html('<td>Główny autor artykułu<a href="#" title="Gadżet wstawia autora największej edycji w ciągu ostatnich 10 dni (upewnij się!)"><sup>?</sup></a>: </td>'
 				+ '<td><input type="text" id="CzyWieszAuthor" name="CzyWieszAuthor" style="width: 50%;margin-left: 2px;vertical-align: middle;">'
 				+ '&nbsp;&nbsp;<input type="checkbox" id="CzyWieszAuthorInf" name="CzyWieszAuthorInf" style="vertical-align: middle;"><label for="CzyWieszAuthorInf"> poinformować go?</label></td>');
 
-		D.author2_input = $('<input type="text" class="CzyWieszAuthor2" name="CzyWieszAuthor2" style="width: 50%;margin-left: 2px;vertical-align: middle;">');
-		var $author2_row = $('<span id="CzyWieszAuthor2Container"></span>').append(D.author2_input.clone());
-		$author2_row = $('<td></td>').append($author2_row)
-			.append('<a id="CzyWieszAuthor2Add">(+)</a>');
-		$author2_row = $('<tr id="CzyWieszAuthor2" style="display: none;" title="Dodaj *tylko* jeśli jego wkład w obecną rozbudowę artykułu był równie duży jak autora podanego powyżej!"></tr>').append('<td>Kolejny autor: </td>').append($author2_row);
-
-		var $date_row = $('<tr></tr>')
+		var $date_row = $('<tr id="CzyWieszDateRow"></tr>')
 			.html('<td>Data utw./rozbud. artykułu<a href="#" title="Gadżet wstawia datę największej edycji w ciągu ostatnich 10 dni (upewnij się!), w przeciwnym wypadku datę dzisiejszą jako datę zgłoszenia)"><sup>?</sup></a>: </td>'
 				+ '<td><input type="text" id="CzyWieszDate" name="CzyWieszDate" style="width: 50%;margin-left: 2px;vertical-align: middle;"></td>');
 
@@ -655,7 +649,7 @@ class DykForm {
 
 		//build the dialog
 		var $dialog = $('<table></table>').css('width','100%').append($ref_row).append($images_row).append($file_row)
-			.append($author_row).append($author2_row).append($date_row).append($signature_row).append($wikiproject_row);
+			.append($author_row).append($date_row).append($signature_row).append($wikiproject_row);
 		$dialog = $('<div id="CzyWieszGadget"></div>').append($title_paragraph).append($question_paragraph).append($question_textarea_paragraph)
 			.append($dialog).append($comment_paragraph).append($comment_textarea_paragraph).append($rules_paragraph).append($loading_bar);
  
@@ -783,18 +777,6 @@ class DykForm {
 			$('#CzyWieszLoaderBar').parent().css({height: '+=24'});
 		});
 
-		// click on (+) near authors input field → add new input field and enlarge the dialog window
-		$('#CzyWieszAuthor2Add').click(function(){
-			if ($('#CzyWieszAuthor2').css('display') == 'none') {
-				$('#CzyWieszAuthor2').removeAttr('style');
-//				$('#CzyWieszLoaderBar').parent().css({height: '+=24'});
-			}
-			else {
-				$('#CzyWieszAuthor2Container').append(D.author2_input.clone());
-				$('#CzyWieszLoaderBar').parent().css({height: '+=24'});
-			}
-		});
-
 		$('#CzyWieszCommentCheckbox').change(function(){
 			$('#CzyWieszCommentContainer').toggle();
 		});
@@ -804,6 +786,7 @@ class DykForm {
 		
 	}
 
+	/** Page revisions and author data. */
 	async pagerevs () {
 		const D = this.core;
 		const bigEdit = 2048; // big/min edit
@@ -859,6 +842,44 @@ class DykForm {
 			warn:	(editSize >= bigEdit ? '' : (D.config.no + '&nbsp;&nbsp;<strong style="color: red;">Rozmiar ' + editSize + ' b dyskwalifikuje artykuł ze zgłoszenia!</strong> <!--small>(<a class="czywiesz-external">info</a>)</small-->') )
 		};
 
+		// autor/edit info: when, who, what changed
+		if (records && records.length) {
+			let infoTable = `<table class="wikitable">`;
+			infoTable += `<tr>
+				<th>Data</th>
+				<th>Dodane</th>
+				<th>Usunięte</th>
+				<th>Edycje</th>
+				<th>Autor(ka)</th>
+			</tr>`;
+			for (const record of records) {
+				infoTable += `<tr>
+					<td>${record.day}</td>
+					<td>+${record.added}</td>
+					<td>-${record.removed}</td>
+					<td>${record.edits}${record.isNew ? ' (nowy art.)' : ''}</td>
+					<td>${record.user}</td>
+				</tr>`;
+			}
+			infoTable += `</table>`;
+			const $tr = $('<tr id="CzyWieszAuthorInfo"></tr>')
+				.insertAfter($('#CzyWieszDateRow'))
+				.html(`
+					<td colspan=2>
+						<a class="toggle" role="button" href="#">(pokaż zmiany w ostatnich dniach)</a>
+						${infoTable}
+					</td>
+				`)
+			;
+			const $table = $('table', $tr);
+			$table.hide();
+			$('.toggle', $tr).click(function(e) {
+				e.preventDefault();
+				$table.toggle();
+			});
+		}
+
+		// size warning
 		$('<tr id="CzyWieszSize"></tr>')
 			.insertAfter($('#CzyWieszRefs'))
 			.html('<td>Rozmiar (>2 kb): </td>'
@@ -877,14 +898,6 @@ class DykForm {
 		var IMAGES = $('#CzyWieszImages').val().trim();
 		var REFS = (D.sourced ? '+' : ' ');
 		var AUTHOR = $('#CzyWieszAuthor').val().trim();
-		var AUTHOR2 = [];
-			//get authors
-			$('.CzyWieszAuthor2').each( function() {
-				var val = $(this).val().trim();
-				if (val != '') {
-					AUTHOR2.push(val);
-				}
-			});
 		var AUTHOR_INF = ( $('#CzyWieszAuthorInf').prop('checked') ? true : false );
 		var DATE = $('#CzyWieszDate').val().trim();
 		var SIGNATURE = $('#CzyWieszSignature').val().trim();
@@ -1687,14 +1700,18 @@ class RevisionList {
 			prop: "revisions",
 			format: "json",
 			rvprop: ['timestamp', 'user', 'size'],
-			rvlimit: ids.length + 1,
+			rvlimit: !ids ? 1 : ids.length + 1,
 			titles: title,
 		});
 		const revisions = this.firstPage(data).revisions;
-		// let isNew = (revisions.length === ids.length);
-		const records = this.prepareData(revisions, dt);
-		console.log({data, revisions, records});
-		return {revisions, records};
+		if (ids && ids.length) {
+			const records = this.prepareData(revisions, dt);
+			console.log({data, revisions, records});
+			return {revisions, records};
+		} else {
+			// no recent edits, old article
+			return {revisions, records:[]};
+		}
 	}
 
 	/**
@@ -1759,6 +1776,8 @@ class RevisionList {
 		// add for last record
 		if (!limitReached) {
 			futureRecord.added += futureRev.size;
+			futureRecord.edits++;
+			futureRecord.isNew = true;
 		}
 	
 		// Convert records object to an array
