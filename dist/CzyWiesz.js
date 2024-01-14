@@ -642,7 +642,7 @@ class DykForm {
 		//rules paragraph
 		var $rules_paragraph = $('<p id="CzyWieszRules"></p>')
 			.html(`<small>Reguły: Zgłaszaj hasła, które powstały lub zostały rozbudowane nie dawniej niż 10 dni temu.
-				Hasła muszą posiadać źródła (najlepiej w formia przypisów) oraz muszą zawierać co najmniej 2 kB samej treści.</small>`)
+				Hasła muszą posiadać źródła (najlepiej w formie przypisów) oraz muszą zawierać co najmniej 2 kB samej treści.</small>`)
 			.css({border: '1px solid #F0F080', backgroundColor: '#FFFFE0', paddingLeft: '5px'});
  
 		var $loading_bar = $('<div id="CzyWieszLoaderBar"></div>')
