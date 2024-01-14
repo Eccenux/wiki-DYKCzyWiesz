@@ -1377,7 +1377,7 @@ class DykProcess {
 		}
 	}
 
-	/** @private . */
+	/** @private Inform wikiprojects. */
 	async inform_wLoop (secttitl_w, summary_w, summary_w2, /* object */ curWikiproject) {
 		var D = this.core;
 		var debug = D.debugmode;
