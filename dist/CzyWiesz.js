@@ -1367,9 +1367,9 @@ class DykProcess {
 				try {
 					await this.inform_wLoop(secttitl_w, summary_w, summary_w2, curWikiproject);
 				} catch (error) {
-					D.errors.push('Błąd informowania projektu: '+ curWikiproject + ': '+error.toString()+'.');
+					D.errors.push('Błąd informowania projektu: '+ curWikiproject.name + ': '+error.toString()+'.');
 					D.errors.show();
-					console.error('Błąd informowania projektu: '+ curWikiproject + ': '+error.toString()+'.');
+					console.error('Błąd informowania projektu: '+ curWikiproject.name + ': '+error.toString()+'.');
 					throw new Error(`Błąd informowania projektów (${i} / ${Dv.wikiproject.length}).`);
 				}
 				this.loadbar.next();
@@ -1378,59 +1378,17 @@ class DykProcess {
 	}
 
 	/** @private . */
-	async inform_wLoop (secttitl_w, summary_w, summary_w2, curWikiproject) {
+	async inform_wLoop (secttitl_w, summary_w, summary_w2, /* object */ curWikiproject) {
 		var D = this.core;
 		var debug = D.debugmode;
 		
-		var wnr = -1;
-		//check if wikiproject wants to be informed other way than 'section=new'
-		//(wnr=) -1 means 'no' (the wikiproject is not on the list D.wikiprojects.list2), any other number means 'yes' and is a number of the wikiproject in D.wikiprojects.list2
-		$(D.wikiprojects.list2).each(function(n){
-			if (this.label == curWikiproject) wnr=n;
-		});
-		D.log('D.wikiprojects.list2',D.wikiprojects.list2);
+		var pageToEdit = curWikiproject.page;
 
-		var czy_talk;
-		var pageToEdit;
-		if (wnr<0) {
-			pageToEdit = 'Wikiprojekt:'+curWikiproject;
-		} else if (D.wikiprojects.list2[wnr].type=='talk') {
-			pageToEdit = 'Dyskusja wikiprojektu:' + curWikiproject;
-			czy_talk = true;
-		} else {
-			pageToEdit = D.wikiprojects.list2[wnr].page;
-		}
-
-		D.log('czy_talk:',czy_talk,'D.wikiprojects.list2[wnr]:',D.wikiprojects.list2[wnr],'curWikiproject:',curWikiproject,'pageToEdit:',pageToEdit);
-
-		// force talk-page like flow so that we can edit single page multiple times
-		if (debug) {
-			czy_talk = true;
-		}
+		D.log('curWikiproject:',curWikiproject,'pageToEdit:',pageToEdit);
 
 		let mainCall;
 		let subpageTitle = this.setupNominationPage();
-		if (czy_talk) {
-			//if report type is 'talk' (D.wikiprojects.list2[wnr].type=='talk' & czy_talk==true) just add new section
-			mainCall = {
-				url : '/w/api.php',
-				type : 'POST',
-				data : {
-					action : 'edit',
-					format : 'json',
-					title : (debug ? config.debugBase + '/wikiprojekt' : pageToEdit),
-					section : 'new',
-					sectiontitle : (debug ? secttitl_w + ' • ' + curWikiproject : secttitl_w),
-					text : (debug ? "debug: '''" + pageToEdit + "'''\n" : '') +  `{{Czy wiesz - wikiprojekt|${D.wgTitle}|s=${subpageTitle} }} ~~` + '~~',
-					summary : summary_w,
-					watchlist : 'nochange',
-					token : D.edittoken
-				}
-			};
-		}
-		//if report type is not 'editsection' or 'subpage' then
-		else {
-
+		if (!debug) {
 			// get page source [to edit]
 			let data;
 			try {
@@ -1451,7 +1409,7 @@ class DykProcess {
 				dykSectionIndicator + '\n'
 				+ '{' + '{Czy wiesz - wikiprojekt|' + D.wgTitle + '}}');
 
-			D.log('czy_talk (2):',czy_talk,'D.wikiprojects.list2[wnr] (2):',D.wikiprojects.list2[wnr],'curWikiproject (2):',curWikiproject,'pageToEdit (2):',pageToEdit);
+			D.log('curWikiproject (2):',curWikiproject,'pageToEdit (2):',pageToEdit);
 
 			mainCall = {
 				url : '/w/api.php',
@@ -1464,6 +1422,25 @@ class DykProcess {
 					summary: summary_w2,
 					watchlist: 'nochange',
 					token:  D.edittoken
+				}
+			};
+		}
+		else {
+			// force talk-page like flow so that we can edit single page multiple times
+			// just add new section
+			mainCall = {
+				url : '/w/api.php',
+				type : 'POST',
+				data : {
+					action : 'edit',
+					format : 'json',
+					title : config.debugBase + '/wikiprojekt',
+					section : 'new',
+					sectiontitle : secttitl_w + ' • ' + curWikiproject,
+					text : "debug: '''" + pageToEdit + "'''\n" +  `{{Czy wiesz - wikiprojekt|${D.wgTitle}|s=${subpageTitle} }} ~~` + '~~',
+					summary : summary_w,
+					watchlist : 'nochange',
+					token : D.edittoken
 				}
 			};
 		}
@@ -1837,19 +1814,6 @@ module.exports = { RevisionList };
 class Wikiprojects {
 	constructor() {
 		this.list =  []; // populated by load() from [[Wikipedia:Wikiprojekt/Spis wikiprojektów]]
-		this.list2 = [   /*****
-				 * List of wikiprojects which aren't on above list and should appear on the list of wikiprojects to be notified.
-				 *
-				 * Objects containing following fields:
-				 * label - text which will appear in the dropdown menu
-				 * page - location of the wikiproject. If type is 'talk', page should point to the
-				 *        wikiproject talk page
-				 * type - 'section' or 'talk'
-				 *        - 'section' - the template will be put on the wikiproject main page, after a line
-				 *                    "<!-- Nowe zgłoszenia CzyWiesza wstawiaj poniżej tej linii. Nie zmieniaj i nie usuwaj tej linii -->" (without quotes)
-				 *        - 'talk' - the template will be placed in a new section on the wikiproject talk page.
-				 */
-		];
 		/** Dropdown menu (available after load). */
 		this.$select = null;
 	}
@@ -1858,7 +1822,7 @@ class Wikiprojects {
 		// eslint-disable-next-line no-undef
 		gadget.getWikiprojects()
 			.then((data) => {
-					const list = data.wikiprojects.map(w => w.name);
+					const list = data.wikiprojects.map(w => ({"name":w.name,"page":w.page}));
 
 					this.list = list;
 			        
@@ -1867,7 +1831,7 @@ class Wikiprojects {
 
 			        for (var i=0; i<this.list.length; i++) {
 			            if (typeof(this.list[i]) == 'function') continue; //on IE wikibits adds indexOf method for arrays. skip it.
-			            $('<option>').attr('value',i).text(this.list[i]).appendTo(this.$select);
+			            $('<option>').attr('value',i).text(this.list[i].name).appendTo(this.$select);
 			        }
 
 					$('#CzyWieszWikiprojectContainer small').remove();
