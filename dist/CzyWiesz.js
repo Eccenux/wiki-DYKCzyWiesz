@@ -1193,10 +1193,16 @@ class DykProcess {
 		/* making data ready */
 		this.loadbar.next();
 
+		// start: end of day of edit XOR current time (whatever is smaller)
+		const editDate = new Date(Dv.date + 'T23:59:59');
+		let clockStart = '{{subst:#timel:Y-m-d H:i:s}}';
+		if (editDate < new Date()) {
+			clockStart = editDate.toISOString().slice(0, 10) + ' 23:59:59';
+		}
 		// making content
 		let input = `== [[${subpage}|${D.wgTitle}]] ==\n`
 			+ '<!-- artykuł zgłoszony za pomocą gadżetu CzyWiesz -->\n'
-			+ '{{licznik czasu|start={{subst:#timel:Y-m-d H:i:s}}|zdarzenie=Dyskusja|rgz=ż|dni=30}}\n'
+			+ `{{licznik czasu|start=${clockStart}|zdarzenie=Dyskusja|rgz=ż|dni=30}}\n`
 			+ Dv.file         //FILE is already with \n at the end
 			+ Dv.question     //QUESTION is already with \n at the end
 			+ '{' + '{Wikiprojekt:Czy wiesz/weryfikacja|' + D.wgTitle + '|' + Dv.refs + '|' + Dv.images + '|' + Dv.author + '|' + Dv.signature + '|?|?|?}}\n'
@@ -1930,7 +1936,7 @@ module.exports = { apiAjax, apiAsync };
 },{}],12:[function(require,module,exports){
 let versionInfo = {
 	version:'6.0.0',
-	buildDay:'2024-01-13',
+	buildDay:'2024-01-14',
 }
 
 module.exports = { versionInfo };
