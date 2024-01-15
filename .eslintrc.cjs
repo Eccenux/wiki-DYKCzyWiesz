@@ -2,7 +2,8 @@ module.exports = {
 	"env": {
 		"node": true,
 		"browser": true,
-		"es2021": true,
+		"es2017": true,
+		"mocha": true,
 	},
 	"globals": {
 		"$": true,
@@ -21,10 +22,6 @@ module.exports = {
 			"sourceType": "script"
 		}
 	}],
-	"parserOptions": {
-		"ecmaVersion": "latest",
-		"sourceType": "module"
-	},
 	"rules": {
 		"no-prototype-builtins": "off",
 		"indent": [
