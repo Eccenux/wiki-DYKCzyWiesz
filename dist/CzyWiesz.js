@@ -1377,8 +1377,14 @@ class DykProcess {
 		}
 	}
 
-	/** @private Inform wikiprojects. */
-	async inform_wLoop (secttitl_w, summary_w, summary_w2, /* object */ curWikiproject) {
+	/**
+	 * @private Inform a wikiproject.
+	 * @param {String} secttitl_w 
+	 * @param {String} summary_w 
+	 * @param {String} summary_w2 
+	 * @param {Object} curWikiproject 
+	 */
+	async inform_wLoop (secttitl_w, summary_w, summary_w2, curWikiproject) {
 		var D = this.core;
 		var debug = D.debugmode;
 		
@@ -1388,6 +1394,7 @@ class DykProcess {
 
 		let mainCall;
 		let subpageTitle = this.setupNominationPage();
+		let infoTpl = `{{Czy wiesz - wikiprojekt|${D.wgTitle}|s=${subpageTitle} }}`;
 		if (!debug) {
 			// get page source [to edit]
 			let data;
@@ -1407,7 +1414,7 @@ class DykProcess {
 			}
 			data = data.replace(dykSectionIndicator,
 				dykSectionIndicator + '\n'
-				+ '{' + '{Czy wiesz - wikiprojekt|' + D.wgTitle + '}}');
+				+ infoTpl);
 
 			D.log('curWikiproject (2):',curWikiproject,'pageToEdit (2):',pageToEdit);
 
@@ -1436,8 +1443,8 @@ class DykProcess {
 					format : 'json',
 					title : config.debugBase + '/wikiprojekt',
 					section : 'new',
-					sectiontitle : secttitl_w + ' • ' + curWikiproject,
-					text : "debug: '''" + pageToEdit + "'''\n" +  `{{Czy wiesz - wikiprojekt|${D.wgTitle}|s=${subpageTitle} }} ~~` + '~~',
+					sectiontitle : secttitl_w + ' • ' + curWikiproject.name,
+					text : "debug: '''" + pageToEdit + "'''\n" +  infoTpl,
 					summary : summary_w,
 					watchlist : 'nochange',
 					token : D.edittoken
@@ -1900,7 +1907,7 @@ module.exports = { apiAjax, apiAsync };
 },{}],12:[function(require,module,exports){
 let versionInfo = {
 	version:'6.0.0',
-	buildDay:'2024-01-14',
+	buildDay:'2024-01-15',
 }
 
 module.exports = { versionInfo };
