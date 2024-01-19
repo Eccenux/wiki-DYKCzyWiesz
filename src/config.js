@@ -28,16 +28,26 @@ var config = {
 	/** sectiontitle for template in wikiprojects' pages/talk pages */
 	secttitl_w: 'Czy wiesz – [[TITLE]]',
 	/** style for this gadget */
-	styletag:	$('<style id="CzyWieszStyleTag">' 
-					+ '.wikiEditor-toolbar-dialog .czy-wiesz-gallery-chosen { border: solid 2px red; }\n' 
-					+ '#CzyWieszWikiprojectAdd {cursor: pointer; }\n'
-					+ '#CzyWieszGalleryToggler a, #CzyWieszRefs a, a.czywiesz-external { '
-						+ 'color: #0645AD; text-decoration: underline; cursor: pointer; padding-right: 13px; '
-						+ 'background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAVklEQVR4Xn3PgQkAMQhDUXfqTu7kTtkpd5RA8AInfArtQ2'
-						+ 'iRXFWT2QedAfttj2FsPIOE1eCOlEuoWWjgzYaB/IkeGOrxXhqB+uA9Bfcm0lAZuh+YIeAD+cAqSz4kCMUAAAAASUVORK5CYII=) center right no-repeat; '
-						+ 'background: url(/w/skins/Vector/images/external-link-ltr-icon.png) center right no-repeat!ie; }'
-					+ '#CzyWieszErrorDialog.wait-im-sending-email, #CzyWieszSuccess.wait-im-sending-email { '
-					+ 'cursor: wait; }'
+	styletag:	$('<style id="CzyWieszStyleTag">'
+					+ /* css */`
+						.wikiEditor-toolbar-dialog .czy-wiesz-gallery-chosen { border: solid 2px red; }
+						#CzyWieszWikiprojectAdd {cursor: pointer; }
+						#CzyWieszGadget .czywiesz-tip {
+							cursor: help;
+							color: #d05700;
+						}
+						#CzyWieszGalleryToggler a, #CzyWieszRefs a, a.czywiesz-external { 
+							color: #0645AD;
+							text-decoration: underline;
+							cursor: pointer;
+							padding-right: 13px; 
+							background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAVklEQVR4Xn3PgQkAMQhDUXfqTu7kTtkpd5RA8AInfArtQ2iRXFWT2QedAfttj2FsPIOE1eCOlEuoWWjgzYaB/IkeGOrxXhqB+uA9Bfcm0lAZuh+YIeAD+cAqSz4kCMUAAAAASUVORK5CYII=)
+								center right no-repeat; 
+						}
+						#CzyWieszErrorDialog.wait-im-sending-email, #CzyWieszSuccess.wait-im-sending-email {
+							cursor: wait; 
+						}
+					`
 				+ '</style>'),
 	/** [[File:Crystal Clear app clean.png]] (20px) [2012-11-20] */
 	yes:		'<img alt="Crystal Clear app clean.png" src="//upload.wikimedia.org/wikipedia/commons/thumb/3/34/Crystal_Clear_app_clean.png/20px-Crystal_Clear_app_clean.png" width="20" height="20">',

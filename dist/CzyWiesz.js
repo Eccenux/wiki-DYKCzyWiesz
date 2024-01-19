@@ -601,13 +601,9 @@ class DykForm {
 
 		//author row
 		var $author_row = $('<tr id="CzyWieszAuthorRow"></tr>')
-			.html('<td>Główny autor artykułu<a href="#" title="Gadżet wstawia autora największej edycji w ciągu ostatnich 10 dni (upewnij się!)"><sup>?</sup></a>: </td>'
+			.html('<td>Główny autor artykułu<span class="czywiesz-tip" title="Gadżet wstawia autora największej edycji w ciągu ostatnich 10 dni (sprawdź zmiany w ostatnich dniach)."><sup>(?)</sup></span>: </td>'
 				+ '<td><input type="text" id="CzyWieszAuthor" name="CzyWieszAuthor" style="width: 50%;margin-left: 2px;vertical-align: middle;">'
 				+ '&nbsp;&nbsp;<input type="checkbox" id="CzyWieszAuthorInf" name="CzyWieszAuthorInf" style="vertical-align: middle;"><label for="CzyWieszAuthorInf"> poinformować go?</label></td>');
-
-		var $date_row = $('<tr id="CzyWieszDateRow"></tr>')
-			.html('<td>Data utw./rozbud. artykułu<a href="#" title="Gadżet wstawia datę największej edycji w ciągu ostatnich 10 dni (upewnij się!), w przeciwnym wypadku datę dzisiejszą jako datę zgłoszenia)"><sup>?</sup></a>: </td>'
-				+ '<td><input type="text" id="CzyWieszDate" name="CzyWieszDate" style="width: 50%;margin-left: 2px;vertical-align: middle;"></td>');
 
 		var $signature_row = $('<tr></tr>')
 			.html('<td>Twój podpis: </td>'
@@ -652,7 +648,7 @@ class DykForm {
 
 		//build the dialog
 		var $dialog = $('<table></table>').css('width','100%').append($ref_row).append($images_row).append($file_row)
-			.append($author_row).append($date_row).append($signature_row).append($wikiproject_row);
+			.append($author_row).append($signature_row).append($wikiproject_row);
 		$dialog = $('<div id="CzyWieszGadget"></div>').append($title_paragraph).append($question_paragraph).append($question_textarea_paragraph)
 			.append($dialog).append($comment_paragraph).append($comment_textarea_paragraph).append($rules_paragraph).append($loading_bar);
  
@@ -679,16 +675,6 @@ class DykForm {
 		  dialogClass: "wikiEditor-toolbar-dialog",
 		  close: function() { $(this).dialog("destroy"); $(this).remove();},
 		  buttons: buttons
-		});
-
-		// autofill today's date
-		$('#CzyWieszDate').val(function(){
-			var a = new Date();
-			var y = a.getFullYear();
-			var m = a.getMonth()+1; m=(m<10?'0'+m:m);
-			var d = a.getDate();    d=(d<10?'0'+d:d);
-			var str = y + '-' + m + '-' + d;
-			return str;
 		});
 
 		// debug quicky
@@ -810,10 +796,7 @@ class DykForm {
 			// add a possible author…
 			if (winner) {
 				$('#CzyWieszAuthor').val(winner.user);
-				$('#CzyWieszAuthor').after('&nbsp;<small id="CzyWieszAuthorTip"><span class="czywiesz-external" title="Autor największej lub najnowszej dużej edycji (' + winner.added + ' znaków) w ciągu ostatnich 10 dni.">&nbsp;(!)&nbsp;</span></small>&nbsp;');
-				// …and date
-				$('#CzyWieszDate').val(winner.day);
-				$('#CzyWieszDate').after('&nbsp;<small id="CzyWieszDateTip"><span class="czywiesz-external" title="To jest data edycji spełniającej limit znaków, znalezionej w ciągu ostatnich 10 dni.">&nbsp;(!)&nbsp;</span></small>&nbsp;');
+				$('#CzyWieszAuthor').after('&nbsp;<small id="CzyWieszAuthorTip"><span class="czywiesz-tip" title="Autor największej lub najnowszej dużej edycji z ostatnich 10 dni (dodane ' + winner.added + ' znaków, data: ' + winner.day + ').">(!)</span></small>&nbsp;');
 				if (D.debugmode) {
 					$('#CzyWieszAuthor').width('25%').val(D.wgUserName);
 					$('#CzyWieszAuthor').after(winner.user);
@@ -865,20 +848,24 @@ class DykForm {
 				</tr>`;
 			}
 			infoTable += `</table>`;
+			const historyHref = mw.util.getUrl(null, {action:'history'});
 			const $tr = $('<tr id="CzyWieszAuthorInfo"></tr>')
-				.insertAfter($('#CzyWieszDateRow'))
+				.insertAfter($('#CzyWieszAuthorRow'))
 				.html(`
 					<td colspan=2>
-						<a class="toggle" role="button" href="#">(pokaż zmiany w ostatnich dniach)</a>
-						${infoTable}
+						<a class="dyk-toggle" role="button" href="#">(pokaż zmiany w ostatnich dniach)</a>
+						<div style="display:none" class="dyk-toggle-content">
+							${infoTable}
+							<a href="${historyHref}" class="czywiesz-external" target="_blank">zobacz historię</a>
+						</div>
 					</td>
 				`)
 			;
-			const $table = $('table', $tr);
-			$table.hide();
-			$('.toggle', $tr).click(function(e) {
+			// toggle action
+			const $toggleContent = $('.dyk-toggle-content', $tr);
+			$('.dyk-toggle', $tr).click(function(e) {
 				e.preventDefault();
-				$table.toggle();
+				$toggleContent.toggle();
 			});
 		}
 
@@ -889,6 +876,11 @@ class DykForm {
 				+ '<td>' + (D.articlesize.enough ? D.config.yes : D.articlesize.warn) + '</td>')
 			.css( D.articlesize.enough ? {display: 'none'} : {})
 		;
+
+		// tooltips
+		$('#CzyWieszGadget .czywiesz-tip').click(function () {
+			alert(this.title);
+		});
 	}
 
 	/** Prepare and validate values. */
@@ -902,7 +894,6 @@ class DykForm {
 		var REFS = (D.sourced ? '+' : ' ');
 		var AUTHOR = $('#CzyWieszAuthor').val().trim();
 		var AUTHOR_INF = ( $('#CzyWieszAuthorInf').prop('checked') ? true : false );
-		var DATE = $('#CzyWieszDate').val().trim();
 		var SIGNATURE = $('#CzyWieszSignature').val().trim();
 		//get the wikiprojects
 		var wikiprojectSet = new Set();
@@ -973,11 +964,6 @@ class DykForm {
 				invalid.fields.push('Author');
 				invalid.alert.push('Podaj autora artykułu.');
 			}
-			if (typeof DATE != 'string' || DATE === '' || DATE.match(/\d\d\d\d-\d\d-\d\d/).length==0) {
-				invalid.is = true;
-				invalid.fields.push('Date');
-				invalid.alert.push('Podaj datę utworzenia/rozbudowy artykułu (w formacie rrrr-mm-dd).');
-			}
 			if (typeof SIGNATURE != 'string' || SIGNATURE === '') {
 				invalid.is = true;
 				invalid.fields.push('Signature');
@@ -995,7 +981,6 @@ class DykForm {
 			images:      IMAGES,
 			refs:        REFS,
 			author:      AUTHOR,
-			date:        DATE,
 			signature:   SIGNATURE,
 			comment:    COMMENT,
 			authorInf:   AUTHOR_INF,
@@ -1194,11 +1179,11 @@ class DykProcess {
 		this.loadbar.next();
 
 		// start: end of day of edit XOR current time (whatever is smaller)
-		const editDate = new Date(Dv.date + 'T23:59:59');
 		let clockStart = '{{subst:#timel:Y-m-d H:i:s}}';
-		if (editDate < new Date()) {
-			clockStart = editDate.toISOString().slice(0, 10) + ' 23:59:59';
-		}
+		// const editDate = new Date(Dv.date + 'T23:59:59');
+		// if (editDate < new Date()) {
+		// 	clockStart = editDate.toISOString().slice(0, 10) + ' 23:59:59';
+		// }
 		// making content
 		let input = `== [[${subpage}|${D.wgTitle}]] ==\n`
 			+ '<!-- artykuł zgłoszony za pomocą gadżetu CzyWiesz -->\n'
@@ -1907,7 +1892,7 @@ module.exports = { apiAjax, apiAsync };
 },{}],12:[function(require,module,exports){
 let versionInfo = {
 	version:'6.0.0',
-	buildDay:'2024-01-15',
+	buildDay:'2024-01-19',
 }
 
 module.exports = { versionInfo };
@@ -1943,16 +1928,26 @@ var config = {
 	/** sectiontitle for template in wikiprojects' pages/talk pages */
 	secttitl_w: 'Czy wiesz – [[TITLE]]',
 	/** style for this gadget */
-	styletag:	$('<style id="CzyWieszStyleTag">' 
-					+ '.wikiEditor-toolbar-dialog .czy-wiesz-gallery-chosen { border: solid 2px red; }\n' 
-					+ '#CzyWieszWikiprojectAdd {cursor: pointer; }\n'
-					+ '#CzyWieszGalleryToggler a, #CzyWieszRefs a, a.czywiesz-external { '
-						+ 'color: #0645AD; text-decoration: underline; cursor: pointer; padding-right: 13px; '
-						+ 'background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAVklEQVR4Xn3PgQkAMQhDUXfqTu7kTtkpd5RA8AInfArtQ2'
-						+ 'iRXFWT2QedAfttj2FsPIOE1eCOlEuoWWjgzYaB/IkeGOrxXhqB+uA9Bfcm0lAZuh+YIeAD+cAqSz4kCMUAAAAASUVORK5CYII=) center right no-repeat; '
-						+ 'background: url(/w/skins/Vector/images/external-link-ltr-icon.png) center right no-repeat!ie; }'
-					+ '#CzyWieszErrorDialog.wait-im-sending-email, #CzyWieszSuccess.wait-im-sending-email { '
-					+ 'cursor: wait; }'
+	styletag:	$('<style id="CzyWieszStyleTag">'
+					+ /* css */`
+						.wikiEditor-toolbar-dialog .czy-wiesz-gallery-chosen { border: solid 2px red; }
+						#CzyWieszWikiprojectAdd {cursor: pointer; }
+						#CzyWieszGadget .czywiesz-tip {
+							cursor: help;
+							color: #d05700;
+						}
+						#CzyWieszGalleryToggler a, #CzyWieszRefs a, a.czywiesz-external { 
+							color: #0645AD;
+							text-decoration: underline;
+							cursor: pointer;
+							padding-right: 13px; 
+							background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAVklEQVR4Xn3PgQkAMQhDUXfqTu7kTtkpd5RA8AInfArtQ2iRXFWT2QedAfttj2FsPIOE1eCOlEuoWWjgzYaB/IkeGOrxXhqB+uA9Bfcm0lAZuh+YIeAD+cAqSz4kCMUAAAAASUVORK5CYII=)
+								center right no-repeat; 
+						}
+						#CzyWieszErrorDialog.wait-im-sending-email, #CzyWieszSuccess.wait-im-sending-email {
+							cursor: wait; 
+						}
+					`
 				+ '</style>'),
 	/** [[File:Crystal Clear app clean.png]] (20px) [2012-11-20] */
 	yes:		'<img alt="Crystal Clear app clean.png" src="//upload.wikimedia.org/wikipedia/commons/thumb/3/34/Crystal_Clear_app_clean.png/20px-Crystal_Clear_app_clean.png" width="20" height="20">',

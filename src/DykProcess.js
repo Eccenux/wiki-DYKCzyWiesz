@@ -119,11 +119,12 @@ class DykProcess {
 		this.loadbar.next();
 
 		// start: end of day of edit XOR current time (whatever is smaller)
-		const editDate = new Date(Dv.date + 'T23:59:59');
 		let clockStart = '{{subst:#timel:Y-m-d H:i:s}}';
-		if (editDate < new Date()) {
-			clockStart = editDate.toISOString().slice(0, 10) + ' 23:59:59';
-		}
+		// vide: Zmiany w stosowaniu terminów #10 
+		// const editDate = new Date(Dv.date + 'T23:59:59');
+		// if (editDate < new Date()) {
+		// 	clockStart = editDate.toISOString().slice(0, 10) + ' 23:59:59';
+		// }
 		// making content
 		let input = `== [[${subpage}|${D.wgTitle}]] ==\n`
 			+ '<!-- artykuł zgłoszony za pomocą gadżetu CzyWiesz -->\n'
