@@ -398,16 +398,24 @@ class DykProcess {
 		let subpageTitle = this.setupNominationPage();
 
 		// end dialog: "Finished!"
-		$('<div id="CzyWieszSuccess"><div class="floatright">' + D.config.CWicon + '</div>'
-			+ '<p style="margin-left: 10px;">Dziękujemy za <a id="CzyWieszLinkAfter" href="//pl.wikipedia.org/wiki/' 
-			+ encodeURIComponent(subpageTitle) + '" class="czywiesz-external" target="_blank">zgłoszenie</a>.<br /><br />'
-			+ 'Dla pewności możesz sprawdzić <a href="//pl.wikipedia.org/wiki/Specjalna:Wk%C5%82ad/'
-			+ encodeURIComponent(Dv.signature)
-			+ '" class="czywiesz-external" target="_blank">swój wkład</a>, czy wszystko poszło zgodnie z planem.<br />'
-			+ '<small><a class="CzyWieszEmailDoAutoraToggle">(Coś nie działa?)</a></small><br />'
-			+ '<span class="CzyWieszEmailDoAutoraInfo" style="display:none;">Jeśli coś poszło nie tak, to <a href="#" class="CzyWieszEmailDoAutoraWyslij">kliknij tutaj</a>, aby wysłać twórcy gadżetu e-mail z opisem błędu, a gadżet dołączy do niego szczegóły techniczne.<span class="CzyWieszEmailDoAutoraWyslano"></span><br /></span>'
-			+ '<br />'
-			+ '<a href="/wiki/Wikiprojekt:Czy_wiesz" title="Wikiprojekt:Czy wiesz">Wikiprojekt Czy wiesz</a></p></div>')
+		$(/* html */`
+			<div id="CzyWieszSuccess">
+				<div class="floatright">${D.config.CWicon}</div>
+				<p style="margin-left: 10px;">Dziękujemy za 
+				<a id="CzyWieszLinkAfter" href="/wiki/${encodeURIComponent(subpageTitle)}" class="czywiesz-external" target="_blank">zgłoszenie</a>.
+				<br /><br />
+				Dla pewności możesz sprawdzić 
+				<a href="/wiki/Specjalna:Wk%C5%82ad/${encodeURIComponent(Dv.signature)}" class="czywiesz-external" target="_blank">swój wkład</a>,
+				czy wszystko poszło zgodnie z planem.<br />
+				<small><a class="CzyWieszEmailDoAutoraToggle">(Coś nie działa?)</a></small>
+				<div class="CzyWieszEmailDoAutoraInfo" style="display:none;">
+					Jeśli coś poszło nie tak, to <a href="#" role="button" class="CzyWieszEmailDoAutoraWyslij">kliknij tutaj</a>,
+					aby wysłać twórcy gadżetu e-mail z opisem błędu, a gadżet dołączy do niego szczegóły techniczne.
+					<span class="CzyWieszEmailDoAutoraWyslano"></span>
+				</div>
+			<br />
+			<a href="/wiki/Wikiprojekt:Czy_wiesz" title="Wikiprojekt:Czy wiesz">Wikiprojekt Czy wiesz</a></p></div>
+		`)
 		.dialog({
 			modal: true,
 			dialogClass: "wikiEditor-toolbar-dialog",
@@ -419,10 +427,13 @@ class DykProcess {
 				$('#CzyWieszGadget').remove();
 			}
 		});
-		$('#CzyWieszSuccess a.CzyWieszEmailDoAutoraToggle').click( function() {
+		$('#CzyWieszSuccess a.CzyWieszEmailDoAutoraToggle').click(function() {
 			$('#CzyWieszSuccess .CzyWieszEmailDoAutoraInfo').toggle();
 		});
-		$('#CzyWieszSuccess a.CzyWieszEmailDoAutoraWyslij').click( () => { D.emailauthor(); } );
+		$('#CzyWieszSuccess a.CzyWieszEmailDoAutoraWyslij').click(function(e) {
+			e.preventDefault();
+			D.emailauthor(this);
+		});
 
 		return true;
 	}

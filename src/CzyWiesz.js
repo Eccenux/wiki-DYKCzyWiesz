@@ -99,7 +99,11 @@ function createDyk(DYKnomination) {
 		return D.edittoken;
 	};
 
-	DYKnomination.emailauthor = async function () {
+	/**
+	 * Send support e-mail.
+	 * @param {Element} button Link/button used to trigger this request.
+	 */
+	DYKnomination.emailauthor = async function (button) {
 		var D = DYKnomination;
 
         var opis = prompt('Opisz, co się stało. Bez tego twórca nie będzie wiedział, co naprawiać.','');
@@ -113,6 +117,14 @@ function createDyk(DYKnomination) {
 		//throbber and cursor-wait – until e-mail sent
 		$('.CzyWieszEmailDoAutoraWyslano').html('<img src="https://upload.wikimedia.org/wikipedia/commons/1/1a/Denken.gif" width="10" height="10">');
 		$('#CzyWieszErrorDialog, #CzyWieszSuccess').addClass('wait-im-sending-email');
+
+		// disable
+		button.classList.add('dyk-button-off');
+
+		if (!D.edittoken) {
+			D.log('Pobranie tokena.');
+			await D.getEditToken(false);
+		}
 
 		apiAsync({
 			url : '/w/api.php',
@@ -128,9 +140,10 @@ function createDyk(DYKnomination) {
 		})
 			.then(function(){
 				$('#CzyWieszErrorDialog, #CzyWieszSuccess').removeClass('wait-im-sending-email');
-				$('.CzyWieszEmailDoAutoraWyslano').text(' Wysłano!');
+				$('.CzyWieszEmailDoAutoraWyslano').html(' <strong>Wysłano!</strong>');
 			})
 			.catch(function(info){
+				button.classList.remove('dyk-button-off');
 				D.errors.push(`Błąd wysyłania e-maila do twórcy: ${info}.`);
 				D.errors.show();
 				console.error('Błąd wysyłania e-maila do twórcy: ', info);
@@ -141,7 +154,7 @@ function createDyk(DYKnomination) {
 	/**
 	 * @type {ErrorInfo}
 	 */
-	DYKnomination.errors = new ErrorInfo(DYKnomination.emailauthor, config.supportUser);
+	DYKnomination.errors = new ErrorInfo((arg1) => {DYKnomination.emailauthor(arg1)}, config.supportUser);
 }
 
 function createFullDyk(DYKnomination) {

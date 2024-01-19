@@ -100,8 +100,14 @@ function createDyk(DYKnomination) {
 		return D.edittoken;
 	};
 
-	DYKnomination.emailauthor = async function () {
+	/**
+	 * Send support e-mail.
+	 * @param {Element} button 
+	 * @returns 
+	 */
+	DYKnomination.emailauthor = async function (button) {
 		var D = DYKnomination;
+		console.log('[dyk]', 'emailauthor');
 
         var opis = prompt('Opisz, co się stało. Bez tego twórca nie będzie wiedział, co naprawiać.','');
         if (!opis) {
@@ -114,6 +120,14 @@ function createDyk(DYKnomination) {
 		//throbber and cursor-wait – until e-mail sent
 		$('.CzyWieszEmailDoAutoraWyslano').html('<img src="https://upload.wikimedia.org/wikipedia/commons/1/1a/Denken.gif" width="10" height="10">');
 		$('#CzyWieszErrorDialog, #CzyWieszSuccess').addClass('wait-im-sending-email');
+
+		// disable
+		button.classList.add('dyk-button-off');
+
+		if (!D.edittoken) {
+			D.log('Pobranie tokena.');
+			await D.getEditToken(false);
+		}
 
 		apiAsync({
 			url : '/w/api.php',
@@ -128,10 +142,13 @@ function createDyk(DYKnomination) {
 			},
 		})
 			.then(function(){
+				console.log('[dyk]', 'emailauthor done');
 				$('#CzyWieszErrorDialog, #CzyWieszSuccess').removeClass('wait-im-sending-email');
-				$('.CzyWieszEmailDoAutoraWyslano').text(' Wysłano!');
+				$('.CzyWieszEmailDoAutoraWyslano').html(' <strong>Wysłano!</strong>');
 			})
 			.catch(function(info){
+				console.log('[dyk]', 'emailauthor error');
+				button.classList.remove('dyk-button-off');
 				D.errors.push(`Błąd wysyłania e-maila do twórcy: ${info}.`);
 				D.errors.show();
 				console.error('Błąd wysyłania e-maila do twórcy: ', info);
@@ -142,7 +159,7 @@ function createDyk(DYKnomination) {
 	/**
 	 * @type {ErrorInfo}
 	 */
-	DYKnomination.errors = new ErrorInfo(DYKnomination.emailauthor, config.supportUser);
+	DYKnomination.errors = new ErrorInfo((arg1) => {DYKnomination.emailauthor(arg1)}, config.supportUser);
 }
 
 function createFullDyk(DYKnomination) {
@@ -549,7 +566,7 @@ class DykForm {
 		var IMG_ARR = $.merge($('#mw-content-text .infobox span[typeof="mw:File"] a.mw-file-description img'),$('#mw-content-text figure[typeof="mw:File/Thumb"] img'));
 		var IMAGES = IMG_ARR.length;
 		var REFS = {
-			warn:	D.config.no + '&nbsp;&nbsp;<strong style="color: red;">Brak źródeł dyskwalifikuje artykuł ze zgłoszenia!</strong> <small>(<a class="czywiesz-external">info</a>)</small>',
+			warn:	D.config.no + '&nbsp;&nbsp;<strong style="color: red;">Brak źródeł dyskwalifikuje artykuł ze zgłoszenia!</strong> <small>(<a href="#" role="button">info</a>)</small>',
 			ar1:	[''],
 			ar2:	['Bibliografia','Przypisy']
 		};
@@ -593,7 +610,7 @@ class DykForm {
 			.html('<td>Liczba grafik w artykule: </td>'
 				+ '<td><input type="number" min="0" id="CzyWieszImages" name="CzyWieszImages" value="' + IMAGES + '"' 
 				+ 'style="width: 3.5em;">'
-				+ '<span id="CzyWieszGalleryToggler" style="display: none;"> &nbsp;<small>(<a class="czywiesz-external">zaproponuj grafikę z artykułu</a>)</small></span>');
+				+ '<span id="CzyWieszGalleryToggler" style="display: none;"> &nbsp;<small><a href="#" role="button">(zaproponuj grafikę z artykułu)</a></small></span>');
 
 		var $file_row = $('<tr></tr>')
 			.html('<td style="width: 30%;"><input type="checkbox" id="CzyWieszFile1" name="CzyWieszFile1" style="vertical-align: middle;"><label for="CzyWieszFile1"> Zaproponuj grafikę: </label></td>' // style="width: 36%;
@@ -756,7 +773,12 @@ class DykForm {
 
 		// if there are no refs (or they're badly named) → append this dialog to a link in $ref_row
 		$('#CzyWieszRefs small a').click(function(){
-			$('<div><div class="floatright">' + D.config.CWicon + '</div><p style="margin-left: 10px;">Zgodnie z wytycznymi <a href="/wiki/Wikiprojekt:Czy_wiesz" title="Wikiprojekt:Czy wiesz">Wikiprojektu Czy wiesz</a> zgłaszane hasło powinno posiadać źródła w formie bibliografii lub przypisów. <a href="/wiki/Wikiprojekt:Czy_wiesz/pomoc#Zg.C5.82aszanie_propozycji_i_poprawa_hase.C5.82" title="Wikiprojekt:Czy wiesz/pomoc#Zgłaszanie propozycji i poprawa haseł">(Więcej…)</a><br /><small>Możliwe, że w artykule sekcje ze źródłami są błędnie nazwane – w takim wypadku popraw je.</small></p></div>')
+			$(/*html*/`<div>
+				<div class="floatright">${D.config.CWicon}</div>
+				<p style="margin-left: 10px;">Zgodnie z wytycznymi <a class="czywiesz-external" target="_blank" href="/wiki/Wikiprojekt:Czy_wiesz" title="Wikiprojekt:Czy wiesz">Wikiprojektu Czy wiesz</a> zgłaszane hasło powinno posiadać źródła w formie bibliografii lub przypisów.
+				<a class="czywiesz-external" target="_blank" href="/wiki/Wikiprojekt:Czy_wiesz/pomoc#Zg.C5.82aszanie_propozycji_i_poprawa_hase.C5.82" title="Wikiprojekt:Czy wiesz/pomoc#Zgłaszanie propozycji i poprawa haseł">Więcej informacji w instrukcji</a>
+				<br /><small>Możliwe, że w artykule sekcje ze źródłami są błędnie nazwane – w takim wypadku popraw je.</small></p>
+			</div>`)
 			.dialog({ modal: true, dialogClass: "wikiEditor-toolbar-dialog", close: function() { $(this).dialog("destroy"); $(this).remove();} });
 		});
 
@@ -1180,6 +1202,7 @@ class DykProcess {
 
 		// start: end of day of edit XOR current time (whatever is smaller)
 		let clockStart = '{{subst:#timel:Y-m-d H:i:s}}';
+		// vide: Zmiany w stosowaniu terminów #10 
 		// const editDate = new Date(Dv.date + 'T23:59:59');
 		// if (editDate < new Date()) {
 		// 	clockStart = editDate.toISOString().slice(0, 10) + ' 23:59:59';
@@ -1457,16 +1480,24 @@ class DykProcess {
 		let subpageTitle = this.setupNominationPage();
 
 		// end dialog: "Finished!"
-		$('<div id="CzyWieszSuccess"><div class="floatright">' + D.config.CWicon + '</div>'
-			+ '<p style="margin-left: 10px;">Dziękujemy za <a id="CzyWieszLinkAfter" href="//pl.wikipedia.org/wiki/' 
-			+ encodeURIComponent(subpageTitle) + '" class="czywiesz-external" target="_blank">zgłoszenie</a>.<br /><br />'
-			+ 'Dla pewności możesz sprawdzić <a href="//pl.wikipedia.org/wiki/Specjalna:Wk%C5%82ad/'
-			+ encodeURIComponent(Dv.signature)
-			+ '" class="czywiesz-external" target="_blank">swój wkład</a>, czy wszystko poszło zgodnie z planem.<br />'
-			+ '<small><a class="CzyWieszEmailDoAutoraToggle">(Coś nie działa?)</a></small><br />'
-			+ '<span class="CzyWieszEmailDoAutoraInfo" style="display:none;">Jeśli coś poszło nie tak, to <a href="#" class="CzyWieszEmailDoAutoraWyslij">kliknij tutaj</a>, aby wysłać twórcy gadżetu e-mail z opisem błędu, a gadżet dołączy do niego szczegóły techniczne.<span class="CzyWieszEmailDoAutoraWyslano"></span><br /></span>'
-			+ '<br />'
-			+ '<a href="/wiki/Wikiprojekt:Czy_wiesz" title="Wikiprojekt:Czy wiesz">Wikiprojekt Czy wiesz</a></p></div>')
+		$(/* html */`
+			<div id="CzyWieszSuccess">
+				<div class="floatright">${D.config.CWicon}</div>
+				<p style="margin-left: 10px;">Dziękujemy za 
+				<a id="CzyWieszLinkAfter" href="/wiki/${encodeURIComponent(subpageTitle)}" class="czywiesz-external" target="_blank">zgłoszenie</a>.
+				<br /><br />
+				Dla pewności możesz sprawdzić 
+				<a href="/wiki/Specjalna:Wk%C5%82ad/${encodeURIComponent(Dv.signature)}" class="czywiesz-external" target="_blank">swój wkład</a>,
+				czy wszystko poszło zgodnie z planem.<br />
+				<small><a class="CzyWieszEmailDoAutoraToggle">(Coś nie działa?)</a></small>
+				<div class="CzyWieszEmailDoAutoraInfo" style="display:none;">
+					Jeśli coś poszło nie tak, to <a href="#" role="button" class="CzyWieszEmailDoAutoraWyslij">kliknij tutaj</a>,
+					aby wysłać twórcy gadżetu e-mail z opisem błędu, a gadżet dołączy do niego szczegóły techniczne.
+					<span class="CzyWieszEmailDoAutoraWyslano"></span>
+				</div>
+			<br />
+			<a href="/wiki/Wikiprojekt:Czy_wiesz" title="Wikiprojekt:Czy wiesz">Wikiprojekt Czy wiesz</a></p></div>
+		`)
 		.dialog({
 			modal: true,
 			dialogClass: "wikiEditor-toolbar-dialog",
@@ -1478,10 +1509,13 @@ class DykProcess {
 				$('#CzyWieszGadget').remove();
 			}
 		});
-		$('#CzyWieszSuccess a.CzyWieszEmailDoAutoraToggle').click( function() {
+		$('#CzyWieszSuccess a.CzyWieszEmailDoAutoraToggle').click(function() {
 			$('#CzyWieszSuccess .CzyWieszEmailDoAutoraInfo').toggle();
 		});
-		$('#CzyWieszSuccess a.CzyWieszEmailDoAutoraWyslij').click( () => { D.emailauthor(); } );
+		$('#CzyWieszSuccess a.CzyWieszEmailDoAutoraWyslij').click(function(e) {
+			e.preventDefault();
+			D.emailauthor(this);
+		});
 
 		return true;
 	}
@@ -1529,10 +1563,10 @@ class ErrorInfo {
 		}
 		let dialog = $('<div id="CzyWieszErrorDialog"></div>')
 			.append(list)
-			.append( $(`
+			.append( $(/* html */`
 				<p>Coś poszło nie tak. Jeśli powyższa lista nie wyjaśnia problemu, to więcej informacji jest w konsoli przeglądarki.</p>
-				<p>Jeśli problem jest nietypowy, to <a href="#" class="CzyWieszEmailDoAutoraWyslij">wyślij e-mail programiście z danymi błędu</a> (szybka wysyłka logów mailem).<span class="CzyWieszEmailDoAutoraWyslano"></span></p>
-				<p>Możesz też opisać co się stało na <a href="https://pl.wikipedia.org/wiki/Dyskusja_wikipedysty:${this.supportUser}" class="czywiesz-external" target="_blank">na stronie dyskusji</a>.</p>
+				<p>Jeśli problem jest nietypowy, to <a href="#" role="button" class="CzyWieszEmailDoAutoraWyslij">wyślij e-mail programiście z danymi błędu</a> (szybka wysyłka logów mailem).<span class="CzyWieszEmailDoAutoraWyslano"></span></p>
+				<p>Możesz też opisać co się stało na <a href="https://pl.wikipedia.org/wiki/WP:BAR:TE" class="czywiesz-external" target="_blank">w kawiarence technicznej</a>.</p>
 			`) )
 		;
 		
@@ -1544,7 +1578,11 @@ class ErrorInfo {
 			dialogClass: "wikiEditor-toolbar-dialog",
 			close: function() { $(this).dialog("destroy"); $(this).remove();}
 		});
-		$('#CzyWieszErrorDialog a.CzyWieszEmailDoAutoraWyslij').click( () => { this.emailSupport(); } );
+		const D = this;
+		$('#CzyWieszErrorDialog a.CzyWieszEmailDoAutoraWyslij').click(function(e) {
+			e.preventDefault();
+			D.emailSupport(this);
+		});
 	}
 }
 
@@ -1936,13 +1974,17 @@ var config = {
 							cursor: help;
 							color: #d05700;
 						}
-						#CzyWieszGalleryToggler a, #CzyWieszRefs a, a.czywiesz-external { 
+						a.czywiesz-external { 
 							color: #0645AD;
 							text-decoration: underline;
 							cursor: pointer;
 							padding-right: 13px; 
 							background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAVklEQVR4Xn3PgQkAMQhDUXfqTu7kTtkpd5RA8AInfArtQ2iRXFWT2QedAfttj2FsPIOE1eCOlEuoWWjgzYaB/IkeGOrxXhqB+uA9Bfcm0lAZuh+YIeAD+cAqSz4kCMUAAAAASUVORK5CYII=)
 								center right no-repeat; 
+						}
+						.dyk-button-off {
+							pointer-events: none;
+							opacity: .5;
 						}
 						#CzyWieszErrorDialog.wait-im-sending-email, #CzyWieszSuccess.wait-im-sending-email {
 							cursor: wait; 

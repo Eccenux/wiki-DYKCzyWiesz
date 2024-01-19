@@ -36,13 +36,17 @@ var config = {
 							cursor: help;
 							color: #d05700;
 						}
-						#CzyWieszGalleryToggler a, #CzyWieszRefs a, a.czywiesz-external { 
+						a.czywiesz-external { 
 							color: #0645AD;
 							text-decoration: underline;
 							cursor: pointer;
 							padding-right: 13px; 
 							background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAVklEQVR4Xn3PgQkAMQhDUXfqTu7kTtkpd5RA8AInfArtQ2iRXFWT2QedAfttj2FsPIOE1eCOlEuoWWjgzYaB/IkeGOrxXhqB+uA9Bfcm0lAZuh+YIeAD+cAqSz4kCMUAAAAASUVORK5CYII=)
 								center right no-repeat; 
+						}
+						.dyk-button-off {
+							pointer-events: none;
+							opacity: .5;
 						}
 						#CzyWieszErrorDialog.wait-im-sending-email, #CzyWieszSuccess.wait-im-sending-email {
 							cursor: wait; 
