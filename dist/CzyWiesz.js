@@ -102,12 +102,10 @@ function createDyk(DYKnomination) {
 
 	/**
 	 * Send support e-mail.
-	 * @param {Element} button 
-	 * @returns 
+	 * @param {Element} button Link/button used to trigger this request.
 	 */
 	DYKnomination.emailauthor = async function (button) {
 		var D = DYKnomination;
-		console.log('[dyk]', 'emailauthor');
 
         var opis = prompt('Opisz, co się stało. Bez tego twórca nie będzie wiedział, co naprawiać.','');
         if (!opis) {
@@ -142,12 +140,10 @@ function createDyk(DYKnomination) {
 			},
 		})
 			.then(function(){
-				console.log('[dyk]', 'emailauthor done');
 				$('#CzyWieszErrorDialog, #CzyWieszSuccess').removeClass('wait-im-sending-email');
 				$('.CzyWieszEmailDoAutoraWyslano').html(' <strong>Wysłano!</strong>');
 			})
 			.catch(function(info){
-				console.log('[dyk]', 'emailauthor error');
 				button.classList.remove('dyk-button-off');
 				D.errors.push(`Błąd wysyłania e-maila do twórcy: ${info}.`);
 				D.errors.show();
@@ -1930,7 +1926,7 @@ module.exports = { apiAjax, apiAsync };
 },{}],12:[function(require,module,exports){
 let versionInfo = {
 	version:'6.0.0',
-	buildDay:'2024-01-19',
+	buildDay:'2024-01-21',
 }
 
 module.exports = { versionInfo };
@@ -2076,7 +2072,7 @@ module.exports = { stdConfirm };
 },{}],16:[function(require,module,exports){
 /** Encode user string for JS. */
 function htmlspecialchars(text) {
-	return text
+	return text.toString()
 		.replace(/&/g, "&amp;")
 		.replace(/</g, "&lt;")
 		.replace(/>/g, "&gt;")

@@ -1,6 +1,6 @@
 /** Encode user string for JS. */
 function htmlspecialchars(text) {
-	return text
+	return text.toString()
 		.replace(/&/g, "&amp;")
 		.replace(/</g, "&lt;")
 		.replace(/>/g, "&gt;")
