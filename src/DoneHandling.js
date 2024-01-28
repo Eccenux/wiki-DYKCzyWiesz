@@ -78,6 +78,8 @@ class DoneHandling {
 	}
 	/** Confirm and execute. */
 	async handle(article) {
+		const D = this.core;
+
 		let confirmInfo = `
 			<p>Czy na pewno chcesz zakończyć dyskusję dla ${htmlspecialchars(article)}?
 			<p>Jeśli są wątpliwości, to możesz poczekać na więcej ocen.
@@ -92,10 +94,22 @@ class DoneHandling {
 				await this.move(article, dd);
 			} catch (error) {
 				console.error(error);
+				let errorInfo = typeof error == 'string' ? htmlspecialchars(error) : '<code>'+htmlspecialchars(error)+'</code>';
 				dd.update(`
-					<p>❌ Przenoszenie nie udało się: ${htmlspecialchars(error)}.</p>
-					<p><a href="${contribHref}" class="czywiesz-external" target="_blank">Sprawdź swój wkład</a>.
-						W konsoli przeglądarki mogą znajdować się dodatkowe infomacji, które możesz przekazać twórcy lub w <em>WP:BAR:TE</em>.
+					<p>❌ Przenoszenie nie udało się: ${errorInfo}</p>
+					<p><a href="${contribHref}" class="czywiesz-external" target="_blank">Sprawdź swój wkład</a>, żeby obejrzeć co już zostało zrobione (czy w ogóle coś).
+					<p>Możesz wejść na stronę zgłoszenia lub ją odświeżyć i spróbować ponownie.
+						Jeśli zgłoszenie nadal nie jest zakończone i nie da się go zakończyć, to być <strong>może musisz zakończyć zgłoszenie ręcznie</strong>:
+					<ol>
+						<li>Usuń zgłoszenie <a href="${mw.util.getUrl(D.getBaseNew(), {action:'edit'})}" class="czywiesz-external" target="_blank">z listy propozycji</a>.
+						<li>Dodaj zgłoszenie <a href="${mw.util.getUrl(D.getBaseDone(), {action:'edit'})}" class="czywiesz-external" target="_blank">do listy ocenionych</a>.
+						<li>W treści zgłoszenia:
+							<ul>
+								<li>W szablonie <code>Wikiprojekt:Czy wiesz/weryfikacja</code> dodaj parametr <code>status=zakończone</code>.
+								<li>W szablonie <code>licznik czasu</code> zmniejsz liczbę dni (możesz ustawić <code>dni=1</code>).
+								<li>Dopisz komentarz wpisując <code>{{Załatwione}}</code>.
+							</ul>
+					</ol>
 				`, true);
 				return;
 			}
@@ -115,7 +129,7 @@ class DoneHandling {
 		dd.open();
 		
 		// Pobranie /propozycje.
-		dd.update('Pobranie wikitekstu propozycji.');
+		dd.update('Pobranie wikitekstu listy propozycji.');
 		let nomsTitle = D.getBaseNew();
 		let nomsText = await apiAsync({
 			url : '/w/index.php?action=raw&title=' + encodeURIComponent(nomsTitle),
@@ -123,7 +137,7 @@ class DoneHandling {
 		});
 		let subpageCode = '';
 		// Usunięcie wpisu z wikitekstu.
-		D.log('Usunięcie wpisu z wikitekstu.');
+		D.log('Usunięcie wpisu z wikitekstu listy propozycji.');
 		let modifiedNomsText = nomsText.replace(/\{\{.+\/propozycje\/[0-9-]+\/([^}]+)\}\}\s*/g, (a, title) => {
 			// console.log(a, title)
 			if (title == article) {
@@ -135,8 +149,12 @@ class DoneHandling {
 		if (!subpageCode.length || modifiedNomsText === nomsText) {
 			console.log('article:', article);
 			console.log('before:', nomsText);
-			console.log('after:', modifiedNomsText);
-			throw new Error(`Błąd usuwania nominacji. Już przeniesiona?`);
+			if (modifiedNomsText !== nomsText) {
+				console.log('after:', modifiedNomsText);
+			}
+			throw `Nie udało się znaleźć nominacji „${article}” w wikikodzie strony „${nomsTitle}”. 
+				Nominacja mogła zostać już przeniesiona lub jest zgłoszona z nietypową nazwą podstrony.
+			`.replace(/\s{2,}/g, ' ');
 		}
 		// Przygotwanie zapisów.
 		if (!D.edittoken) {
