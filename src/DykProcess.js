@@ -320,7 +320,7 @@ class DykProcess {
 
 		let mainCall;
 		let subpageTitle = this.setupNominationPage();
-		let infoTpl = `{{Czy wiesz - wikiprojekt|${D.wgTitle}|s=${subpageTitle} }}`;
+		let infoTpl = `{{Czy wiesz - wikiprojekt|${D.wgTitle}|s=${subpageTitle}}}`;
 		if (!debug) {
 			// get page source [to edit]
 			let data;
