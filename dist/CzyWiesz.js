@@ -316,6 +316,28 @@ class DoneHandling {
 		}
 	}
 
+
+	/**
+	 * Check if moved to rated.
+	 * @param {Element} item .
+	 * @param {Boolean} isSubpage .
+	 */
+	checkItemDone(item, isSubpage) {
+		if (isSubpage) {
+			// already moved
+			const movedEl = document.querySelector(this.movedSelector);
+			if (movedEl) {
+				return true;
+			}
+		}
+		// already moved (by inner status)
+		const itemStatus = item.querySelector(this.statusSelector);
+		if (itemStatus && itemStatus.textContent.search(this.statusMovedRe) >= 0) {
+			return true;
+		}
+		return false;
+	}
+
 	/**
 	 * Init done table.
 	 * [[Wikiprojekt:Czy wiesz/weryfikacja]]
@@ -323,33 +345,34 @@ class DoneHandling {
 	 * @param {Boolean} isSubpage .
 	 */
 	initItem(item, isSubpage) {
-		if (isSubpage) {
-			// already moved
-			const movedEl = document.querySelector(this.movedSelector);
-			if (movedEl) {
-				return false;
-			}
-		}
-		// already moved (by inner status)
-		const itemStatus = item.querySelector(this.statusSelector);
-		if (itemStatus && itemStatus.textContent.search(this.statusMovedRe) >= 0) {
+		let alreadyMoved = this.checkItemDone(item, isSubpage);
+		let isAdmin = mw.config.get('wgUserGroups').includes('sysop');
+		let addRollback = isSubpage && isAdmin;
+		if (alreadyMoved && !addRollback) {
 			return false;
 		}
 
-		// no article link
+		// check article link
 		const link = item.querySelector('a:not(.new)');
 		if (!link) {
 			this.core.log('No article link.');
 			return false;
 		}
+		// move action
 		let article = link.textContent;
-		this.createButton(item, 'Zakończ', () => {
-			this.handle(article);
-		});
+		if (!alreadyMoved) {
+			this.createButton(item, 'Zakończ', () => {
+				this.handleDone(article);
+			});
+		} else if (addRollback) {
+			this.createButton(item, 'Cofnij do nominacji', () => {
+				this.handleRollback(article);
+			});
+		}
 		return true;
 	}
-	/** Confirm and execute. */
-	async handle(article) {
+	/** Confirm and execute move. */
+	async handleDone(article) {
 		const D = this.core;
 
 		let confirmInfo = `
@@ -362,8 +385,9 @@ class DoneHandling {
 			const dd = new DoneDialog('Przenoszenie wpisu', 'Start...');
 			const currentUser = mw.config.get('wgUserName');
 			const contribHref = '/wiki/Special:Contributions/'+encodeURIComponent(currentUser);
+			let subpageTitle = '';
 			try {
-				await this.move(article, dd);
+				subpageTitle = await this.move(article, dd);
 			} catch (error) {
 				console.error(error);
 				let errorInfo = typeof error == 'string' ? htmlspecialchars(error) : '<code>'+htmlspecialchars(error)+'</code>';
@@ -385,10 +409,45 @@ class DoneHandling {
 				`, true);
 				return;
 			}
-			dd.update(`Przenoszenie zakończone. Dla pewności możesz sprawdzić 
-				<a href="${contribHref}" class="czywiesz-external" target="_blank">swój wkład</a>.`)
+			dd.update(`
+				<p>✅ Przenoszenie <a href="${mw.util.getUrl(subpageTitle)}">strony zgłoszenia</a> zakończone.
+				<p><small>Dla pewności możesz sprawdzić <a href="${contribHref}" class="czywiesz-external" target="_blank">swój wkład</a>.</small>
+			`);
+			dd.forceResize();
 		}
 	}
+
+	/** Confirm and execute rollback. */
+	async handleRollback(article) {
+		let confirmInfo = `
+			<p>Czy na pewno chcesz cofnąć ${htmlspecialchars(article)} do bieżących nominacji?
+		`;
+
+		if (await stdConfirm(confirmInfo)) {
+
+			const dd = new DoneDialog('Cofnięcie do propozycji', 'Start...');
+			const currentUser = mw.config.get('wgUserName');
+			const contribHref = '/wiki/Special:Contributions/'+encodeURIComponent(currentUser);
+			let subpageTitle = '';
+			try {
+				subpageTitle = await this.unmove(article, dd);
+			} catch (error) {
+				console.error(error);
+				let errorInfo = typeof error == 'string' ? htmlspecialchars(error) : '<code>'+htmlspecialchars(error)+'</code>';
+				dd.update(`
+					<p>❌ Wycofanie nie udało się: ${errorInfo}</p>
+					<p><a href="${contribHref}" class="czywiesz-external" target="_blank">Sprawdź swój wkład</a>, żeby obejrzeć co już zostało zrobione (czy w ogóle coś).
+				`, true);
+				return;
+			}
+			dd.update(`
+				<p>✅ Cofnięcie udane. <a href="${mw.util.getUrl(subpageTitle, {action:'edit'})}">Zmień licznik i dodaj powód otwarcia zgłoszenia</a>.</p>
+				<p><small>Możesz też sprawdzić <a href="${contribHref}" class="czywiesz-external" target="_blank">swój wkład</a></small>.</p>
+			`);
+			dd.forceResize();
+		}
+	}
+
 	/**
 	 * Done, move it.
 	 * @param {String} article Article title.
@@ -399,9 +458,14 @@ class DoneHandling {
 
 		// okienko informacyjne
 		dd.open();
+
+		// steps for dd.update
+		const stepTpl = (no) => `🚴 Krok ${no}/${totalSteps}: `;
+		const totalSteps = 4;
+		let stepNo = 1;
 		
 		// Pobranie /propozycje.
-		dd.update('Pobranie wikitekstu listy propozycji.');
+		dd.update(stepTpl(stepNo++) + 'Pobranie wikitekstu listy propozycji.');
 		let nomsTitle = D.getBaseNew();
 		let nomsText = await apiAsync({
 			url : '/w/index.php?action=raw&title=' + encodeURIComponent(nomsTitle),
@@ -434,7 +498,7 @@ class DoneHandling {
 			await this.core.getEditToken(false);
 		}
 		// Zapis zmian w propozycjach.
-		dd.update('Usunięcie wpisu z propozycji.');
+		dd.update(stepTpl(stepNo++) + 'Usunięcie wpisu z propozycji.');
 		let summaryDone = D.config.summary_done.replace('TITLE', article);
 		await apiAsync({
 			url : '/w/api.php',
@@ -451,11 +515,11 @@ class DoneHandling {
 		});
 
 		// Oznaczenie jako załatwione.
-		dd.update('Oznaczenie jako załatwione.');
-		await this.markDone(subpageCode, summaryDone);
+		dd.update(stepTpl(stepNo++) + 'Oznaczenie jako załatwione.');
+		let subpageTitle = await this.markDone(subpageCode, summaryDone);
 
 		// Dopisanie na koniec /ocenione.
-		dd.update('Dopisanie na koniec ocenionych.');
+		dd.update(stepTpl(stepNo++) + 'Dopisanie na koniec ocenionych.');
 		await apiAsync({
 			url : '/w/api.php',
 			type: 'POST',
@@ -469,6 +533,93 @@ class DoneHandling {
 				token : D.edittoken
 			}
 		});
+
+		return subpageTitle;
+	}
+
+	/**
+	 * Move back to nominations.
+	 * 
+	 * Note! It is assumed unmove is done on a subpage.
+	 * 
+	 * @param {String} article Article title.
+	 * @param {DoneDialog} dd Dialog for progress info.
+	 */
+	async unmove(article, dd) {
+		const D = this.core;
+
+		// okienko informacyjne
+		dd.open();
+
+		// steps for dd.update
+		const stepTpl = (no) => `🚴 Krok ${no}/${totalSteps}: `;
+		const totalSteps = 4;
+		let stepNo = 1;
+		
+		// Pobranie /ocenione.
+		dd.update(stepTpl(stepNo++) + 'Pobranie wikitekstu listy ocenionych.');
+		let nomsTitle = D.getBaseDone();
+		let nomsText = await apiAsync({
+			url : '/w/index.php?action=raw&title=' + encodeURIComponent(nomsTitle),
+			cache : false
+		});
+		let subpageTitle = mw.config.get('wgPageName').replace(/_/g, ' ');
+		// Usunięcie wpisu z wikitekstu.
+		D.log('Usunięcie wpisu z wikitekstu listy propozycji.');
+		let modifiedNomsText = nomsText.replace(/\{\{(.+\/propozycje\/[0-9-]+\/([^}]+))\}\}\s*/g, (a, fullTitle, title) => {
+			if (title == article || fullTitle == subpageTitle) {
+				return "";
+			}
+			return a;
+		});
+		if (modifiedNomsText === nomsText) {
+			console.log('article:', article);
+			console.log('before:', nomsText);
+			D.log(`Nie udało się znaleźć nominacji „${article}” w wikikodzie strony „${nomsTitle}”. Pomijam.`);
+		}
+		// Przygotwanie zapisów.
+		if (!D.edittoken) {
+			D.log('Pobranie tokena.');
+			await this.core.getEditToken(false);
+		}
+		// Zapis zmian w propozycjach.
+		dd.update(stepTpl(stepNo++) + 'Usunięcie wpisu z listy.');
+		let summaryDone = D.config.summary_rollback.replace('TITLE', article);
+		await apiAsync({
+			url : '/w/api.php',
+			type : 'POST',
+			data: {
+				action: 'edit',
+				format: 'json',
+				title:  nomsTitle,
+				text:   modifiedNomsText,
+				summary: summaryDone,
+				watchlist: 'nochange',
+				token:  D.edittoken,
+			}
+		});
+
+		// Oznaczenie jako załatwione.
+		dd.update(stepTpl(stepNo++) + 'Usunięcie oznaczenia jako załatwione.');
+		await this.markUnDone(subpageTitle, summaryDone);
+
+		// Dopisanie na koniec /propozycji.
+		dd.update(stepTpl(stepNo++) + 'Dopisanie na koniec propozycji.');
+		await apiAsync({
+			url : '/w/api.php',
+			type: 'POST',
+			data : {
+				action : 'edit',
+				format : 'json',
+				title : D.getBaseNew(),
+				appendtext : `\n{{${subpageTitle}}}`,
+				summary: summaryDone,
+				watchlist : 'nochange',
+				token : D.edittoken
+			}
+		});
+
+		return subpageTitle;
 	}
 
 	/**
@@ -499,6 +650,46 @@ class DoneHandling {
 
 		// dodanie oznaczenia dyskusji
 		wiki += '\n\n{{Załatwione}} artykuł oceniony ~~~~.';
+
+		await apiAsync({
+			url : '/w/api.php',
+			type: 'POST',
+			data : {
+				action : 'edit',
+				format : 'json',
+				title : subpageTitle,
+				text : wiki,
+				summary: summaryDone,
+				watchlist : 'nochange',
+				token : D.edittoken
+			}
+		});
+
+		return subpageTitle;
+	}
+
+	/**
+	 * Mark subpage as not-done.
+	 * @param {String} subpageTitle Subpage wikicode (template style).
+	 * @param {String} summaryDone Done info.
+	 */
+	async markUnDone(subpageTitle, summaryDone) {
+		const D = this.core;
+
+		// pobranie tekstu
+		let wiki = await apiAsync({
+			url : '/w/index.php?action=raw&title=' + encodeURIComponent(subpageTitle),
+			cache : false
+		});
+
+		// usunięcie statusu zakończenia w tabeli
+		wiki = wiki.replace(/(\{\{Wikiprojekt:Czy wiesz\/weryfikacja)([^}]+)(\}\})/g, (a, start, body, end) => {
+			body = body.replace(/ *\| *status *=[^|}]+/g, '');
+			return `${start}${body}${end}`;
+		});
+
+		// usunięcie oznaczenia dyskusji
+		wiki = wiki.replace(/\{\{(Załatwione|Zrobione)\}\}/i, '{{s|$1}}');
 
 		await apiAsync({
 			url : '/w/api.php',
@@ -1943,8 +2134,8 @@ module.exports = { apiAjax, apiAsync };
 
 },{}],12:[function(require,module,exports){
 let versionInfo = {
-	version:'6.0.1',
-	buildDay:'2024-01-28',
+	version:'6.1.0',
+	buildDay:'2024-01-29',
 }
 
 module.exports = { versionInfo };
@@ -1967,6 +2158,7 @@ var config = {
 	summary:	'TITLE nowe zgłoszenie za pomocą [[Wikipedia:Narzędzia/CzyWiesz|gadżetu CzyWiesz]]',
 	/** summary template for done */
 	summary_done:	'TITLE ozn. jako ocenione za pomocą [[Wikipedia:Narzędzia/CzyWiesz|gadżetu CzyWiesz]]',
+	summary_rollback:	'TITLE wraca do poropozycji za pomocą [[Wikipedia:Narzędzia/CzyWiesz|gadżetu CzyWiesz]]',
 	/** summary for template in the article */
 	summary_r:	'Artykuł ten został zgłoszony do umieszczenia na [[Wikipedia:Strona główna|stronie głównej]] w rubryce „[[Szablon:Czy wiesz|Czy wiesz]]” za pomocą [[Wikipedia:Narzędzia/CzyWiesz|gadżetu CzyWiesz]]',
 	/** summary for template on author's talk page */
