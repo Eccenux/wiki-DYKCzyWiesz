@@ -472,12 +472,14 @@ class DoneHandling {
 			cache : false
 		});
 		let subpageCode = '';
+		let subpageTitle = '';
 		// Usunięcie wpisu z wikitekstu.
 		D.log('Usunięcie wpisu z wikitekstu listy propozycji.');
-		let modifiedNomsText = nomsText.replace(/\{\{.+\/propozycje\/[0-9-]+\/([^}]+)\}\}\s*/g, (a, title) => {
+		let modifiedNomsText = nomsText.replace(/\{\{(.+\/propozycje\/[0-9-]+\/([^}]+))\}\}\s*/g, (a, fullTitle, title) => {
 			// console.log(a, title)
 			if (title == article) {
 				subpageCode = a.trim();
+				subpageTitle = fullTitle;
 				return "";
 			}
 			return a;
@@ -499,7 +501,7 @@ class DoneHandling {
 		}
 		// Zapis zmian w propozycjach.
 		dd.update(stepTpl(stepNo++) + 'Usunięcie wpisu z propozycji.');
-		let subpageLink = subpageCode.replace(/\{\{/,'[[').replace(/\}\}/,`|${article}]]`);
+		let subpageLink = `[[${subpageTitle}|${article}]]`;
 		let summaryDone = D.config.summary_done.replace('TITLE', subpageLink);
 		await apiAsync({
 			url : '/w/api.php',
@@ -585,7 +587,8 @@ class DoneHandling {
 		}
 		// Zapis zmian w propozycjach.
 		dd.update(stepTpl(stepNo++) + 'Usunięcie wpisu z listy.');
-		let summaryDone = D.config.summary_rollback.replace('TITLE', article);
+		let subpageLink = `[[${subpageTitle}|${article}]]`;
+		let summaryDone = D.config.summary_rollback.replace('TITLE', subpageLink);
 		await apiAsync({
 			url : '/w/api.php',
 			type : 'POST',
