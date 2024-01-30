@@ -37,7 +37,7 @@ class DykForm {
 		var IMG_ARR = $.merge($('#mw-content-text .infobox span[typeof="mw:File"] a.mw-file-description img'),$('#mw-content-text figure[typeof="mw:File/Thumb"] img'));
 		var IMAGES = IMG_ARR.length;
 		var REFS = {
-			warn:	D.config.no + '&nbsp;&nbsp;<strong style="color: red;">Brak źródeł dyskwalifikuje artykuł ze zgłoszenia!</strong> <small>(<a class="czywiesz-external">info</a>)</small>',
+			warn:	D.config.no + '&nbsp;&nbsp;<strong style="color: red;">Brak źródeł dyskwalifikuje artykuł ze zgłoszenia!</strong> <small>(<a href="#" role="button">info</a>)</small>',
 			ar1:	[''],
 			ar2:	['Bibliografia','Przypisy']
 		};
@@ -81,7 +81,7 @@ class DykForm {
 			.html('<td>Liczba grafik w artykule: </td>'
 				+ '<td><input type="number" min="0" id="CzyWieszImages" name="CzyWieszImages" value="' + IMAGES + '"' 
 				+ 'style="width: 3.5em;">'
-				+ '<span id="CzyWieszGalleryToggler" style="display: none;"> &nbsp;<small>(<a class="czywiesz-external">zaproponuj grafikę z artykułu</a>)</small></span>');
+				+ '<span id="CzyWieszGalleryToggler" style="display: none;"> &nbsp;<small><a href="#" role="button">(zaproponuj grafikę z artykułu)</a></small></span>');
 
 		var $file_row = $('<tr></tr>')
 			.html('<td style="width: 30%;"><input type="checkbox" id="CzyWieszFile1" name="CzyWieszFile1" style="vertical-align: middle;"><label for="CzyWieszFile1"> Zaproponuj grafikę: </label></td>' // style="width: 36%;
@@ -89,13 +89,9 @@ class DykForm {
 
 		//author row
 		var $author_row = $('<tr id="CzyWieszAuthorRow"></tr>')
-			.html('<td>Główny autor artykułu<a href="#" title="Gadżet wstawia autora największej edycji w ciągu ostatnich 10 dni (upewnij się!)"><sup>?</sup></a>: </td>'
+			.html('<td>Główny autor artykułu<span class="czywiesz-tip" title="Gadżet wstawia autora największej edycji w ciągu ostatnich 10 dni (sprawdź zmiany w ostatnich dniach)."><sup>(?)</sup></span>: </td>'
 				+ '<td><input type="text" id="CzyWieszAuthor" name="CzyWieszAuthor" style="width: 50%;margin-left: 2px;vertical-align: middle;">'
 				+ '&nbsp;&nbsp;<input type="checkbox" id="CzyWieszAuthorInf" name="CzyWieszAuthorInf" style="vertical-align: middle;"><label for="CzyWieszAuthorInf"> poinformować go?</label></td>');
-
-		var $date_row = $('<tr id="CzyWieszDateRow"></tr>')
-			.html('<td>Data utw./rozbud. artykułu<a href="#" title="Gadżet wstawia datę największej edycji w ciągu ostatnich 10 dni (upewnij się!), w przeciwnym wypadku datę dzisiejszą jako datę zgłoszenia)"><sup>?</sup></a>: </td>'
-				+ '<td><input type="text" id="CzyWieszDate" name="CzyWieszDate" style="width: 50%;margin-left: 2px;vertical-align: middle;"></td>');
 
 		var $signature_row = $('<tr></tr>')
 			.html('<td>Twój podpis: </td>'
@@ -140,7 +136,7 @@ class DykForm {
 
 		//build the dialog
 		var $dialog = $('<table></table>').css('width','100%').append($ref_row).append($images_row).append($file_row)
-			.append($author_row).append($date_row).append($signature_row).append($wikiproject_row);
+			.append($author_row).append($signature_row).append($wikiproject_row);
 		$dialog = $('<div id="CzyWieszGadget"></div>').append($title_paragraph).append($question_paragraph).append($question_textarea_paragraph)
 			.append($dialog).append($comment_paragraph).append($comment_textarea_paragraph).append($rules_paragraph).append($loading_bar);
  
@@ -167,16 +163,6 @@ class DykForm {
 		  dialogClass: "wikiEditor-toolbar-dialog",
 		  close: function() { $(this).dialog("destroy"); $(this).remove();},
 		  buttons: buttons
-		});
-
-		// autofill today's date
-		$('#CzyWieszDate').val(function(){
-			var a = new Date();
-			var y = a.getFullYear();
-			var m = a.getMonth()+1; m=(m<10?'0'+m:m);
-			var d = a.getDate();    d=(d<10?'0'+d:d);
-			var str = y + '-' + m + '-' + d;
-			return str;
 		});
 
 		// debug quicky
@@ -258,7 +244,12 @@ class DykForm {
 
 		// if there are no refs (or they're badly named) → append this dialog to a link in $ref_row
 		$('#CzyWieszRefs small a').click(function(){
-			$('<div><div class="floatright">' + D.config.CWicon + '</div><p style="margin-left: 10px;">Zgodnie z wytycznymi <a href="/wiki/Wikiprojekt:Czy_wiesz" title="Wikiprojekt:Czy wiesz">Wikiprojektu Czy wiesz</a> zgłaszane hasło powinno posiadać źródła w formie bibliografii lub przypisów. <a href="/wiki/Wikiprojekt:Czy_wiesz/pomoc#Zg.C5.82aszanie_propozycji_i_poprawa_hase.C5.82" title="Wikiprojekt:Czy wiesz/pomoc#Zgłaszanie propozycji i poprawa haseł">(Więcej…)</a><br /><small>Możliwe, że w artykule sekcje ze źródłami są błędnie nazwane – w takim wypadku popraw je.</small></p></div>')
+			$(/*html*/`<div>
+				<div class="floatright">${D.config.CWicon}</div>
+				<p style="margin-left: 10px;">Zgodnie z wytycznymi <a class="czywiesz-external" target="_blank" href="/wiki/Wikiprojekt:Czy_wiesz" title="Wikiprojekt:Czy wiesz">Wikiprojektu Czy wiesz</a> zgłaszane hasło powinno posiadać źródła w formie bibliografii lub przypisów.
+				<a class="czywiesz-external" target="_blank" href="/wiki/Wikiprojekt:Czy_wiesz/pomoc#Zg.C5.82aszanie_propozycji_i_poprawa_hase.C5.82" title="Wikiprojekt:Czy wiesz/pomoc#Zgłaszanie propozycji i poprawa haseł">Więcej informacji w instrukcji</a>
+				<br /><small>Możliwe, że w artykule sekcje ze źródłami są błędnie nazwane – w takim wypadku popraw je.</small></p>
+			</div>`)
 			.dialog({ modal: true, dialogClass: "wikiEditor-toolbar-dialog", close: function() { $(this).dialog("destroy"); $(this).remove();} });
 		});
 
@@ -298,10 +289,7 @@ class DykForm {
 			// add a possible author…
 			if (winner) {
 				$('#CzyWieszAuthor').val(winner.user);
-				$('#CzyWieszAuthor').after('&nbsp;<small id="CzyWieszAuthorTip"><span class="czywiesz-external" title="Autor największej lub najnowszej dużej edycji (' + winner.added + ' znaków) w ciągu ostatnich 10 dni.">&nbsp;(!)&nbsp;</span></small>&nbsp;');
-				// …and date
-				$('#CzyWieszDate').val(winner.day);
-				$('#CzyWieszDate').after('&nbsp;<small id="CzyWieszDateTip"><span class="czywiesz-external" title="To jest data edycji spełniającej limit znaków, znalezionej w ciągu ostatnich 10 dni.">&nbsp;(!)&nbsp;</span></small>&nbsp;');
+				$('#CzyWieszAuthor').after('&nbsp;<small id="CzyWieszAuthorTip"><span class="czywiesz-tip" title="Autor największej lub najnowszej dużej edycji z ostatnich 10 dni (dodane ' + winner.added + ' znaków, data: ' + winner.day + ').">(!)</span></small>&nbsp;');
 				if (D.debugmode) {
 					$('#CzyWieszAuthor').width('25%').val(D.wgUserName);
 					$('#CzyWieszAuthor').after(winner.user);
@@ -353,20 +341,24 @@ class DykForm {
 				</tr>`;
 			}
 			infoTable += `</table>`;
+			const historyHref = mw.util.getUrl(null, {action:'history'});
 			const $tr = $('<tr id="CzyWieszAuthorInfo"></tr>')
-				.insertAfter($('#CzyWieszDateRow'))
+				.insertAfter($('#CzyWieszAuthorRow'))
 				.html(`
 					<td colspan=2>
-						<a class="toggle" role="button" href="#">(pokaż zmiany w ostatnich dniach)</a>
-						${infoTable}
+						<a class="dyk-toggle" role="button" href="#">(pokaż zmiany w ostatnich dniach)</a>
+						<div style="display:none" class="dyk-toggle-content">
+							${infoTable}
+							<a href="${historyHref}" class="czywiesz-external" target="_blank">zobacz historię</a>
+						</div>
 					</td>
 				`)
 			;
-			const $table = $('table', $tr);
-			$table.hide();
-			$('.toggle', $tr).click(function(e) {
+			// toggle action
+			const $toggleContent = $('.dyk-toggle-content', $tr);
+			$('.dyk-toggle', $tr).click(function(e) {
 				e.preventDefault();
-				$table.toggle();
+				$toggleContent.toggle();
 			});
 		}
 
@@ -377,6 +369,11 @@ class DykForm {
 				+ '<td>' + (D.articlesize.enough ? D.config.yes : D.articlesize.warn) + '</td>')
 			.css( D.articlesize.enough ? {display: 'none'} : {})
 		;
+
+		// tooltips
+		$('#CzyWieszGadget .czywiesz-tip').click(function () {
+			alert(this.title);
+		});
 	}
 
 	/** Prepare and validate values. */
@@ -390,7 +387,6 @@ class DykForm {
 		var REFS = (D.sourced ? '+' : ' ');
 		var AUTHOR = $('#CzyWieszAuthor').val().trim();
 		var AUTHOR_INF = ( $('#CzyWieszAuthorInf').prop('checked') ? true : false );
-		var DATE = $('#CzyWieszDate').val().trim();
 		var SIGNATURE = $('#CzyWieszSignature').val().trim();
 		//get the wikiprojects
 		var wikiprojectSet = new Set();
@@ -461,11 +457,6 @@ class DykForm {
 				invalid.fields.push('Author');
 				invalid.alert.push('Podaj autora artykułu.');
 			}
-			if (typeof DATE != 'string' || DATE === '' || DATE.match(/\d\d\d\d-\d\d-\d\d/).length==0) {
-				invalid.is = true;
-				invalid.fields.push('Date');
-				invalid.alert.push('Podaj datę utworzenia/rozbudowy artykułu (w formacie rrrr-mm-dd).');
-			}
 			if (typeof SIGNATURE != 'string' || SIGNATURE === '') {
 				invalid.is = true;
 				invalid.fields.push('Signature');
@@ -483,7 +474,6 @@ class DykForm {
 			images:      IMAGES,
 			refs:        REFS,
 			author:      AUTHOR,
-			date:        DATE,
 			signature:   SIGNATURE,
 			comment:    COMMENT,
 			authorInf:   AUTHOR_INF,

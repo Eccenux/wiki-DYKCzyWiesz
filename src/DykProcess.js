@@ -119,11 +119,12 @@ class DykProcess {
 		this.loadbar.next();
 
 		// start: end of day of edit XOR current time (whatever is smaller)
-		const editDate = new Date(Dv.date + 'T23:59:59');
 		let clockStart = '{{subst:#timel:Y-m-d H:i:s}}';
-		if (editDate < new Date()) {
-			clockStart = editDate.toISOString().slice(0, 10) + ' 23:59:59';
-		}
+		// vide: Zmiany w stosowaniu terminów #10 
+		// const editDate = new Date(Dv.date + 'T23:59:59');
+		// if (editDate < new Date()) {
+		// 	clockStart = editDate.toISOString().slice(0, 10) + ' 23:59:59';
+		// }
 		// making content
 		let input = `== [[${subpage}|${D.wgTitle}]] ==\n`
 			+ '<!-- artykuł zgłoszony za pomocą gadżetu CzyWiesz -->\n'
@@ -302,7 +303,13 @@ class DykProcess {
 		}
 	}
 
-	/** @private Inform wikiprojects. */
+	/**
+	 * @private Inform a wikiproject.
+	 * @param {String} secttitl_w 
+	 * @param {String} summary_w 
+	 * @param {String} summary_w2 
+	 * @param {Object} curWikiproject 
+	 */
 	async inform_wLoop (sectionTitle_w, summary_w_newsection, summary_w, /* object */ curWikiproject) {
 		var D = this.core;
 		var debug = D.debugmode;
@@ -313,6 +320,7 @@ class DykProcess {
 
 		let mainCall;
 		let subpageTitle = this.setupNominationPage();
+		let infoTpl = `{{Czy wiesz - wikiprojekt|${D.wgTitle}|s=${subpageTitle}}}`;
 		if (!debug) {
 			// get page source [to edit]
 			let data;
@@ -331,7 +339,7 @@ class DykProcess {
 			}
 			data = data.replace(D.config.dykSectionIndicator,
 				D.config.dykSectionIndicator + '\n'
-				+ '{' + '{Czy wiesz - wikiprojekt|' + D.wgTitle + '}}');
+				+ infoTpl);
 
 			D.log('curWikiproject (2):',curWikiproject,'pageToEdit (2):',pageToEdit);
 
@@ -360,8 +368,8 @@ class DykProcess {
 					format : 'json',
 					title : config.debugBase + '/wikiprojekt',
 					section : 'new',
-					sectiontitle : sectionTitle_w + ' • ' + curWikiproject,
-					text : "debug: '''" + pageToEdit + "'''\n" +  `{{Czy wiesz - wikiprojekt|${D.wgTitle}|s=${subpageTitle} }} ~~` + '~~',
+					sectiontitle : sectionTitle_w + ' • ' + curWikiproject.name,
+					text : "debug: '''" + pageToEdit + "'''\n" +  infoTpl,
 					summary : summary_w_newsection,
 					watchlist : 'nochange',
 					token : D.edittoken
@@ -389,16 +397,24 @@ class DykProcess {
 		let subpageTitle = this.setupNominationPage();
 
 		// end dialog: "Finished!"
-		$('<div id="CzyWieszSuccess"><div class="floatright">' + D.config.CWicon + '</div>'
-			+ '<p style="margin-left: 10px;">Dziękujemy za <a id="CzyWieszLinkAfter" href="//pl.wikipedia.org/wiki/' 
-			+ encodeURIComponent(subpageTitle) + '" class="czywiesz-external" target="_blank">zgłoszenie</a>.<br /><br />'
-			+ 'Dla pewności możesz sprawdzić <a href="//pl.wikipedia.org/wiki/Specjalna:Wk%C5%82ad/'
-			+ encodeURIComponent(Dv.signature)
-			+ '" class="czywiesz-external" target="_blank">swój wkład</a>, czy wszystko poszło zgodnie z planem.<br />'
-			+ '<small><a class="CzyWieszEmailDoAutoraToggle">(Coś nie działa?)</a></small><br />'
-			+ '<span class="CzyWieszEmailDoAutoraInfo" style="display:none;">Jeśli coś poszło nie tak, to <a href="#" class="CzyWieszEmailDoAutoraWyslij">kliknij tutaj</a>, aby wysłać twórcy gadżetu e-mail z opisem błędu, a gadżet dołączy do niego szczegóły techniczne.<span class="CzyWieszEmailDoAutoraWyslano"></span><br /></span>'
-			+ '<br />'
-			+ '<a href="/wiki/Wikiprojekt:Czy_wiesz" title="Wikiprojekt:Czy wiesz">Wikiprojekt Czy wiesz</a></p></div>')
+		$(/* html */`
+			<div id="CzyWieszSuccess">
+				<div class="floatright">${D.config.CWicon}</div>
+				<p style="margin-left: 10px;">Dziękujemy za 
+				<a id="CzyWieszLinkAfter" href="/wiki/${encodeURIComponent(subpageTitle)}" class="czywiesz-external" target="_blank">zgłoszenie</a>.
+				<br /><br />
+				Dla pewności możesz sprawdzić 
+				<a href="/wiki/Specjalna:Wk%C5%82ad/${encodeURIComponent(Dv.signature)}" class="czywiesz-external" target="_blank">swój wkład</a>,
+				czy wszystko poszło zgodnie z planem.<br />
+				<small><a class="CzyWieszEmailDoAutoraToggle">(Coś nie działa?)</a></small>
+				<div class="CzyWieszEmailDoAutoraInfo" style="display:none;">
+					Jeśli coś poszło nie tak, to <a href="#" role="button" class="CzyWieszEmailDoAutoraWyslij">kliknij tutaj</a>,
+					aby wysłać twórcy gadżetu e-mail z opisem błędu, a gadżet dołączy do niego szczegóły techniczne.
+					<span class="CzyWieszEmailDoAutoraWyslano"></span>
+				</div>
+			<br />
+			<a href="/wiki/Wikiprojekt:Czy_wiesz" title="Wikiprojekt:Czy wiesz">Wikiprojekt Czy wiesz</a></p></div>
+		`)
 		.dialog({
 			modal: true,
 			dialogClass: "wikiEditor-toolbar-dialog",
@@ -410,10 +426,13 @@ class DykProcess {
 				$('#CzyWieszGadget').remove();
 			}
 		});
-		$('#CzyWieszSuccess a.CzyWieszEmailDoAutoraToggle').click( function() {
+		$('#CzyWieszSuccess a.CzyWieszEmailDoAutoraToggle').click(function() {
 			$('#CzyWieszSuccess .CzyWieszEmailDoAutoraInfo').toggle();
 		});
-		$('#CzyWieszSuccess a.CzyWieszEmailDoAutoraWyslij').click( () => { D.emailauthor(); } );
+		$('#CzyWieszSuccess a.CzyWieszEmailDoAutoraWyslij').click(function(e) {
+			e.preventDefault();
+			D.emailauthor(this);
+		});
 
 		return true;
 	}

@@ -100,7 +100,11 @@ function createDyk(DYKnomination) {
 		return D.edittoken;
 	};
 
-	DYKnomination.emailauthor = async function () {
+	/**
+	 * Send support e-mail.
+	 * @param {Element} button Link/button used to trigger this request.
+	 */
+	DYKnomination.emailauthor = async function (button) {
 		var D = DYKnomination;
 
         var opis = prompt('Opisz, co się stało. Bez tego twórca nie będzie wiedział, co naprawiać.','');
@@ -114,6 +118,14 @@ function createDyk(DYKnomination) {
 		//throbber and cursor-wait – until e-mail sent
 		$('.CzyWieszEmailDoAutoraWyslano').html('<img src="https://upload.wikimedia.org/wikipedia/commons/1/1a/Denken.gif" width="10" height="10">');
 		$('#CzyWieszErrorDialog, #CzyWieszSuccess').addClass('wait-im-sending-email');
+
+		// disable
+		button.classList.add('dyk-button-off');
+
+		if (!D.edittoken) {
+			D.log('Pobranie tokena.');
+			await D.getEditToken(false);
+		}
 
 		apiAsync({
 			url : '/w/api.php',
@@ -129,9 +141,10 @@ function createDyk(DYKnomination) {
 		})
 			.then(function(){
 				$('#CzyWieszErrorDialog, #CzyWieszSuccess').removeClass('wait-im-sending-email');
-				$('.CzyWieszEmailDoAutoraWyslano').text(' Wysłano!');
+				$('.CzyWieszEmailDoAutoraWyslano').html(' <strong>Wysłano!</strong>');
 			})
 			.catch(function(info){
+				button.classList.remove('dyk-button-off');
 				D.errors.push(`Błąd wysyłania e-maila do twórcy: ${info}.`);
 				D.errors.show();
 				console.error('Błąd wysyłania e-maila do twórcy: ', info);
@@ -142,7 +155,7 @@ function createDyk(DYKnomination) {
 	/**
 	 * @type {ErrorInfo}
 	 */
-	DYKnomination.errors = new ErrorInfo(DYKnomination.emailauthor, config.supportUser);
+	DYKnomination.errors = new ErrorInfo((arg1) => {DYKnomination.emailauthor(arg1)}, config.supportUser);
 }
 
 function createFullDyk(DYKnomination) {
@@ -303,6 +316,28 @@ class DoneHandling {
 		}
 	}
 
+
+	/**
+	 * Check if moved to rated.
+	 * @param {Element} item .
+	 * @param {Boolean} isSubpage .
+	 */
+	checkItemDone(item, isSubpage) {
+		if (isSubpage) {
+			// already moved
+			const movedEl = document.querySelector(this.movedSelector);
+			if (movedEl) {
+				return true;
+			}
+		}
+		// already moved (by inner status)
+		const itemStatus = item.querySelector(this.statusSelector);
+		if (itemStatus && itemStatus.textContent.search(this.statusMovedRe) >= 0) {
+			return true;
+		}
+		return false;
+	}
+
 	/**
 	 * Init done table.
 	 * [[Wikiprojekt:Czy wiesz/weryfikacja]]
@@ -310,33 +345,36 @@ class DoneHandling {
 	 * @param {Boolean} isSubpage .
 	 */
 	initItem(item, isSubpage) {
-		if (isSubpage) {
-			// already moved
-			const movedEl = document.querySelector(this.movedSelector);
-			if (movedEl) {
-				return false;
-			}
-		}
-		// already moved (by inner status)
-		const itemStatus = item.querySelector(this.statusSelector);
-		if (itemStatus && itemStatus.textContent.search(this.statusMovedRe) >= 0) {
+		let alreadyMoved = this.checkItemDone(item, isSubpage);
+		let isAdmin = mw.config.get('wgUserGroups').includes('sysop');
+		let addRollback = isSubpage && isAdmin;
+		if (alreadyMoved && !addRollback) {
 			return false;
 		}
 
-		// no article link
+		// check article link
 		const link = item.querySelector('a:not(.new)');
 		if (!link) {
 			this.core.log('No article link.');
 			return false;
 		}
+		// move action
 		let article = link.textContent;
-		this.createButton(item, 'Zakończ', () => {
-			this.handle(article);
-		});
+		if (!alreadyMoved) {
+			this.createButton(item, 'Zakończ', () => {
+				this.handleDone(article);
+			});
+		} else if (addRollback) {
+			this.createButton(item, 'Cofnij do nominacji', () => {
+				this.handleRollback(article);
+			});
+		}
 		return true;
 	}
-	/** Confirm and execute. */
-	async handle(article) {
+	/** Confirm and execute move. */
+	async handleDone(article) {
+		const D = this.core;
+
 		let confirmInfo = `
 			<p>Czy na pewno chcesz zakończyć dyskusję dla ${htmlspecialchars(article)}?
 			<p>Jeśli są wątpliwości, to możesz poczekać na więcej ocen.
@@ -347,21 +385,69 @@ class DoneHandling {
 			const dd = new DoneDialog('Przenoszenie wpisu', 'Start...');
 			const currentUser = mw.config.get('wgUserName');
 			const contribHref = '/wiki/Special:Contributions/'+encodeURIComponent(currentUser);
+			let subpageTitle = '';
 			try {
-				await this.move(article, dd);
+				subpageTitle = await this.move(article, dd);
 			} catch (error) {
 				console.error(error);
+				let errorInfo = typeof error == 'string' ? htmlspecialchars(error) : '<code>'+htmlspecialchars(error)+'</code>';
 				dd.update(`
-					<p>❌ Przenoszenie nie udało się: ${htmlspecialchars(error)}.</p>
-					<p><a href="${contribHref}" class="czywiesz-external" target="_blank">Sprawdź swój wkład</a>.
-						W konsoli przeglądarki mogą znajdować się dodatkowe infomacji, które możesz przekazać twórcy lub w <em>WP:BAR:TE</em>.
+					<p>❌ Przenoszenie nie udało się: ${errorInfo}</p>
+					<p><a href="${contribHref}" class="czywiesz-external" target="_blank">Sprawdź swój wkład</a>, żeby obejrzeć co już zostało zrobione (czy w ogóle coś).
+					<p>Możesz wejść na stronę zgłoszenia lub ją odświeżyć i spróbować ponownie.
+						Jeśli zgłoszenie nadal nie jest zakończone i nie da się go zakończyć, to być <strong>może musisz zakończyć zgłoszenie ręcznie</strong>:
+					<ol>
+						<li>Usuń zgłoszenie <a href="${mw.util.getUrl(D.getBaseNew(), {action:'edit'})}" class="czywiesz-external" target="_blank">z listy propozycji</a>.
+						<li>Dodaj zgłoszenie <a href="${mw.util.getUrl(D.getBaseDone(), {action:'edit'})}" class="czywiesz-external" target="_blank">do listy ocenionych</a>.
+						<li>W treści zgłoszenia:
+							<ul>
+								<li>W szablonie <code>Wikiprojekt:Czy wiesz/weryfikacja</code> dodaj parametr <code>status=zakończone</code>.
+								<li>W szablonie <code>licznik czasu</code> zmniejsz liczbę dni (możesz ustawić <code>dni=1</code>).
+								<li>Dopisz komentarz wpisując <code>{{Załatwione}}</code>.
+							</ul>
+					</ol>
 				`, true);
 				return;
 			}
-			dd.update(`Przenoszenie zakończone. Dla pewności możesz sprawdzić 
-				<a href="${contribHref}" class="czywiesz-external" target="_blank">swój wkład</a>.`)
+			dd.update(`
+				<p>✅ Przenoszenie <a href="${mw.util.getUrl(subpageTitle)}">strony zgłoszenia</a> zakończone.
+				<p><small>Dla pewności możesz sprawdzić <a href="${contribHref}" class="czywiesz-external" target="_blank">swój wkład</a>.</small>
+			`);
+			dd.forceResize();
 		}
 	}
+
+	/** Confirm and execute rollback. */
+	async handleRollback(article) {
+		let confirmInfo = `
+			<p>Czy na pewno chcesz cofnąć ${htmlspecialchars(article)} do bieżących nominacji?
+		`;
+
+		if (await stdConfirm(confirmInfo)) {
+
+			const dd = new DoneDialog('Cofnięcie do propozycji', 'Start...');
+			const currentUser = mw.config.get('wgUserName');
+			const contribHref = '/wiki/Special:Contributions/'+encodeURIComponent(currentUser);
+			let subpageTitle = '';
+			try {
+				subpageTitle = await this.unmove(article, dd);
+			} catch (error) {
+				console.error(error);
+				let errorInfo = typeof error == 'string' ? htmlspecialchars(error) : '<code>'+htmlspecialchars(error)+'</code>';
+				dd.update(`
+					<p>❌ Wycofanie nie udało się: ${errorInfo}</p>
+					<p><a href="${contribHref}" class="czywiesz-external" target="_blank">Sprawdź swój wkład</a>, żeby obejrzeć co już zostało zrobione (czy w ogóle coś).
+				`, true);
+				return;
+			}
+			dd.update(`
+				<p>✅ Cofnięcie udane. <a href="${mw.util.getUrl(subpageTitle, {action:'edit'})}">Zmień licznik i dodaj powód otwarcia zgłoszenia</a>.</p>
+				<p><small>Możesz też sprawdzić <a href="${contribHref}" class="czywiesz-external" target="_blank">swój wkład</a></small>.</p>
+			`);
+			dd.forceResize();
+		}
+	}
+
 	/**
 	 * Done, move it.
 	 * @param {String} article Article title.
@@ -372,9 +458,14 @@ class DoneHandling {
 
 		// okienko informacyjne
 		dd.open();
+
+		// steps for dd.update
+		const stepTpl = (no) => `🚴 Krok ${no}/${totalSteps}: `;
+		const totalSteps = 4;
+		let stepNo = 1;
 		
 		// Pobranie /propozycje.
-		dd.update('Pobranie wikitekstu propozycji.');
+		dd.update(stepTpl(stepNo++) + 'Pobranie wikitekstu listy propozycji.');
 		let nomsTitle = D.getBaseNew();
 		let nomsText = await apiAsync({
 			url : '/w/index.php?action=raw&title=' + encodeURIComponent(nomsTitle),
@@ -382,7 +473,7 @@ class DoneHandling {
 		});
 		let subpageCode = '';
 		// Usunięcie wpisu z wikitekstu.
-		D.log('Usunięcie wpisu z wikitekstu.');
+		D.log('Usunięcie wpisu z wikitekstu listy propozycji.');
 		let modifiedNomsText = nomsText.replace(/\{\{.+\/propozycje\/[0-9-]+\/([^}]+)\}\}\s*/g, (a, title) => {
 			// console.log(a, title)
 			if (title == article) {
@@ -394,8 +485,12 @@ class DoneHandling {
 		if (!subpageCode.length || modifiedNomsText === nomsText) {
 			console.log('article:', article);
 			console.log('before:', nomsText);
-			console.log('after:', modifiedNomsText);
-			throw new Error(`Błąd usuwania nominacji. Już przeniesiona?`);
+			if (modifiedNomsText !== nomsText) {
+				console.log('after:', modifiedNomsText);
+			}
+			throw `Nie udało się znaleźć nominacji „${article}” w wikikodzie strony „${nomsTitle}”. 
+				Nominacja mogła zostać już przeniesiona lub jest zgłoszona z nietypową nazwą podstrony.
+			`.replace(/\s{2,}/g, ' ');
 		}
 		// Przygotwanie zapisów.
 		if (!D.edittoken) {
@@ -403,7 +498,7 @@ class DoneHandling {
 			await this.core.getEditToken(false);
 		}
 		// Zapis zmian w propozycjach.
-		dd.update('Usunięcie wpisu z propozycji.');
+		dd.update(stepTpl(stepNo++) + 'Usunięcie wpisu z propozycji.');
 		let subpageLink = subpageCode.replace(/\{\{/,'[[').replace(/\}\}/,`|${article}]]`);
 		let summaryDone = D.config.summary_done.replace('TITLE', subpageLink);
 		await apiAsync({
@@ -421,11 +516,11 @@ class DoneHandling {
 		});
 
 		// Oznaczenie jako załatwione.
-		dd.update('Oznaczenie jako załatwione.');
-		await this.markDone(subpageCode, summaryDone);
+		dd.update(stepTpl(stepNo++) + 'Oznaczenie jako załatwione.');
+		let subpageTitle = await this.markDone(subpageCode, summaryDone);
 
 		// Dopisanie na koniec /ocenione.
-		dd.update('Dopisanie na koniec ocenionych.');
+		dd.update(stepTpl(stepNo++) + 'Dopisanie na koniec ocenionych.');
 		await apiAsync({
 			url : '/w/api.php',
 			type: 'POST',
@@ -439,6 +534,93 @@ class DoneHandling {
 				token : D.edittoken
 			}
 		});
+
+		return subpageTitle;
+	}
+
+	/**
+	 * Move back to nominations.
+	 * 
+	 * Note! It is assumed unmove is done on a subpage.
+	 * 
+	 * @param {String} article Article title.
+	 * @param {DoneDialog} dd Dialog for progress info.
+	 */
+	async unmove(article, dd) {
+		const D = this.core;
+
+		// okienko informacyjne
+		dd.open();
+
+		// steps for dd.update
+		const stepTpl = (no) => `🚴 Krok ${no}/${totalSteps}: `;
+		const totalSteps = 4;
+		let stepNo = 1;
+		
+		// Pobranie /ocenione.
+		dd.update(stepTpl(stepNo++) + 'Pobranie wikitekstu listy ocenionych.');
+		let nomsTitle = D.getBaseDone();
+		let nomsText = await apiAsync({
+			url : '/w/index.php?action=raw&title=' + encodeURIComponent(nomsTitle),
+			cache : false
+		});
+		let subpageTitle = mw.config.get('wgPageName').replace(/_/g, ' ');
+		// Usunięcie wpisu z wikitekstu.
+		D.log('Usunięcie wpisu z wikitekstu listy propozycji.');
+		let modifiedNomsText = nomsText.replace(/\{\{(.+\/propozycje\/[0-9-]+\/([^}]+))\}\}\s*/g, (a, fullTitle, title) => {
+			if (title == article || fullTitle == subpageTitle) {
+				return "";
+			}
+			return a;
+		});
+		if (modifiedNomsText === nomsText) {
+			console.log('article:', article);
+			console.log('before:', nomsText);
+			D.log(`Nie udało się znaleźć nominacji „${article}” w wikikodzie strony „${nomsTitle}”. Pomijam.`);
+		}
+		// Przygotwanie zapisów.
+		if (!D.edittoken) {
+			D.log('Pobranie tokena.');
+			await this.core.getEditToken(false);
+		}
+		// Zapis zmian w propozycjach.
+		dd.update(stepTpl(stepNo++) + 'Usunięcie wpisu z listy.');
+		let summaryDone = D.config.summary_rollback.replace('TITLE', article);
+		await apiAsync({
+			url : '/w/api.php',
+			type : 'POST',
+			data: {
+				action: 'edit',
+				format: 'json',
+				title:  nomsTitle,
+				text:   modifiedNomsText,
+				summary: summaryDone,
+				watchlist: 'nochange',
+				token:  D.edittoken,
+			}
+		});
+
+		// Oznaczenie jako załatwione.
+		dd.update(stepTpl(stepNo++) + 'Usunięcie oznaczenia jako załatwione.');
+		await this.markUnDone(subpageTitle, summaryDone);
+
+		// Dopisanie na koniec /propozycji.
+		dd.update(stepTpl(stepNo++) + 'Dopisanie na koniec propozycji.');
+		await apiAsync({
+			url : '/w/api.php',
+			type: 'POST',
+			data : {
+				action : 'edit',
+				format : 'json',
+				title : D.getBaseNew(),
+				appendtext : `\n{{${subpageTitle}}}`,
+				summary: summaryDone,
+				watchlist : 'nochange',
+				token : D.edittoken
+			}
+		});
+
+		return subpageTitle;
 	}
 
 	/**
@@ -469,6 +651,46 @@ class DoneHandling {
 
 		// dodanie oznaczenia dyskusji
 		wiki += '\n\n{{Załatwione}} artykuł oceniony ~~~~.';
+
+		await apiAsync({
+			url : '/w/api.php',
+			type: 'POST',
+			data : {
+				action : 'edit',
+				format : 'json',
+				title : subpageTitle,
+				text : wiki,
+				summary: summaryDone,
+				watchlist : 'nochange',
+				token : D.edittoken
+			}
+		});
+
+		return subpageTitle;
+	}
+
+	/**
+	 * Mark subpage as not-done.
+	 * @param {String} subpageTitle Subpage wikicode (template style).
+	 * @param {String} summaryDone Done info.
+	 */
+	async markUnDone(subpageTitle, summaryDone) {
+		const D = this.core;
+
+		// pobranie tekstu
+		let wiki = await apiAsync({
+			url : '/w/index.php?action=raw&title=' + encodeURIComponent(subpageTitle),
+			cache : false
+		});
+
+		// usunięcie statusu zakończenia w tabeli
+		wiki = wiki.replace(/(\{\{Wikiprojekt:Czy wiesz\/weryfikacja)([^}]+)(\}\})/g, (a, start, body, end) => {
+			body = body.replace(/ *\| *status *=[^|}]+/g, '');
+			return `${start}${body}${end}`;
+		});
+
+		// usunięcie oznaczenia dyskusji
+		wiki = wiki.replace(/\{\{(Załatwione|Zrobione)\}\}/i, '{{s|$1}}');
 
 		await apiAsync({
 			url : '/w/api.php',
@@ -550,7 +772,7 @@ class DykForm {
 		var IMG_ARR = $.merge($('#mw-content-text .infobox span[typeof="mw:File"] a.mw-file-description img'),$('#mw-content-text figure[typeof="mw:File/Thumb"] img'));
 		var IMAGES = IMG_ARR.length;
 		var REFS = {
-			warn:	D.config.no + '&nbsp;&nbsp;<strong style="color: red;">Brak źródeł dyskwalifikuje artykuł ze zgłoszenia!</strong> <small>(<a class="czywiesz-external">info</a>)</small>',
+			warn:	D.config.no + '&nbsp;&nbsp;<strong style="color: red;">Brak źródeł dyskwalifikuje artykuł ze zgłoszenia!</strong> <small>(<a href="#" role="button">info</a>)</small>',
 			ar1:	[''],
 			ar2:	['Bibliografia','Przypisy']
 		};
@@ -594,7 +816,7 @@ class DykForm {
 			.html('<td>Liczba grafik w artykule: </td>'
 				+ '<td><input type="number" min="0" id="CzyWieszImages" name="CzyWieszImages" value="' + IMAGES + '"' 
 				+ 'style="width: 3.5em;">'
-				+ '<span id="CzyWieszGalleryToggler" style="display: none;"> &nbsp;<small>(<a class="czywiesz-external">zaproponuj grafikę z artykułu</a>)</small></span>');
+				+ '<span id="CzyWieszGalleryToggler" style="display: none;"> &nbsp;<small><a href="#" role="button">(zaproponuj grafikę z artykułu)</a></small></span>');
 
 		var $file_row = $('<tr></tr>')
 			.html('<td style="width: 30%;"><input type="checkbox" id="CzyWieszFile1" name="CzyWieszFile1" style="vertical-align: middle;"><label for="CzyWieszFile1"> Zaproponuj grafikę: </label></td>' // style="width: 36%;
@@ -602,13 +824,9 @@ class DykForm {
 
 		//author row
 		var $author_row = $('<tr id="CzyWieszAuthorRow"></tr>')
-			.html('<td>Główny autor artykułu<a href="#" title="Gadżet wstawia autora największej edycji w ciągu ostatnich 10 dni (upewnij się!)"><sup>?</sup></a>: </td>'
+			.html('<td>Główny autor artykułu<span class="czywiesz-tip" title="Gadżet wstawia autora największej edycji w ciągu ostatnich 10 dni (sprawdź zmiany w ostatnich dniach)."><sup>(?)</sup></span>: </td>'
 				+ '<td><input type="text" id="CzyWieszAuthor" name="CzyWieszAuthor" style="width: 50%;margin-left: 2px;vertical-align: middle;">'
 				+ '&nbsp;&nbsp;<input type="checkbox" id="CzyWieszAuthorInf" name="CzyWieszAuthorInf" style="vertical-align: middle;"><label for="CzyWieszAuthorInf"> poinformować go?</label></td>');
-
-		var $date_row = $('<tr id="CzyWieszDateRow"></tr>')
-			.html('<td>Data utw./rozbud. artykułu<a href="#" title="Gadżet wstawia datę największej edycji w ciągu ostatnich 10 dni (upewnij się!), w przeciwnym wypadku datę dzisiejszą jako datę zgłoszenia)"><sup>?</sup></a>: </td>'
-				+ '<td><input type="text" id="CzyWieszDate" name="CzyWieszDate" style="width: 50%;margin-left: 2px;vertical-align: middle;"></td>');
 
 		var $signature_row = $('<tr></tr>')
 			.html('<td>Twój podpis: </td>'
@@ -653,7 +871,7 @@ class DykForm {
 
 		//build the dialog
 		var $dialog = $('<table></table>').css('width','100%').append($ref_row).append($images_row).append($file_row)
-			.append($author_row).append($date_row).append($signature_row).append($wikiproject_row);
+			.append($author_row).append($signature_row).append($wikiproject_row);
 		$dialog = $('<div id="CzyWieszGadget"></div>').append($title_paragraph).append($question_paragraph).append($question_textarea_paragraph)
 			.append($dialog).append($comment_paragraph).append($comment_textarea_paragraph).append($rules_paragraph).append($loading_bar);
  
@@ -680,16 +898,6 @@ class DykForm {
 		  dialogClass: "wikiEditor-toolbar-dialog",
 		  close: function() { $(this).dialog("destroy"); $(this).remove();},
 		  buttons: buttons
-		});
-
-		// autofill today's date
-		$('#CzyWieszDate').val(function(){
-			var a = new Date();
-			var y = a.getFullYear();
-			var m = a.getMonth()+1; m=(m<10?'0'+m:m);
-			var d = a.getDate();    d=(d<10?'0'+d:d);
-			var str = y + '-' + m + '-' + d;
-			return str;
 		});
 
 		// debug quicky
@@ -771,7 +979,12 @@ class DykForm {
 
 		// if there are no refs (or they're badly named) → append this dialog to a link in $ref_row
 		$('#CzyWieszRefs small a').click(function(){
-			$('<div><div class="floatright">' + D.config.CWicon + '</div><p style="margin-left: 10px;">Zgodnie z wytycznymi <a href="/wiki/Wikiprojekt:Czy_wiesz" title="Wikiprojekt:Czy wiesz">Wikiprojektu Czy wiesz</a> zgłaszane hasło powinno posiadać źródła w formie bibliografii lub przypisów. <a href="/wiki/Wikiprojekt:Czy_wiesz/pomoc#Zg.C5.82aszanie_propozycji_i_poprawa_hase.C5.82" title="Wikiprojekt:Czy wiesz/pomoc#Zgłaszanie propozycji i poprawa haseł">(Więcej…)</a><br /><small>Możliwe, że w artykule sekcje ze źródłami są błędnie nazwane – w takim wypadku popraw je.</small></p></div>')
+			$(/*html*/`<div>
+				<div class="floatright">${D.config.CWicon}</div>
+				<p style="margin-left: 10px;">Zgodnie z wytycznymi <a class="czywiesz-external" target="_blank" href="/wiki/Wikiprojekt:Czy_wiesz" title="Wikiprojekt:Czy wiesz">Wikiprojektu Czy wiesz</a> zgłaszane hasło powinno posiadać źródła w formie bibliografii lub przypisów.
+				<a class="czywiesz-external" target="_blank" href="/wiki/Wikiprojekt:Czy_wiesz/pomoc#Zg.C5.82aszanie_propozycji_i_poprawa_hase.C5.82" title="Wikiprojekt:Czy wiesz/pomoc#Zgłaszanie propozycji i poprawa haseł">Więcej informacji w instrukcji</a>
+				<br /><small>Możliwe, że w artykule sekcje ze źródłami są błędnie nazwane – w takim wypadku popraw je.</small></p>
+			</div>`)
 			.dialog({ modal: true, dialogClass: "wikiEditor-toolbar-dialog", close: function() { $(this).dialog("destroy"); $(this).remove();} });
 		});
 
@@ -811,10 +1024,7 @@ class DykForm {
 			// add a possible author…
 			if (winner) {
 				$('#CzyWieszAuthor').val(winner.user);
-				$('#CzyWieszAuthor').after('&nbsp;<small id="CzyWieszAuthorTip"><span class="czywiesz-external" title="Autor największej lub najnowszej dużej edycji (' + winner.added + ' znaków) w ciągu ostatnich 10 dni.">&nbsp;(!)&nbsp;</span></small>&nbsp;');
-				// …and date
-				$('#CzyWieszDate').val(winner.day);
-				$('#CzyWieszDate').after('&nbsp;<small id="CzyWieszDateTip"><span class="czywiesz-external" title="To jest data edycji spełniającej limit znaków, znalezionej w ciągu ostatnich 10 dni.">&nbsp;(!)&nbsp;</span></small>&nbsp;');
+				$('#CzyWieszAuthor').after('&nbsp;<small id="CzyWieszAuthorTip"><span class="czywiesz-tip" title="Autor największej lub najnowszej dużej edycji z ostatnich 10 dni (dodane ' + winner.added + ' znaków, data: ' + winner.day + ').">(!)</span></small>&nbsp;');
 				if (D.debugmode) {
 					$('#CzyWieszAuthor').width('25%').val(D.wgUserName);
 					$('#CzyWieszAuthor').after(winner.user);
@@ -866,20 +1076,24 @@ class DykForm {
 				</tr>`;
 			}
 			infoTable += `</table>`;
+			const historyHref = mw.util.getUrl(null, {action:'history'});
 			const $tr = $('<tr id="CzyWieszAuthorInfo"></tr>')
-				.insertAfter($('#CzyWieszDateRow'))
+				.insertAfter($('#CzyWieszAuthorRow'))
 				.html(`
 					<td colspan=2>
-						<a class="toggle" role="button" href="#">(pokaż zmiany w ostatnich dniach)</a>
-						${infoTable}
+						<a class="dyk-toggle" role="button" href="#">(pokaż zmiany w ostatnich dniach)</a>
+						<div style="display:none" class="dyk-toggle-content">
+							${infoTable}
+							<a href="${historyHref}" class="czywiesz-external" target="_blank">zobacz historię</a>
+						</div>
 					</td>
 				`)
 			;
-			const $table = $('table', $tr);
-			$table.hide();
-			$('.toggle', $tr).click(function(e) {
+			// toggle action
+			const $toggleContent = $('.dyk-toggle-content', $tr);
+			$('.dyk-toggle', $tr).click(function(e) {
 				e.preventDefault();
-				$table.toggle();
+				$toggleContent.toggle();
 			});
 		}
 
@@ -890,6 +1104,11 @@ class DykForm {
 				+ '<td>' + (D.articlesize.enough ? D.config.yes : D.articlesize.warn) + '</td>')
 			.css( D.articlesize.enough ? {display: 'none'} : {})
 		;
+
+		// tooltips
+		$('#CzyWieszGadget .czywiesz-tip').click(function () {
+			alert(this.title);
+		});
 	}
 
 	/** Prepare and validate values. */
@@ -903,7 +1122,6 @@ class DykForm {
 		var REFS = (D.sourced ? '+' : ' ');
 		var AUTHOR = $('#CzyWieszAuthor').val().trim();
 		var AUTHOR_INF = ( $('#CzyWieszAuthorInf').prop('checked') ? true : false );
-		var DATE = $('#CzyWieszDate').val().trim();
 		var SIGNATURE = $('#CzyWieszSignature').val().trim();
 		//get the wikiprojects
 		var wikiprojectSet = new Set();
@@ -974,11 +1192,6 @@ class DykForm {
 				invalid.fields.push('Author');
 				invalid.alert.push('Podaj autora artykułu.');
 			}
-			if (typeof DATE != 'string' || DATE === '' || DATE.match(/\d\d\d\d-\d\d-\d\d/).length==0) {
-				invalid.is = true;
-				invalid.fields.push('Date');
-				invalid.alert.push('Podaj datę utworzenia/rozbudowy artykułu (w formacie rrrr-mm-dd).');
-			}
 			if (typeof SIGNATURE != 'string' || SIGNATURE === '') {
 				invalid.is = true;
 				invalid.fields.push('Signature');
@@ -996,7 +1209,6 @@ class DykForm {
 			images:      IMAGES,
 			refs:        REFS,
 			author:      AUTHOR,
-			date:        DATE,
 			signature:   SIGNATURE,
 			comment:    COMMENT,
 			authorInf:   AUTHOR_INF,
@@ -1195,11 +1407,12 @@ class DykProcess {
 		this.loadbar.next();
 
 		// start: end of day of edit XOR current time (whatever is smaller)
-		const editDate = new Date(Dv.date + 'T23:59:59');
 		let clockStart = '{{subst:#timel:Y-m-d H:i:s}}';
-		if (editDate < new Date()) {
-			clockStart = editDate.toISOString().slice(0, 10) + ' 23:59:59';
-		}
+		// vide: Zmiany w stosowaniu terminów #10 
+		// const editDate = new Date(Dv.date + 'T23:59:59');
+		// if (editDate < new Date()) {
+		// 	clockStart = editDate.toISOString().slice(0, 10) + ' 23:59:59';
+		// }
 		// making content
 		let input = `== [[${subpage}|${D.wgTitle}]] ==\n`
 			+ '<!-- artykuł zgłoszony za pomocą gadżetu CzyWiesz -->\n'
@@ -1378,7 +1591,13 @@ class DykProcess {
 		}
 	}
 
-	/** @private Inform wikiprojects. */
+	/**
+	 * @private Inform a wikiproject.
+	 * @param {String} secttitl_w 
+	 * @param {String} summary_w 
+	 * @param {String} summary_w2 
+	 * @param {Object} curWikiproject 
+	 */
 	async inform_wLoop (sectionTitle_w, summary_w_newsection, summary_w, /* object */ curWikiproject) {
 		var D = this.core;
 		var debug = D.debugmode;
@@ -1389,6 +1608,7 @@ class DykProcess {
 
 		let mainCall;
 		let subpageTitle = this.setupNominationPage();
+		let infoTpl = `{{Czy wiesz - wikiprojekt|${D.wgTitle}|s=${subpageTitle}}}`;
 		if (!debug) {
 			// get page source [to edit]
 			let data;
@@ -1407,7 +1627,7 @@ class DykProcess {
 			}
 			data = data.replace(D.config.dykSectionIndicator,
 				D.config.dykSectionIndicator + '\n'
-				+ '{' + '{Czy wiesz - wikiprojekt|' + D.wgTitle + '}}');
+				+ infoTpl);
 
 			D.log('curWikiproject (2):',curWikiproject,'pageToEdit (2):',pageToEdit);
 
@@ -1436,8 +1656,8 @@ class DykProcess {
 					format : 'json',
 					title : config.debugBase + '/wikiprojekt',
 					section : 'new',
-					sectiontitle : sectionTitle_w + ' • ' + curWikiproject,
-					text : "debug: '''" + pageToEdit + "'''\n" +  `{{Czy wiesz - wikiprojekt|${D.wgTitle}|s=${subpageTitle} }} ~~` + '~~',
+					sectiontitle : sectionTitle_w + ' • ' + curWikiproject.name,
+					text : "debug: '''" + pageToEdit + "'''\n" +  infoTpl,
 					summary : summary_w_newsection,
 					watchlist : 'nochange',
 					token : D.edittoken
@@ -1465,16 +1685,24 @@ class DykProcess {
 		let subpageTitle = this.setupNominationPage();
 
 		// end dialog: "Finished!"
-		$('<div id="CzyWieszSuccess"><div class="floatright">' + D.config.CWicon + '</div>'
-			+ '<p style="margin-left: 10px;">Dziękujemy za <a id="CzyWieszLinkAfter" href="//pl.wikipedia.org/wiki/' 
-			+ encodeURIComponent(subpageTitle) + '" class="czywiesz-external" target="_blank">zgłoszenie</a>.<br /><br />'
-			+ 'Dla pewności możesz sprawdzić <a href="//pl.wikipedia.org/wiki/Specjalna:Wk%C5%82ad/'
-			+ encodeURIComponent(Dv.signature)
-			+ '" class="czywiesz-external" target="_blank">swój wkład</a>, czy wszystko poszło zgodnie z planem.<br />'
-			+ '<small><a class="CzyWieszEmailDoAutoraToggle">(Coś nie działa?)</a></small><br />'
-			+ '<span class="CzyWieszEmailDoAutoraInfo" style="display:none;">Jeśli coś poszło nie tak, to <a href="#" class="CzyWieszEmailDoAutoraWyslij">kliknij tutaj</a>, aby wysłać twórcy gadżetu e-mail z opisem błędu, a gadżet dołączy do niego szczegóły techniczne.<span class="CzyWieszEmailDoAutoraWyslano"></span><br /></span>'
-			+ '<br />'
-			+ '<a href="/wiki/Wikiprojekt:Czy_wiesz" title="Wikiprojekt:Czy wiesz">Wikiprojekt Czy wiesz</a></p></div>')
+		$(/* html */`
+			<div id="CzyWieszSuccess">
+				<div class="floatright">${D.config.CWicon}</div>
+				<p style="margin-left: 10px;">Dziękujemy za 
+				<a id="CzyWieszLinkAfter" href="/wiki/${encodeURIComponent(subpageTitle)}" class="czywiesz-external" target="_blank">zgłoszenie</a>.
+				<br /><br />
+				Dla pewności możesz sprawdzić 
+				<a href="/wiki/Specjalna:Wk%C5%82ad/${encodeURIComponent(Dv.signature)}" class="czywiesz-external" target="_blank">swój wkład</a>,
+				czy wszystko poszło zgodnie z planem.<br />
+				<small><a class="CzyWieszEmailDoAutoraToggle">(Coś nie działa?)</a></small>
+				<div class="CzyWieszEmailDoAutoraInfo" style="display:none;">
+					Jeśli coś poszło nie tak, to <a href="#" role="button" class="CzyWieszEmailDoAutoraWyslij">kliknij tutaj</a>,
+					aby wysłać twórcy gadżetu e-mail z opisem błędu, a gadżet dołączy do niego szczegóły techniczne.
+					<span class="CzyWieszEmailDoAutoraWyslano"></span>
+				</div>
+			<br />
+			<a href="/wiki/Wikiprojekt:Czy_wiesz" title="Wikiprojekt:Czy wiesz">Wikiprojekt Czy wiesz</a></p></div>
+		`)
 		.dialog({
 			modal: true,
 			dialogClass: "wikiEditor-toolbar-dialog",
@@ -1486,10 +1714,13 @@ class DykProcess {
 				$('#CzyWieszGadget').remove();
 			}
 		});
-		$('#CzyWieszSuccess a.CzyWieszEmailDoAutoraToggle').click( function() {
+		$('#CzyWieszSuccess a.CzyWieszEmailDoAutoraToggle').click(function() {
 			$('#CzyWieszSuccess .CzyWieszEmailDoAutoraInfo').toggle();
 		});
-		$('#CzyWieszSuccess a.CzyWieszEmailDoAutoraWyslij').click( () => { D.emailauthor(); } );
+		$('#CzyWieszSuccess a.CzyWieszEmailDoAutoraWyslij').click(function(e) {
+			e.preventDefault();
+			D.emailauthor(this);
+		});
 
 		return true;
 	}
@@ -1537,10 +1768,10 @@ class ErrorInfo {
 		}
 		let dialog = $('<div id="CzyWieszErrorDialog"></div>')
 			.append(list)
-			.append( $(`
+			.append( $(/* html */`
 				<p>Coś poszło nie tak. Jeśli powyższa lista nie wyjaśnia problemu, to więcej informacji jest w konsoli przeglądarki.</p>
-				<p>Jeśli problem jest nietypowy, to <a href="#" class="CzyWieszEmailDoAutoraWyslij">wyślij e-mail programiście z danymi błędu</a> (szybka wysyłka logów mailem).<span class="CzyWieszEmailDoAutoraWyslano"></span></p>
-				<p>Możesz też opisać co się stało na <a href="https://pl.wikipedia.org/wiki/Dyskusja_wikipedysty:${this.supportUser}" class="czywiesz-external" target="_blank">na stronie dyskusji</a>.</p>
+				<p>Jeśli problem jest nietypowy, to <a href="#" role="button" class="CzyWieszEmailDoAutoraWyslij">wyślij e-mail programiście z danymi błędu</a> (szybka wysyłka logów mailem).<span class="CzyWieszEmailDoAutoraWyslano"></span></p>
+				<p>Możesz też opisać co się stało na <a href="https://pl.wikipedia.org/wiki/WP:BAR:TE" class="czywiesz-external" target="_blank">w kawiarence technicznej</a>.</p>
 			`) )
 		;
 		
@@ -1552,7 +1783,11 @@ class ErrorInfo {
 			dialogClass: "wikiEditor-toolbar-dialog",
 			close: function() { $(this).dialog("destroy"); $(this).remove();}
 		});
-		$('#CzyWieszErrorDialog a.CzyWieszEmailDoAutoraWyslij').click( () => { this.emailSupport(); } );
+		const D = this;
+		$('#CzyWieszErrorDialog a.CzyWieszEmailDoAutoraWyslij').click(function(e) {
+			e.preventDefault();
+			D.emailSupport(this);
+		});
 	}
 }
 
@@ -1899,8 +2134,8 @@ module.exports = { apiAjax, apiAsync };
 
 },{}],12:[function(require,module,exports){
 let versionInfo = {
-	version:'6.0.0',
-	buildDay:'2024-01-14',
+	version:'6.1.0',
+	buildDay:'2024-01-29',
 }
 
 module.exports = { versionInfo };
@@ -1926,6 +2161,7 @@ var config = {
 	summary:	'TITLE nowe zgłoszenie za pomocą [[Wikipedia:Narzędzia/CzyWiesz|gadżetu CzyWiesz]]',
 	/** summary template for done */
 	summary_done:	'TITLE ozn. jako ocenione za pomocą [[Wikipedia:Narzędzia/CzyWiesz|gadżetu CzyWiesz]]',
+	summary_rollback:	'TITLE wraca do poropozycji za pomocą [[Wikipedia:Narzędzia/CzyWiesz|gadżetu CzyWiesz]]',
 	/** summary for template in the article */
 	summary_r:	'Nominacja do umieszczenia na [[Wikipedia:Strona główna|stronie głównej]] w rubryce „[[Szablon:Czy wiesz|Czy wiesz]]” za pomocą [[Wikipedia:Narzędzia/CzyWiesz|gadżetu CzyWiesz]]',
 	/** summary for template on author's talk page */
@@ -1939,16 +2175,30 @@ var config = {
 	/** new section title for template in wikiprojects */
 	sectionTitle_w: 'Czy wiesz – [[TITLE]]',
 	/** style for this gadget */
-	styletag:	$('<style id="CzyWieszStyleTag">' 
-					+ '.wikiEditor-toolbar-dialog .czy-wiesz-gallery-chosen { border: solid 2px red; }\n' 
-					+ '#CzyWieszWikiprojectAdd {cursor: pointer; }\n'
-					+ '#CzyWieszGalleryToggler a, #CzyWieszRefs a, a.czywiesz-external { '
-						+ 'color: #0645AD; text-decoration: underline; cursor: pointer; padding-right: 13px; '
-						+ 'background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAVklEQVR4Xn3PgQkAMQhDUXfqTu7kTtkpd5RA8AInfArtQ2'
-						+ 'iRXFWT2QedAfttj2FsPIOE1eCOlEuoWWjgzYaB/IkeGOrxXhqB+uA9Bfcm0lAZuh+YIeAD+cAqSz4kCMUAAAAASUVORK5CYII=) center right no-repeat; '
-						+ 'background: url(/w/skins/Vector/images/external-link-ltr-icon.png) center right no-repeat!ie; }'
-					+ '#CzyWieszErrorDialog.wait-im-sending-email, #CzyWieszSuccess.wait-im-sending-email { '
-					+ 'cursor: wait; }'
+	styletag:	$('<style id="CzyWieszStyleTag">'
+					+ /* css */`
+						.wikiEditor-toolbar-dialog .czy-wiesz-gallery-chosen { border: solid 2px red; }
+						#CzyWieszWikiprojectAdd {cursor: pointer; }
+						#CzyWieszGadget .czywiesz-tip {
+							cursor: help;
+							color: #d05700;
+						}
+						a.czywiesz-external { 
+							color: #0645AD;
+							text-decoration: underline;
+							cursor: pointer;
+							padding-right: 13px; 
+							background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAVklEQVR4Xn3PgQkAMQhDUXfqTu7kTtkpd5RA8AInfArtQ2iRXFWT2QedAfttj2FsPIOE1eCOlEuoWWjgzYaB/IkeGOrxXhqB+uA9Bfcm0lAZuh+YIeAD+cAqSz4kCMUAAAAASUVORK5CYII=)
+								center right no-repeat; 
+						}
+						.dyk-button-off {
+							pointer-events: none;
+							opacity: .5;
+						}
+						#CzyWieszErrorDialog.wait-im-sending-email, #CzyWieszSuccess.wait-im-sending-email {
+							cursor: wait; 
+						}
+					`
 				+ '</style>'),
 	/** [[File:Crystal Clear app clean.png]] (20px) [2012-11-20] */
 	yes:		'<img alt="Crystal Clear app clean.png" src="//upload.wikimedia.org/wikipedia/commons/thumb/3/34/Crystal_Clear_app_clean.png/20px-Crystal_Clear_app_clean.png" width="20" height="20">',
@@ -2035,7 +2285,7 @@ module.exports = { stdConfirm };
 },{}],16:[function(require,module,exports){
 /** Encode user string for JS. */
 function htmlspecialchars(text) {
-	return text
+	return text.toString()
 		.replace(/&/g, "&amp;")
 		.replace(/</g, "&lt;")
 		.replace(/>/g, "&gt;")

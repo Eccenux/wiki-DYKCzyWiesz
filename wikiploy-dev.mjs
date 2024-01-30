@@ -12,7 +12,7 @@ import { addConfig, setupSummary } from './wikiploy-common.mjs';
 	// await setupSummary(ployBot);
 	// temp for v6 quick tests
 	ployBot.summary = () => {
-		return 'v6 test';
+		return 'v6 info @Github';
 	};
 
 	// push out file(s) to wiki
