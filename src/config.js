@@ -10,23 +10,26 @@ var config = {
 	/** E-mail topic (debug info). */
 	supportEmailTopic: 'Błąd w Gadżecie Czy wiesz',
 
+	/** name of the link in menu */
 	portlet_title: 'Zgłoś do „Czy wiesz…”',
+	/** line that should be at the beginning of „Czy wiesz” section in each Wikiproject – helps gadget finding the right spot */
+	dykSectionIndicator: '<!-- Nowe zgłoszenia CzyWiesza wstawiaj poniżej tej linii. Nie zmieniaj i nie usuwaj tej linii -->',
 	/** summary template for nomination */
 	summary:	'TITLE nowe zgłoszenie za pomocą [[Wikipedia:Narzędzia/CzyWiesz|gadżetu CzyWiesz]]',
 	/** summary template for done */
 	summary_done:	'TITLE ozn. jako ocenione za pomocą [[Wikipedia:Narzędzia/CzyWiesz|gadżetu CzyWiesz]]',
 	/** summary for template in the article */
-	summary_r:	'Artykuł ten został zgłoszony do umieszczenia na [[Wikipedia:Strona główna|stronie głównej]] w rubryce „[[Szablon:Czy wiesz|Czy wiesz]]” za pomocą [[Wikipedia:Narzędzia/CzyWiesz|gadżetu CzyWiesz]]',
+	summary_r:	'Nominacja do umieszczenia na [[Wikipedia:Strona główna|stronie głównej]] w rubryce „[[Szablon:Czy wiesz|Czy wiesz]]” za pomocą [[Wikipedia:Narzędzia/CzyWiesz|gadżetu CzyWiesz]]',
 	/** summary for template on author's talk page */
 	summary_a:	'/* Czy wiesz – [[TITLE]] */ nowe zgłoszenie za pomocą [[Wikipedia:Narzędzia/CzyWiesz|gadżetu CzyWiesz]]',
-	/** sectiontitle for template on author's talk page */
-	secttitl_a: 'Czy wiesz – [[TITLE]]',
-	/** summary for template in wikiprojects (type: talk) */
-	summary_w:	'/* Czy wiesz – [[TITLE]] */ nowe zgłoszenie za pomocą [[Wikipedia:Narzędzia/CzyWiesz|gadżetu CzyWiesz]]',
-	/** summary for template in wikiprojects (type: editsection or subpage) */
-	summary_w2:	'/* Czy wiesz */ [[TITLE]] – nowe zgłoszenie za pomocą [[Wikipedia:Narzędzia/CzyWiesz|gadżetu CzyWiesz]]',
-	/** sectiontitle for template in wikiprojects' pages/talk pages */
-	secttitl_w: 'Czy wiesz – [[TITLE]]',
+	/** new section title for template on author's talk page */
+	sectionTitle_a: 'Czy wiesz – [[TITLE]]',
+	/** summary for template in wikiprojects (append to section) */
+	summary_w:	'/* Czy wiesz */ [[TITLE]] – nowe zgłoszenie za pomocą [[Wikipedia:Narzędzia/CzyWiesz|gadżetu CzyWiesz]]',
+	/** summary for template in wikiprojects (new section) */
+	summary_w_newsection:	'/* Czy wiesz – [[TITLE]] */ nowe zgłoszenie za pomocą [[Wikipedia:Narzędzia/CzyWiesz|gadżetu CzyWiesz]]',
+	/** new section title for template in wikiprojects */
+	sectionTitle_w: 'Czy wiesz – [[TITLE]]',
 	/** style for this gadget */
 	styletag:	$('<style id="CzyWieszStyleTag">' 
 					+ '.wikiEditor-toolbar-dialog .czy-wiesz-gallery-chosen { border: solid 2px red; }\n' 

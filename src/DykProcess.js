@@ -239,7 +239,7 @@ class DykProcess {
 		var D = this.core;
 		var Dv = this.values;
 		var debug = D.debugmode;
-		var secttitl_a,summary_a;
+		var sectionTitle_a,summary_a;
 
 		if ( !Dv.authorInf ) {
 			return;
@@ -247,7 +247,7 @@ class DykProcess {
 
 		let subpageTitle = this.setupNominationPage();
 		try {
-			secttitl_a = D.config.secttitl_a.replace('TITLE',D.wgTitle);
+			sectionTitle_a = D.config.sectionTitle_a.replace('TITLE',D.wgTitle);
 			summary_a = D.config.summary_a.replace('TITLE',D.wgTitle);
 			await apiAsync({
 				url : '/w/api.php',
@@ -257,7 +257,7 @@ class DykProcess {
 					format : 'json',
 					title : (debug ? config.debugBase + '/autor' : 'Dyskusja wikipedysty:' + Dv.author),
 					section : 'new',
-					sectiontitle : secttitl_a,
+					sectiontitle : sectionTitle_a,
 					text : (debug ? "debug: '''" + Dv.author + "'''\n" : '') + '{' + '{subst:Czy wiesz - autor0|tytuł strony='+D.wgTitle+'|s='+subpageTitle+'}} ~~' + '~~',
 					summary : summary_a,
 					watchlist : 'nochange',
@@ -276,21 +276,21 @@ class DykProcess {
 	async inform_w () {
 		var D = this.core;
 		var Dv = this.values;
-		var summary_w,secttitl_w;
+		var summary_w_newsection,summary_w,sectionTitle_w;
 
 		if ( Dv.wikiproject.length == 0 ) {
 			return;
 		}
 		else {
-			secttitl_w = D.config.secttitl_w.replace('TITLE',D.wgTitle);
+			sectionTitle_w = D.config.sectionTitle_w.replace('TITLE',D.wgTitle);
+			summary_w_newsection = D.config.summary_w_newsection.replace('TITLE',D.wgTitle);
 			summary_w = D.config.summary_w.replace('TITLE',D.wgTitle);
-			var summary_w2 = D.config.summary_w2.replace('TITLE',D.wgTitle);
  
 			// recursive inform loop
 			for (let i = 0; i < Dv.wikiproject.length; i++) {
 				const curWikiproject = Dv.wikiproject[i];
 				try {
-					await this.inform_wLoop(secttitl_w, summary_w, summary_w2, curWikiproject);
+					await this.inform_wLoop(sectionTitle_w, summary_w_newsection, summary_w, curWikiproject);
 				} catch (error) {
 					D.errors.push('Błąd informowania projektu: '+ curWikiproject.name + ': '+error.toString()+'.');
 					D.errors.show();
@@ -303,7 +303,7 @@ class DykProcess {
 	}
 
 	/** @private Inform wikiprojects. */
-	async inform_wLoop (secttitl_w, summary_w, summary_w2, /* object */ curWikiproject) {
+	async inform_wLoop (sectionTitle_w, summary_w_newsection, summary_w, /* object */ curWikiproject) {
 		var D = this.core;
 		var debug = D.debugmode;
 		
@@ -326,12 +326,11 @@ class DykProcess {
 			}
 
 			// now we need to prepare data for page edit operation
-			let dykSectionIndicator = '<!-- Nowe zgłoszenia CzyWiesza wstawiaj poniżej tej linii. Nie zmieniaj i nie usuwaj tej linii -->';
-			if (!data.match(dykSectionIndicator)) {
-				data = data.replace('[[Kategoria:','== Czy wiesz ==\n' + dykSectionIndicator + '\n\n[[Kategoria:');
+			if (!data.match(D.config.dykSectionIndicator)) {
+				data = data.replace('[[Kategoria:','== Czy wiesz ==\n' + D.config.dykSectionIndicator + '\n\n[[Kategoria:');
 			}
-			data = data.replace(dykSectionIndicator,
-				dykSectionIndicator + '\n'
+			data = data.replace(D.config.dykSectionIndicator,
+				D.config.dykSectionIndicator + '\n'
 				+ '{' + '{Czy wiesz - wikiprojekt|' + D.wgTitle + '}}');
 
 			D.log('curWikiproject (2):',curWikiproject,'pageToEdit (2):',pageToEdit);
@@ -344,7 +343,7 @@ class DykProcess {
 					format: 'json',
 					title:  pageToEdit,
 					text:   data,
-					summary: summary_w2,
+					summary: summary_w,
 					watchlist: 'nochange',
 					token:  D.edittoken
 				}
@@ -361,9 +360,9 @@ class DykProcess {
 					format : 'json',
 					title : config.debugBase + '/wikiprojekt',
 					section : 'new',
-					sectiontitle : secttitl_w + ' • ' + curWikiproject,
+					sectiontitle : sectionTitle_w + ' • ' + curWikiproject,
 					text : "debug: '''" + pageToEdit + "'''\n" +  `{{Czy wiesz - wikiprojekt|${D.wgTitle}|s=${subpageTitle} }} ~~` + '~~',
-					summary : summary_w,
+					summary : summary_w_newsection,
 					watchlist : 'nochange',
 					token : D.edittoken
 				}

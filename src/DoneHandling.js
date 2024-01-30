@@ -145,7 +145,8 @@ class DoneHandling {
 		}
 		// Zapis zmian w propozycjach.
 		dd.update('Usunięcie wpisu z propozycji.');
-		let summaryDone = D.config.summary_done.replace('TITLE', article);
+		let subpageLink = subpageCode.replace(/\{\{/,'[[').replace(/\}\}/,`|${article}]]`);
+		let summaryDone = D.config.summary_done.replace('TITLE', subpageLink);
 		await apiAsync({
 			url : '/w/api.php',
 			type : 'POST',
