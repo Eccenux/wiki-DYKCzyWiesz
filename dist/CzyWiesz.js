@@ -472,12 +472,14 @@ class DoneHandling {
 			cache : false
 		});
 		let subpageCode = '';
+		let subpageTitle = '';
 		// Usunięcie wpisu z wikitekstu.
 		D.log('Usunięcie wpisu z wikitekstu listy propozycji.');
-		let modifiedNomsText = nomsText.replace(/\{\{.+\/propozycje\/[0-9-]+\/([^}]+)\}\}\s*/g, (a, title) => {
+		let modifiedNomsText = nomsText.replace(/\{\{(.+\/propozycje\/[0-9-]+\/([^}]+))\}\}\s*/g, (a, fullTitle, title) => {
 			// console.log(a, title)
 			if (title == article) {
 				subpageCode = a.trim();
+				subpageTitle = fullTitle;
 				return "";
 			}
 			return a;
@@ -499,7 +501,8 @@ class DoneHandling {
 		}
 		// Zapis zmian w propozycjach.
 		dd.update(stepTpl(stepNo++) + 'Usunięcie wpisu z propozycji.');
-		let summaryDone = D.config.summary_done.replace('TITLE', article);
+		let subpageLink = `[[${subpageTitle}|${article}]]`;
+		let summaryDone = D.config.summary_done.replace('TITLE', subpageLink);
 		await apiAsync({
 			url : '/w/api.php',
 			type : 'POST',
@@ -584,7 +587,8 @@ class DoneHandling {
 		}
 		// Zapis zmian w propozycjach.
 		dd.update(stepTpl(stepNo++) + 'Usunięcie wpisu z listy.');
-		let summaryDone = D.config.summary_rollback.replace('TITLE', article);
+		let subpageLink = `[[${subpageTitle}|${article}]]`;
+		let summaryDone = D.config.summary_rollback.replace('TITLE', subpageLink);
 		await apiAsync({
 			url : '/w/api.php',
 			type : 'POST',
@@ -1199,7 +1203,7 @@ class DykForm {
 			if ( (typeof COMMENT!='string'&&typeof COMMENT!='boolean') || (typeof COMMENT=='string' && (COMMENT===''||COMMENT.match(/^[^A-ZĘÓĄŚŁŻŹĆŃa-zęóąśłżźćń]+$/)) ) || (typeof COMMENT=='string'&&COMMENT==true) ) {
 				invalid.is = true;
 				invalid.fields.push('Comment');
-				invalid.alert.push('Jeśli musisz podać jakiś komentarz to podaj jakiś sensowny, jeśli nie – wyłącz to pole. Nie wstawiaj w tym polu samego podpisu (lecz po komentarzu podpisz się).');
+				invalid.alert.push('Jeśli musisz podać jakiś komentarz to podaj jakiś sensowny, jeśli nie – wyłącz to pole. Nie wstawiaj w tym polu samego podpisu (lecz w przypadku komentarza – podpisz się).');
 			}
 
 		const values = {
@@ -1527,7 +1531,7 @@ class DykProcess {
 		var D = this.core;
 		var Dv = this.values;
 		var debug = D.debugmode;
-		var secttitl_a,summary_a;
+		var sectionTitle_a,summary_a;
 
 		if ( !Dv.authorInf ) {
 			return;
@@ -1535,7 +1539,7 @@ class DykProcess {
 
 		let subpageTitle = this.setupNominationPage();
 		try {
-			secttitl_a = D.config.secttitl_a.replace('TITLE',D.wgTitle);
+			sectionTitle_a = D.config.sectionTitle_a.replace('TITLE',D.wgTitle);
 			summary_a = D.config.summary_a.replace('TITLE',D.wgTitle);
 			await apiAsync({
 				url : '/w/api.php',
@@ -1545,7 +1549,7 @@ class DykProcess {
 					format : 'json',
 					title : (debug ? config.debugBase + '/autor' : 'Dyskusja wikipedysty:' + Dv.author),
 					section : 'new',
-					sectiontitle : secttitl_a,
+					sectiontitle : sectionTitle_a,
 					text : (debug ? "debug: '''" + Dv.author + "'''\n" : '') + '{' + '{subst:Czy wiesz - autor0|tytuł strony='+D.wgTitle+'|s='+subpageTitle+'}} ~~' + '~~',
 					summary : summary_a,
 					watchlist : 'nochange',
@@ -1564,21 +1568,21 @@ class DykProcess {
 	async inform_w () {
 		var D = this.core;
 		var Dv = this.values;
-		var summary_w,secttitl_w;
+		var summary_w_newsection,summary_w,sectionTitle_w;
 
 		if ( Dv.wikiproject.length == 0 ) {
 			return;
 		}
 		else {
-			secttitl_w = D.config.secttitl_w.replace('TITLE',D.wgTitle);
+			sectionTitle_w = D.config.sectionTitle_w.replace('TITLE',D.wgTitle);
+			summary_w_newsection = D.config.summary_w_newsection.replace('TITLE',D.wgTitle);
 			summary_w = D.config.summary_w.replace('TITLE',D.wgTitle);
-			var summary_w2 = D.config.summary_w2.replace('TITLE',D.wgTitle);
  
 			// recursive inform loop
 			for (let i = 0; i < Dv.wikiproject.length; i++) {
 				const curWikiproject = Dv.wikiproject[i];
 				try {
-					await this.inform_wLoop(secttitl_w, summary_w, summary_w2, curWikiproject);
+					await this.inform_wLoop(sectionTitle_w, summary_w_newsection, summary_w, curWikiproject);
 				} catch (error) {
 					D.errors.push('Błąd informowania projektu: '+ curWikiproject.name + ': '+error.toString()+'.');
 					D.errors.show();
@@ -1597,7 +1601,7 @@ class DykProcess {
 	 * @param {String} summary_w2 
 	 * @param {Object} curWikiproject 
 	 */
-	async inform_wLoop (secttitl_w, summary_w, summary_w2, curWikiproject) {
+	async inform_wLoop (sectionTitle_w, summary_w_newsection, summary_w, /* object */ curWikiproject) {
 		var D = this.core;
 		var debug = D.debugmode;
 		
@@ -1621,12 +1625,11 @@ class DykProcess {
 			}
 
 			// now we need to prepare data for page edit operation
-			let dykSectionIndicator = '<!-- Nowe zgłoszenia CzyWiesza wstawiaj poniżej tej linii. Nie zmieniaj i nie usuwaj tej linii -->';
-			if (!data.match(dykSectionIndicator)) {
-				data = data.replace('[[Kategoria:','== Czy wiesz ==\n' + dykSectionIndicator + '\n\n[[Kategoria:');
+			if (!data.match(D.config.dykSectionIndicator)) {
+				data = data.replace('[[Kategoria:','== Czy wiesz ==\n' + D.config.dykSectionIndicator + '\n\n[[Kategoria:');
 			}
-			data = data.replace(dykSectionIndicator,
-				dykSectionIndicator + '\n'
+			data = data.replace(D.config.dykSectionIndicator,
+				D.config.dykSectionIndicator + '\n'
 				+ infoTpl);
 
 			D.log('curWikiproject (2):',curWikiproject,'pageToEdit (2):',pageToEdit);
@@ -1639,7 +1642,7 @@ class DykProcess {
 					format: 'json',
 					title:  pageToEdit,
 					text:   data,
-					summary: summary_w2,
+					summary: summary_w,
 					watchlist: 'nochange',
 					token:  D.edittoken
 				}
@@ -1656,9 +1659,9 @@ class DykProcess {
 					format : 'json',
 					title : config.debugBase + '/wikiprojekt',
 					section : 'new',
-					sectiontitle : secttitl_w + ' • ' + curWikiproject.name,
+					sectiontitle : sectionTitle_w + ' • ' + curWikiproject.name,
 					text : "debug: '''" + pageToEdit + "'''\n" +  infoTpl,
-					summary : summary_w,
+					summary : summary_w_newsection,
 					watchlist : 'nochange',
 					token : D.edittoken
 				}
@@ -2153,24 +2156,27 @@ var config = {
 	/** E-mail topic (debug info). */
 	supportEmailTopic: 'Błąd w Gadżecie Czy wiesz',
 
+	/** name of the link in menu */
 	portlet_title: 'Zgłoś do „Czy wiesz…”',
+	/** line that should be at the beginning of „Czy wiesz” section in each Wikiproject – helps gadget finding the right spot */
+	dykSectionIndicator: '<!-- Nowe zgłoszenia CzyWiesza wstawiaj poniżej tej linii. Nie zmieniaj i nie usuwaj tej linii -->',
 	/** summary template for nomination */
 	summary:	'TITLE nowe zgłoszenie za pomocą [[Wikipedia:Narzędzia/CzyWiesz|gadżetu CzyWiesz]]',
 	/** summary template for done */
 	summary_done:	'TITLE ozn. jako ocenione za pomocą [[Wikipedia:Narzędzia/CzyWiesz|gadżetu CzyWiesz]]',
 	summary_rollback:	'TITLE wraca do poropozycji za pomocą [[Wikipedia:Narzędzia/CzyWiesz|gadżetu CzyWiesz]]',
 	/** summary for template in the article */
-	summary_r:	'Artykuł ten został zgłoszony do umieszczenia na [[Wikipedia:Strona główna|stronie głównej]] w rubryce „[[Szablon:Czy wiesz|Czy wiesz]]” za pomocą [[Wikipedia:Narzędzia/CzyWiesz|gadżetu CzyWiesz]]',
+	summary_r:	'Nominacja do umieszczenia na [[Wikipedia:Strona główna|stronie głównej]] w rubryce „[[Szablon:Czy wiesz|Czy wiesz]]” za pomocą [[Wikipedia:Narzędzia/CzyWiesz|gadżetu CzyWiesz]]',
 	/** summary for template on author's talk page */
 	summary_a:	'/* Czy wiesz – [[TITLE]] */ nowe zgłoszenie za pomocą [[Wikipedia:Narzędzia/CzyWiesz|gadżetu CzyWiesz]]',
-	/** sectiontitle for template on author's talk page */
-	secttitl_a: 'Czy wiesz – [[TITLE]]',
-	/** summary for template in wikiprojects (type: talk) */
-	summary_w:	'/* Czy wiesz – [[TITLE]] */ nowe zgłoszenie za pomocą [[Wikipedia:Narzędzia/CzyWiesz|gadżetu CzyWiesz]]',
-	/** summary for template in wikiprojects (type: editsection or subpage) */
-	summary_w2:	'/* Czy wiesz */ [[TITLE]] – nowe zgłoszenie za pomocą [[Wikipedia:Narzędzia/CzyWiesz|gadżetu CzyWiesz]]',
-	/** sectiontitle for template in wikiprojects' pages/talk pages */
-	secttitl_w: 'Czy wiesz – [[TITLE]]',
+	/** new section title for template on author's talk page */
+	sectionTitle_a: 'Czy wiesz – [[TITLE]]',
+	/** summary for template in wikiprojects (append to section) */
+	summary_w:	'/* Czy wiesz */ [[TITLE]] – nowe zgłoszenie za pomocą [[Wikipedia:Narzędzia/CzyWiesz|gadżetu CzyWiesz]]',
+	/** summary for template in wikiprojects (new section) */
+	summary_w_newsection:	'/* Czy wiesz – [[TITLE]] */ nowe zgłoszenie za pomocą [[Wikipedia:Narzędzia/CzyWiesz|gadżetu CzyWiesz]]',
+	/** new section title for template in wikiprojects */
+	sectionTitle_w: 'Czy wiesz – [[TITLE]]',
 	/** style for this gadget */
 	styletag:	$('<style id="CzyWieszStyleTag">'
 					+ /* css */`
