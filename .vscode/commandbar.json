@@ -34,7 +34,7 @@
 			"priority": 0
 		},
 
-		// this our one-click rollout
+		// this is our one-click rollout
 		{
 			"text": "build & deploy-dev",
 			"tooltip": "Build (browserify) and deploy (wikiploy).",
@@ -49,6 +49,24 @@
 			"color": "lightgreen",
 			"commandType": "palette",
 			"command": "workbench.action.tasks.runTask|Run rollout",
+			"priority": 0
+		},
+
+		// post-build quick rollout
+		{
+			"text": "(only) deploy-dev",
+			"tooltip": "deploy (wikiploy).",
+			"color": "lightgreen",
+			"commandType": "palette",
+			"command": "workbench.action.tasks.runTask|Run dev deploy",
+			"priority": 0
+		},
+		{
+			"text": "(only) deploy-RELEASE",
+			"tooltip": "deploy (wikiploy).",
+			"color": "lightgreen",
+			"commandType": "palette",
+			"command": "workbench.action.tasks.runTask|Run deploy",
 			"priority": 0
 		}
 	]

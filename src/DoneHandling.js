@@ -199,20 +199,18 @@ class DoneHandling {
 			url : '/w/index.php?action=raw&title=' + encodeURIComponent(nomsTitle),
 			cache : false
 		});
-		let subpageCode = '';
 		let subpageTitle = '';
 		// Usunięcie wpisu z wikitekstu.
 		D.log('Usunięcie wpisu z wikitekstu listy propozycji.');
 		let modifiedNomsText = nomsText.replace(/\{\{(.+\/propozycje\/[0-9-]+\/([^}]+))\}\}\s*/g, (a, fullTitle, title) => {
 			// console.log(a, title)
 			if (title == article) {
-				subpageCode = a.trim();
-				subpageTitle = fullTitle;
+				subpageTitle = fullTitle.trim();
 				return "";
 			}
 			return a;
 		});
-		if (!subpageCode.length || modifiedNomsText === nomsText) {
+		if (!subpageTitle.length || modifiedNomsText === nomsText) {
 			console.log('article:', article);
 			console.log('before:', nomsText);
 			if (modifiedNomsText !== nomsText) {
@@ -247,7 +245,7 @@ class DoneHandling {
 
 		// Oznaczenie jako załatwione.
 		dd.update(stepTpl(stepNo++) + 'Oznaczenie jako załatwione.');
-		let subpageTitle = await this.markDone(subpageCode, summaryDone);
+		await this.markDone(subpageTitle, summaryDone);
 
 		// Dopisanie na koniec /ocenione.
 		dd.update(stepTpl(stepNo++) + 'Dopisanie na koniec ocenionych.');
@@ -258,7 +256,7 @@ class DoneHandling {
 				action : 'edit',
 				format : 'json',
 				title : D.getBaseDone(),
-				appendtext : '\n'+subpageCode,
+				appendtext : `\n{{${subpageTitle}}}`,
 				summary: summaryDone,
 				watchlist : 'nochange',
 				token : D.edittoken
@@ -356,13 +354,11 @@ class DoneHandling {
 
 	/**
 	 * Mark subpage as done.
-	 * @param {String} subpageCode Subpage wikicode (template style).
+	 * @param {String} subpageTitle Subpage name / title.
 	 * @param {String} summaryDone Done info.
 	 */
-	async markDone(subpageCode, summaryDone) {
+	async markDone(subpageTitle, summaryDone) {
 		const D = this.core;
-
-		const subpageTitle = subpageCode.replace('{{', '').replace('}}', '').trim();
 
 		// pobranie tekstu
 		let wiki = await apiAsync({
@@ -396,8 +392,6 @@ class DoneHandling {
 				token : D.edittoken
 			}
 		});
-
-		return subpageTitle;
 	}
 
 	/**
