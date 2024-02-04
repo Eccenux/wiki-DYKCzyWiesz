@@ -35,12 +35,17 @@ else if (pageName == 'Wikipedia:Narzędzia/CzyWiesz') {
 if (pageName.indexOf('/propozycje') > 0 || pageName.indexOf('/ocenione') > 0) {
 	createDyk(DYKnomination);
 	// this can be used to e.g. setup debugmode
-	mw.hook('userjs.DYKnomination.loaded').fire(DYKnomination);
+	mw.hook('userjs.DYKnomination.loaded').fire(DYKnomination, {DoneHandling});
 
-	const doneHandling = new DoneHandling(pageName, DYKnomination);
-	$(document).ready(function() {
-		doneHandling.init();
-	});
+	let isEditor = mw.config.get('wgUserGroups').includes('editor');
+	if (isEditor) {
+		const doneHandling = new DoneHandling(pageName, DYKnomination);
+		$(document).ready(function() {
+			doneHandling.init();
+		});
+	} else {
+		console.warn('[DYK]', 'Brak uprawnień redaktorskich, nie można zarządzać propozycjami.');
+	}
 }
 
 // expose to others
