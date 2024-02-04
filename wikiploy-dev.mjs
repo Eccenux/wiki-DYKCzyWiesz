@@ -5,6 +5,7 @@ const ployBot = new WikiployLite(botpass);
 
 // common deploy function(s)
 import { addConfig, setupSummary } from './wikiploy-common.mjs';
+import { versionInfo } from './src/build/version.js';
 
 // run asynchronously to be able to wait for results
 (async () => {
@@ -12,7 +13,7 @@ import { addConfig, setupSummary } from './wikiploy-common.mjs';
 	// await setupSummary(ployBot);
 	// temp for v6 quick tests
 	ployBot.summary = () => {
-		return 'v6 info @Github';
+		return `v${versionInfo.version} info @Github`;
 	};
 
 	// push out file(s) to wiki

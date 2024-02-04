@@ -131,7 +131,8 @@ class DykProcess {
 		| przypisy       = ${Dv.refs}
 		| ilustracje     = ${Dv.images}
 		| 1. autorstwo   = ${Dv.author}
-		| 2. autorstwo   = 
+		| 2. autorstwo   = ${Dv.author2}
+		| strona         = ${subpage}
 		| nominacja      = ${Dv.signature}
 		| status         = 
 		| 1. sprawdzenie = 
@@ -248,7 +249,7 @@ class DykProcess {
 		}
 	}
 
-	/** @private Inform author. */
+	/** @private Inform author(s). */
 	async inform_a () {
 		var D = this.core;
 		var Dv = this.values;
@@ -263,21 +264,23 @@ class DykProcess {
 		try {
 			sectionTitle_a = D.config.sectionTitle_a.replace('TITLE',D.wgTitle);
 			summary_a = D.config.summary_a.replace('TITLE',D.wgTitle);
-			await apiAsync({
+			const requestData = (author) => ({
 				url : '/w/api.php',
 				type : 'POST',
 				data : {
 					action : 'edit',
 					format : 'json',
-					title : (debug ? config.debugBase + '/autor' : 'Dyskusja wikipedysty:' + Dv.author),
+					title : (debug ? config.debugBase + '/autor' : 'Dyskusja wikipedysty:' + author),
 					section : 'new',
 					sectiontitle : sectionTitle_a,
-					text : (debug ? "debug: '''" + Dv.author + "'''\n" : '') + '{' + '{subst:Czy wiesz - autor0|tytuł strony='+D.wgTitle+'|s='+subpageTitle+'}} ~~' + '~~',
+					text : (debug ? "debug: '''" + author + "'''\n" : '') + '{' + '{subst:Czy wiesz - autor0|tytuł strony='+D.wgTitle+'|s='+subpageTitle+'}} ~~' + '~~',
 					summary : summary_a,
 					watchlist : 'nochange',
 					token : D.edittoken
 				},
-			})
+			});
+			await apiAsync(requestData(Dv.author));
+			await apiAsync(requestData(Dv.author2));
 		} catch (info) {
 			D.errors.push('Błąd informowania autora: ' + info);
 			D.errors.show();

@@ -11,8 +11,26 @@ class DoneDialog {
 	constructor(title, info) {
 		this.title = title;
 		this.info = info;
-		/** @private OO.ui.Dialog placeholder. */
+		/**
+		 * @type {OO.ui.Dialog}
+		 * @private
+		 */
 		this.doneDialogInternal = false;
+		/**
+		 * @type {Element}
+		 * @private
+		 */
+		this.elInfo = false;
+		/**
+		 * @type {Element}
+		 * @private
+		 */
+		this.elWarnings = false;
+		/**
+		 * @type {Element}
+		 * @private
+		 */
+		this.elWarningsList = false;
 	}
 	/** Show dialog. */
 	open() {
@@ -26,12 +44,39 @@ class DoneDialog {
 	 * @param {String} info HTML info.
 	 * @param {Boolean} append Option to append info (e.g. to append errors).
 	 */
-	update(info, append) {
-		if (append) {
-			info = `<div>${this.elInfo.innerHTML}</div>` + info;
+	update(info, append, resize = true) {
+		// clear
+		if (!append) {
+			this.elInfo.innerHTML = info;
+		} else {
+			const el = document.createElement('div');
+			el.innerHTML = info;
+			this.elInfo.appendChild(el);
 		}
-		this.elInfo.innerHTML = info;
-		if (append) {
+		if (append || resize) {
+			this.forceResize();
+		}
+	}
+	/**
+	 * Add a warning.
+	 * @param {String} info HTML info.
+	 * @param {Boolean} append Append warning (replaced otherwise).
+	 * @param {Boolean} resize 
+	 */
+	warn(info, append = true, resize = true) {
+		// clear / show
+		this.elWarnings.style.display = info.length ? 'block' : 'none';
+		// clear
+		if (!info.length || !append) {
+			this.elWarningsList.innerHTML = "";
+		}
+		// new element
+		if (info.length) {
+			const el = document.createElement('li');
+			el.innerHTML = info;
+			this.elWarningsList.appendChild(el);
+		}
+		if (resize) {
 			this.forceResize();
 		}
 	}
@@ -69,11 +114,14 @@ class DoneDialog {
 				padded: true,
 				expanded: false 
 			} );
-			this.content.$element.append( `<div class="info">${me.info}</div>` );
+			this.content.$element.append( /*html*/`<div class="info">${me.info}</div>` );
+			this.content.$element.append( /*html*/`<div class="warnings" style="display:none"><strong>Ostrzeżenia:</strong><ul></ul></div>` );
 			this.$body.append( this.content.$element );
 
 			// cache
 			me.elInfo = this.content.$element[0].querySelector('.info');
+			me.elWarnings = this.content.$element[0].querySelector('.warnings');
+			me.elWarningsList = me.elWarnings.querySelector('ul');
 		};
 
 		DoneDialogInternal.prototype.getActionProcess = function ( action ) {

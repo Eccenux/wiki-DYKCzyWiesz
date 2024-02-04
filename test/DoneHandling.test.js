@@ -97,4 +97,47 @@ describe('DoneHandling', () => {
 			assert.equal(result, expected, resInfo(result, expected));
 		});
 	});
+
+	describe('removeNomination', () => {
+		let eg = (test) => {
+			return `abc
+			{{WP:CW/propozycje/2024-01/Wiki Open 2024}}
+			{{WP:CW/propozycje/2024-02/Dallas Open 2024}}
+			{{WP:CW/propozycje/2024-02/Warsaw Open 2024}}
+			${test}
+			{{WP:CW/propozycje/2024-02/Kopytko}}
+			def`.replace(/\n\t+/g, '\n')
+		}
+		let expected = eg('').replace(/\n+/g, '\n');
+		let resInfo = (result, expected) => `\nresult:\n${result}\nexpected:\n${expected}`;
+
+		let result;
+		it('should remove with space', () => {
+			const subpageTitle = 'WP:CW/propozycje/2024-02/Kopytko testowe';
+			const wiki = eg(`{{${subpageTitle}}}`);
+			result = doneHandling.removeNomination(wiki, subpageTitle);
+			assert.equal(result, expected, resInfo(result, expected));
+		});
+		it('should remove witout space', () => {
+			const subpageTitle = 'WP:CW/propozycje/2024-02/Kopytko_testowe';
+			const wiki = eg(`{{${subpageTitle}}}`);
+			result = doneHandling.removeNomination(wiki, subpageTitle);
+			assert.equal(result, expected, resInfo(result, expected));
+			result = doneHandling.removeNomination(wiki, subpageTitle.replace('_', ' '));
+			assert.equal(result, expected, resInfo(result, expected));
+		});
+		it('should remove both', () => {
+			const subpageTitle = 'WP:CW/propozycje/2024-02/Kopytko_testowe';
+			const wiki = eg(`{{${subpageTitle}}}\n{{${subpageTitle.replace('_', ' ')}}}`);
+			result = doneHandling.removeNomination(wiki, subpageTitle);
+			assert.equal(result, expected, resInfo(result, expected));
+		});
+		it('shouldnt remove prefix', () => {
+			const subpageTitle = 'WP:CW/propozycje/2024-02/Abc Def';
+			const wiki = eg(`{{${subpageTitle}}}\n{{${subpageTitle} Ghi}}`);
+			result = doneHandling.removeNomination(wiki, subpageTitle);
+			assert.isTrue(result.includes('/Abc Def Ghi'), `Should keep prefixed title; res:\n${result}`);
+			assert.isNotTrue(result.includes('/Abc Def}}'), `Should remove the title; res:\n${result}`);
+		});
+	});
 });

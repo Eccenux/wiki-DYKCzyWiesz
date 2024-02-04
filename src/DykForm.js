@@ -88,10 +88,21 @@ class DykForm {
 				+ '<td><tt>[[Plik:</tt><input type="text" id="CzyWieszFile2" name="CzyWieszFile2" style="width: 52%; vertical-align: middle;" disabled><tt>|100px|right]]</tt></td>');
 
 		//author row
-		var $author_row = $('<tr id="CzyWieszAuthorRow"></tr>')
-			.html('<td>Główny autor artykułu<span class="czywiesz-tip" title="Gadżet wstawia autora największej edycji w ciągu ostatnich 10 dni (sprawdź zmiany w ostatnich dniach)."><sup>(?)</sup></span>: </td>'
-				+ '<td><input type="text" id="CzyWieszAuthor" name="CzyWieszAuthor" style="width: 50%;margin-left: 2px;vertical-align: middle;">'
-				+ '&nbsp;&nbsp;<input type="checkbox" id="CzyWieszAuthorInf" name="CzyWieszAuthorInf" style="vertical-align: middle;"><label for="CzyWieszAuthorInf"> poinformować go?</label></td>');
+		var $author_row = $(/*html*/`
+			<tr id="CzyWieszAuthorRow">
+				<td>Główna autor(-ka) artykułu<span class="czywiesz-tip" title="Gadżet ustala autorstwo wg największej edycji w ciągu ostatnich 10 dni (sprawdź zmiany w ostatnich dniach)."><sup>(?)</sup></span>: </td>
+				<td><input type="text" id="CzyWieszAuthor" name="CzyWieszAuthor" style="width: 50%;margin-left: 2px;vertical-align: middle;">
+				&nbsp;&nbsp;<input type="checkbox" checked id="CzyWieszAuthorInf" name="CzyWieszAuthorInf" style="vertical-align: middle;"><label for="CzyWieszAuthorInf"> wysłać powiadomienia?</label></td>
+			</tr>
+			<tr id="CzyWieszAuthor2Row">
+				<td>Druga autor(-ka) artykułu<span class="czywiesz-tip" title="Użyj listy zmian, żeby sprawdzić, czy ktoś jeszcze wprowadzał duże zmiany."><sup>(?)</sup></span>: </td>
+				<td><input type="text" id="CzyWieszAuthor2" name="CzyWieszAuthor2" style="width: 50%;margin-left: 2px;vertical-align: middle;">
+				</td>
+			</tr>
+			<tr id="CzyWieszAuthorInfo">
+				<td colspan=2></td>
+			</tr>
+		`.replace(/\n\t+/g, '').trim());
 
 		var $signature_row = $('<tr></tr>')
 			.html('<td>Twój podpis: </td>'
@@ -168,12 +179,12 @@ class DykForm {
 		// debug quicky
 		if (D.debugmode) {
 			$('#CzyWieszQuestion').val(`jak testować '''[[${D.wgTitle}]]'''?`);
-			$('#CzyWieszAuthor').parent().append(`
-				<p style="padding:2px;margin:0;font-size:80%;background:wheat"
-						title="Autor dostanie powiadomienie o utworzonej podstronie." 
-					>Uwaga! Dla testów lepiej wpisz siebie (autor dostanie pinga).
-				</p>
-			`);
+			// $('#CzyWieszAuthor').parent().append(`
+			// 	<p style="padding:2px;margin:0;font-size:80%;background:wheat"
+			// 			title="Autor dostanie powiadomienie o utworzonej podstronie." 
+			// 		>Uwaga! Dla testów lepiej wpisz siebie (autor dostanie pinga).
+			// 	</p>
+			// `);
 		}
 
 		//fill wikiprojects list
@@ -289,11 +300,11 @@ class DykForm {
 			// add a possible author…
 			if (winner) {
 				$('#CzyWieszAuthor').val(winner.user);
-				$('#CzyWieszAuthor').after('&nbsp;<small id="CzyWieszAuthorTip"><span class="czywiesz-tip" title="Autor największej lub najnowszej dużej edycji z ostatnich 10 dni (dodane ' + winner.added + ' znaków, data: ' + winner.day + ').">(!)</span></small>&nbsp;');
-				if (D.debugmode) {
-					$('#CzyWieszAuthor').width('25%').val(D.wgUserName);
-					$('#CzyWieszAuthor').after(winner.user);
-				}
+				$('#CzyWieszAuthor').after('&nbsp;<small id="CzyWieszAuthorTip"><span class="czywiesz-tip" title="Autorstwo ustalone wg największej lub najnowszej dużej edycji z ostatnich 10 dni (dodane ' + winner.added + ' znaków, data: ' + winner.day + ').">(!)</span></small>&nbsp;');
+				// if (D.debugmode) {
+				// 	$('#CzyWieszAuthor').width('25%').val(D.wgUserName);
+				// 	$('#CzyWieszAuthor').after(winner.user);
+				// }
 			} else {
 				alert(`
 					⚠️ W ciągu ostatnich 10 dni ''nie dokonano wystarczająco dużych zmian''.
@@ -342,21 +353,17 @@ class DykForm {
 			}
 			infoTable += `</table>`;
 			const historyHref = mw.util.getUrl(null, {action:'history'});
-			const $tr = $('<tr id="CzyWieszAuthorInfo"></tr>')
-				.insertAfter($('#CzyWieszAuthorRow'))
-				.html(`
-					<td colspan=2>
+			const container = document.querySelector('#CzyWieszAuthorInfo td');
+			container.innerHTML = /*html*/`
 						<a class="dyk-toggle" role="button" href="#">(pokaż zmiany w ostatnich dniach)</a>
 						<div style="display:none" class="dyk-toggle-content">
 							${infoTable}
 							<a href="${historyHref}" class="czywiesz-external" target="_blank">zobacz historię</a>
 						</div>
-					</td>
-				`)
-			;
+			`;
 			// toggle action
-			const $toggleContent = $('.dyk-toggle-content', $tr);
-			$('.dyk-toggle', $tr).click(function(e) {
+			const $toggleContent = $('.dyk-toggle-content', container);
+			$('.dyk-toggle', container).click(function(e) {
 				e.preventDefault();
 				$toggleContent.toggle();
 			});
@@ -387,6 +394,7 @@ class DykForm {
 		var REFS = (D.sourced ? '+' : ' ');
 		var AUTHOR = $('#CzyWieszAuthor').val().trim();
 		var AUTHOR_INF = ( $('#CzyWieszAuthorInf').prop('checked') ? true : false );
+		var AUTHOR2 = $('#CzyWieszAuthor2').val().trim();
 		var SIGNATURE = $('#CzyWieszSignature').val().trim();
 		//get the wikiprojects
 		var wikiprojectSet = new Set();
@@ -474,9 +482,10 @@ class DykForm {
 			images:      IMAGES,
 			refs:        REFS,
 			author:      AUTHOR,
+			authorInf:   AUTHOR_INF,
+			author2:      AUTHOR2,
 			signature:   SIGNATURE,
 			comment:    COMMENT,
-			authorInf:   AUTHOR_INF,
 			wikiproject: WIKIPROJECT
 		};
 

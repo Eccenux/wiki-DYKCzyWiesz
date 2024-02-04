@@ -180,8 +180,26 @@ class DoneDialog {
 	constructor(title, info) {
 		this.title = title;
 		this.info = info;
-		/** @private OO.ui.Dialog placeholder. */
+		/**
+		 * @type {OO.ui.Dialog}
+		 * @private
+		 */
 		this.doneDialogInternal = false;
+		/**
+		 * @type {Element}
+		 * @private
+		 */
+		this.elInfo = false;
+		/**
+		 * @type {Element}
+		 * @private
+		 */
+		this.elWarnings = false;
+		/**
+		 * @type {Element}
+		 * @private
+		 */
+		this.elWarningsList = false;
 	}
 	/** Show dialog. */
 	open() {
@@ -195,12 +213,39 @@ class DoneDialog {
 	 * @param {String} info HTML info.
 	 * @param {Boolean} append Option to append info (e.g. to append errors).
 	 */
-	update(info, append) {
-		if (append) {
-			info = `<div>${this.elInfo.innerHTML}</div>` + info;
+	update(info, append, resize = true) {
+		// clear
+		if (!append) {
+			this.elInfo.innerHTML = info;
+		} else {
+			const el = document.createElement('div');
+			el.innerHTML = info;
+			this.elInfo.appendChild(el);
 		}
-		this.elInfo.innerHTML = info;
-		if (append) {
+		if (append || resize) {
+			this.forceResize();
+		}
+	}
+	/**
+	 * Add a warning.
+	 * @param {String} info HTML info.
+	 * @param {Boolean} append Append warning (replaced otherwise).
+	 * @param {Boolean} resize 
+	 */
+	warn(info, append = true, resize = true) {
+		// clear / show
+		this.elWarnings.style.display = info.length ? 'block' : 'none';
+		// clear
+		if (!info.length || !append) {
+			this.elWarningsList.innerHTML = "";
+		}
+		// new element
+		if (info.length) {
+			const el = document.createElement('li');
+			el.innerHTML = info;
+			this.elWarningsList.appendChild(el);
+		}
+		if (resize) {
 			this.forceResize();
 		}
 	}
@@ -238,11 +283,14 @@ class DoneDialog {
 				padded: true,
 				expanded: false 
 			} );
-			this.content.$element.append( `<div class="info">${me.info}</div>` );
+			this.content.$element.append( /*html*/`<div class="info">${me.info}</div>` );
+			this.content.$element.append( /*html*/`<div class="warnings" style="display:none"><strong>Ostrzeżenia:</strong><ul></ul></div>` );
 			this.$body.append( this.content.$element );
 
 			// cache
 			me.elInfo = this.content.$element[0].querySelector('.info');
+			me.elWarnings = this.content.$element[0].querySelector('.warnings');
+			me.elWarningsList = me.elWarnings.querySelector('ul');
 		};
 
 		DoneDialogInternal.prototype.getActionProcess = function ( action ) {
@@ -294,7 +342,7 @@ class DoneHandling {
 		this.pageName = pageName;
 		this.core = core;
 		// jeśli są 3 oceny (lub więcej)
-		this.doneSelector = '.dyk-done';
+		this.doneSelector = '.dyk-done'; // template items (main element, inside which other elements reside)
 		this.movedSelector = '.template-done';
 		this.statusSelector = '.dyk-status';
 		this.statusMovedRe = /zako.{1,2}czone/;
@@ -340,14 +388,15 @@ class DoneHandling {
 
 	/**
 	 * Init done table.
-	 * [[Szablon:CW/weryfikacja]]
-	 * @param {Element} item .
+	 * 
+	 * @param {Element} item Main template element [[Szablon:CW/weryfikacja]].
 	 * @param {Boolean} isSubpage .
 	 */
 	initItem(item, isSubpage) {
 		let alreadyMoved = this.checkItemDone(item, isSubpage);
 		let isAdmin = mw.config.get('wgUserGroups').includes('sysop');
-		let addRollback = isSubpage && isAdmin;
+		//let addRollback = isSubpage && isAdmin;
+		let addRollback = isAdmin;
 		if (alreadyMoved && !addRollback) {
 			return false;
 		}
@@ -362,17 +411,36 @@ class DoneHandling {
 		let article = link.textContent;
 		if (!alreadyMoved) {
 			this.createButton(item, 'Zakończ', () => {
-				this.handleDone(article);
+				this.handleDone(item, article, isSubpage);
 			});
 		} else if (addRollback) {
 			this.createButton(item, 'Cofnij do nominacji', () => {
-				this.handleRollback(article);
+				this.handleRollback(item, article, isSubpage);
 			});
 		}
 		return true;
 	}
-	/** Confirm and execute move. */
-	async handleDone(article) {
+	/**
+	 * Get sub page title from a marker element in the tpl.
+	 * @param {Element} item Main template element [[Szablon:CW/weryfikacja]].
+	 * @param {Boolean} isSubpage .
+	 */
+	getSubpageTitle(item, isSubpage) {
+		if (isSubpage) {
+			return mw.config.get('wgPageName');
+		}
+		const el = item.querySelector('.dyk-self-page');
+		let subpageTitle = el ? el.textContent.trim() : '';
+		return subpageTitle;
+	}
+	/**
+	 * Confirm and execute move.
+	 * 
+	 * @param {Element} item Main template element [[Szablon:CW/weryfikacja]].
+	 * @param {String} article Article title.
+	 * @param {Boolean} isSubpage .
+	 */
+	async handleDone(item, article, isSubpage) {
 		const D = this.core;
 
 		let confirmInfo = `
@@ -385,9 +453,20 @@ class DoneHandling {
 			const dd = new DoneDialog('Przenoszenie wpisu', 'Start...');
 			const currentUser = mw.config.get('wgUserName');
 			const contribHref = '/wiki/Special:Contributions/'+encodeURIComponent(currentUser);
-			let subpageTitle = '';
+
+			let subpageTitle = this.getSubpageTitle(item, isSubpage);
+			if (!subpageTitle.length) {
+				console.error('subpageTitle failed', {isSubpage, item});
+				dd.update(`
+					<p>❌ Przenoszenie zostało przerwane (nie wykonano żadnych zmian).</p>
+					<p>Wygląda na to, że szablon weryfikacji dla „${article}” jest nieprawidłowo wypełniony.
+					Wejdź na podstronę zgłoszenia i dodaj parametr <code>| strona = {{subst:FULLPAGENAME}}</code>.</p>
+				`, true);
+				return;
+			}
+
 			try {
-				subpageTitle = await this.move(article, dd);
+				await this.move(article, subpageTitle, dd);
 			} catch (error) {
 				console.error(error);
 				let errorInfo = typeof error == 'string' ? htmlspecialchars(error) : '<code>'+htmlspecialchars(error)+'</code>';
@@ -401,24 +480,31 @@ class DoneHandling {
 						<li>Dodaj zgłoszenie <a href="${mw.util.getUrl(D.getBaseDone(), {action:'edit'})}" class="czywiesz-external" target="_blank">do listy ocenionych</a>.
 						<li>W treści zgłoszenia:
 							<ul>
-								<li>W szablonie <code>CW/weryfikacja</code> dodaj parametr <code>status=zakończone</code>.
+								<li>W szablonie <code>CW/weryfikacja</code> ustaw parametr <code>status=zakończone</code>.
 								<li>W szablonie <code>licznik czasu</code> zmniejsz liczbę dni (możesz ustawić <code>dni=1</code>).
 								<li>Dopisz komentarz wpisując <code>{{Załatwione}}</code>.
 							</ul>
+						</li>
 					</ol>
 				`, true);
 				return;
 			}
 			dd.update(`
-				<p>✅ Przenoszenie <a href="${mw.util.getUrl(subpageTitle)}">strony zgłoszenia</a> zakończone.
-				<p><small>Dla pewności możesz sprawdzić <a href="${contribHref}" class="czywiesz-external" target="_blank">swój wkład</a>.</small>
+				<p>✅ Przenoszenie <a href="${mw.util.getUrl(subpageTitle)}">strony zgłoszenia</a> zakończone.</p>
+				<p><small>Dla pewności możesz sprawdzić <a href="${contribHref}" class="czywiesz-external" target="_blank">swój wkład</a>.</small></p>
 			`);
 			dd.forceResize();
 		}
 	}
 
-	/** Confirm and execute rollback. */
-	async handleRollback(article) {
+	/**
+	 * Confirm and execute rollback.
+	 * 
+	 * @param {Element} item Main template element [[Szablon:CW/weryfikacja]].
+	 * @param {String} article Article title.
+	 * @param {Boolean} isSubpage .
+	 */
+	async handleRollback(item, article, isSubpage) {
 		let confirmInfo = `
 			<p>Czy na pewno chcesz cofnąć ${htmlspecialchars(article)} do bieżących nominacji?
 		`;
@@ -428,9 +514,20 @@ class DoneHandling {
 			const dd = new DoneDialog('Cofnięcie do propozycji', 'Start...');
 			const currentUser = mw.config.get('wgUserName');
 			const contribHref = '/wiki/Special:Contributions/'+encodeURIComponent(currentUser);
-			let subpageTitle = '';
+			
+			let subpageTitle = this.getSubpageTitle(item, isSubpage);
+			if (!subpageTitle.length) {
+				console.error('subpageTitle failed', {isSubpage, item});
+				dd.update(`
+					<p>❌ Przenoszenie zostało przerwane (nie wykonano żadnych zmian).</p>
+					<p>Wygląda na to, że szablon weryfikacji dla „${article}” jest nieprawidłowo wypełniony.
+					Wejdź na podstronę zgłoszenia i dodaj parametr <code>| strona = {{subst:FULLPAGENAME}}</code>.</p>
+				`, true);
+				return;
+			}
+
 			try {
-				subpageTitle = await this.unmove(article, dd);
+				await this.unmove(article, subpageTitle, dd);
 			} catch (error) {
 				console.error(error);
 				let errorInfo = typeof error == 'string' ? htmlspecialchars(error) : '<code>'+htmlspecialchars(error)+'</code>';
@@ -448,12 +545,97 @@ class DoneHandling {
 		}
 	}
 
+	/** Remove nomination from a transclusions list. */
+	removeNomination(wiki, subpageTitle) {
+		const cleanup = (t) => t.replace(/_/g, ' ').trim()
+		let title = cleanup(subpageTitle);
+		let after = wiki.replace(/\{\{(.+\/propozycje\/[0-9-]+\/([^}]+))\}\}\s*/g, (a, fullTitle) => title === cleanup(fullTitle) ? "" : a);
+		return (after === wiki) ? false : after;
+	}
+
+	/**
+	 * Remove step.
+	 * @param {DoneDialog} dd .
+	 * @param {String} listPage Listing of transclusions.
+	 * @param {String} subpageTitle A transcluded page.
+	 * @param {String} summaryDone Change summary.
+	 */
+	async stepRemove(dd, listPage, subpageTitle, summaryDone) {
+		const D = this.core;
+
+		// Pobranie listy
+		D.log('Pobranie wikitekstu listy zgłoszeń.');
+		let listText = await apiAsync({
+			url : '/w/index.php?action=raw&title=' + encodeURIComponent(listPage),
+			cache : false
+		});
+		// Usunięcie wpisu z wikitekstu.
+		D.log('Usunięcie wpisu z wikitekstu listy zgłoszeń.');
+		let modifiedListText = this.removeNomination(listText, subpageTitle);
+		if (!modifiedListText) {
+			dd.warn(`Nie udało się znaleźć nominacji „${subpageTitle}” na stronie „${listPage}”. Pominięto usuwanie wpisu.`);
+		} else {
+			// Zapis zmian w propozycjach.
+			D.log('Usunięcie wpisu ze zgłoszeń.');
+			await apiAsync({
+				url : '/w/api.php',
+				type : 'POST',
+				data: {
+					action: 'edit',
+					format: 'json',
+					title:  listPage,
+					text:   modifiedListText,
+					summary: summaryDone,
+					watchlist: 'nochange',
+					token:  D.edittoken,
+				}
+			});
+		}
+	}
+
+	/**
+	 * Append step.
+	 * @param {DoneDialog} dd .
+	 * @param {String} listPage Listing of transclusions.
+	 * @param {String} subpageTitle A transcluded page.
+	 * @param {String} summaryDone Change summary.
+	 */
+	async stepAppend(dd, listPage, subpageTitle, summaryDone) {
+		const D = this.core;
+
+		// spr.
+		let listText = await apiAsync({
+			url : '/w/index.php?action=raw&title=' + encodeURIComponent(listPage),
+			cache : false
+		});
+		let modified = this.removeNomination(listText, subpageTitle);
+		if (modified) {
+			dd.warn(`Nominacja „${subpageTitle}” jest już na stronie „${listPage}”. Pominięto dodawanie wpisu.`);
+			return false;
+		}
+		await apiAsync({
+			url : '/w/api.php',
+			type: 'POST',
+			data : {
+				action : 'edit',
+				format : 'json',
+				title : listPage,
+				appendtext : `\n{{${subpageTitle}}}`,
+				summary: summaryDone,
+				watchlist : 'nochange',
+				token : D.edittoken
+			}
+		});
+		return true;
+	}
+
 	/**
 	 * Done, move it.
 	 * @param {String} article Article title.
+	 * @param {String} subpageTitle Nomination page.
 	 * @param {DoneDialog} dd Dialog for progress info.
 	 */
-	async move(article, dd) {
+	async move(article, subpageTitle, dd) {
 		const D = this.core;
 
 		// okienko informacyjne
@@ -461,59 +643,20 @@ class DoneHandling {
 
 		// steps for dd.update
 		const stepTpl = (no) => `🚴 Krok ${no}/${totalSteps}: `;
-		const totalSteps = 4;
+		const totalSteps = 3;
 		let stepNo = 1;
-		
-		// Pobranie /propozycje.
-		dd.update(stepTpl(stepNo++) + 'Pobranie wikitekstu listy propozycji.');
-		let nomsTitle = D.getBaseNew();
-		let nomsText = await apiAsync({
-			url : '/w/index.php?action=raw&title=' + encodeURIComponent(nomsTitle),
-			cache : false
-		});
-		let subpageTitle = '';
-		// Usunięcie wpisu z wikitekstu.
-		D.log('Usunięcie wpisu z wikitekstu listy propozycji.');
-		let modifiedNomsText = nomsText.replace(/\{\{(.+\/propozycje\/[0-9-]+\/([^}]+))\}\}\s*/g, (a, fullTitle, title) => {
-			// console.log(a, title)
-			if (title == article) {
-				subpageTitle = fullTitle.trim();
-				return "";
-			}
-			return a;
-		});
-		if (!subpageTitle.length || modifiedNomsText === nomsText) {
-			console.log('article:', article);
-			console.log('before:', nomsText);
-			if (modifiedNomsText !== nomsText) {
-				console.log('after:', modifiedNomsText);
-			}
-			throw `Nie udało się znaleźć nominacji „${article}” w wikikodzie strony „${nomsTitle}”. 
-				Nominacja mogła zostać już przeniesiona lub jest zgłoszona z nietypową nazwą podstrony.
-			`.replace(/\s{2,}/g, ' ');
-		}
-		// Przygotwanie zapisów.
+
+		// Przygotwanie zapisów od razu
 		if (!D.edittoken) {
 			D.log('Pobranie tokena.');
 			await this.core.getEditToken(false);
 		}
-		// Zapis zmian w propozycjach.
-		dd.update(stepTpl(stepNo++) + 'Usunięcie wpisu z propozycji.');
 		let subpageLink = `[[${subpageTitle}|${article}]]`;
 		let summaryDone = D.config.summary_done.replace('TITLE', subpageLink);
-		await apiAsync({
-			url : '/w/api.php',
-			type : 'POST',
-			data: {
-				action: 'edit',
-				format: 'json',
-				title:  nomsTitle,
-				text:   modifiedNomsText,
-				summary: summaryDone,
-				watchlist: 'nochange',
-				token:  D.edittoken,
-			}
-		});
+		
+		// Usunięcie wpisu
+		dd.update(stepTpl(stepNo++) + 'Usunięcie z listy propozycji.');
+		await this.stepRemove(dd, D.getBaseNew(), subpageTitle, summaryDone);
 
 		// Oznaczenie jako załatwione.
 		dd.update(stepTpl(stepNo++) + 'Oznaczenie jako załatwione.');
@@ -521,32 +664,18 @@ class DoneHandling {
 
 		// Dopisanie na koniec /ocenione.
 		dd.update(stepTpl(stepNo++) + 'Dopisanie na koniec ocenionych.');
-		await apiAsync({
-			url : '/w/api.php',
-			type: 'POST',
-			data : {
-				action : 'edit',
-				format : 'json',
-				title : D.getBaseDone(),
-				appendtext : `\n{{${subpageTitle}}}`,
-				summary: summaryDone,
-				watchlist : 'nochange',
-				token : D.edittoken
-			}
-		});
+		await this.stepAppend(dd, D.getBaseDone(), subpageTitle, summaryDone);
 
 		return subpageTitle;
 	}
 
 	/**
 	 * Move back to nominations.
-	 * 
-	 * Note! It is assumed unmove is done on a subpage.
-	 * 
 	 * @param {String} article Article title.
+	 * @param {String} subpageTitle Nomination page.
 	 * @param {DoneDialog} dd Dialog for progress info.
 	 */
-	async unmove(article, dd) {
+	async unmove(article, subpageTitle, dd) {
 		const D = this.core;
 
 		// okienko informacyjne
@@ -554,52 +683,20 @@ class DoneHandling {
 
 		// steps for dd.update
 		const stepTpl = (no) => `🚴 Krok ${no}/${totalSteps}: `;
-		const totalSteps = 4;
+		const totalSteps = 3;
 		let stepNo = 1;
-		
-		// Pobranie /ocenione.
-		dd.update(stepTpl(stepNo++) + 'Pobranie wikitekstu listy ocenionych.');
-		let nomsTitle = D.getBaseDone();
-		let nomsText = await apiAsync({
-			url : '/w/index.php?action=raw&title=' + encodeURIComponent(nomsTitle),
-			cache : false
-		});
-		let subpageTitle = mw.config.get('wgPageName').replace(/_/g, ' ');
-		// Usunięcie wpisu z wikitekstu.
-		D.log('Usunięcie wpisu z wikitekstu listy propozycji.');
-		let modifiedNomsText = nomsText.replace(/\{\{(.+\/propozycje\/[0-9-]+\/([^}]+))\}\}\s*/g, (a, fullTitle, title) => {
-			if (title == article || fullTitle == subpageTitle) {
-				return "";
-			}
-			return a;
-		});
-		if (modifiedNomsText === nomsText) {
-			console.log('article:', article);
-			console.log('before:', nomsText);
-			D.log(`Nie udało się znaleźć nominacji „${article}” w wikikodzie strony „${nomsTitle}”. Pomijam.`);
-		}
+
 		// Przygotwanie zapisów.
 		if (!D.edittoken) {
 			D.log('Pobranie tokena.');
 			await this.core.getEditToken(false);
 		}
-		// Zapis zmian w propozycjach.
-		dd.update(stepTpl(stepNo++) + 'Usunięcie wpisu z listy.');
 		let subpageLink = `[[${subpageTitle}|${article}]]`;
 		let summaryDone = D.config.summary_rollback.replace('TITLE', subpageLink);
-		await apiAsync({
-			url : '/w/api.php',
-			type : 'POST',
-			data: {
-				action: 'edit',
-				format: 'json',
-				title:  nomsTitle,
-				text:   modifiedNomsText,
-				summary: summaryDone,
-				watchlist: 'nochange',
-				token:  D.edittoken,
-			}
-		});
+		
+		// Usunięcie wpisu
+		dd.update(stepTpl(stepNo++) + 'Usunięcie z listy propozycji.');
+		await this.stepRemove(dd, D.getBaseDone(), subpageTitle, summaryDone);
 
 		// Oznaczenie jako załatwione.
 		dd.update(stepTpl(stepNo++) + 'Usunięcie oznaczenia jako załatwione.');
@@ -607,19 +704,7 @@ class DoneHandling {
 
 		// Dopisanie na koniec /propozycji.
 		dd.update(stepTpl(stepNo++) + 'Dopisanie na koniec propozycji.');
-		await apiAsync({
-			url : '/w/api.php',
-			type: 'POST',
-			data : {
-				action : 'edit',
-				format : 'json',
-				title : D.getBaseNew(),
-				appendtext : `\n{{${subpageTitle}}}`,
-				summary: summaryDone,
-				watchlist : 'nochange',
-				token : D.edittoken
-			}
-		});
+		await this.stepAppend(dd, D.getBaseNew(), subpageTitle, summaryDone);
 
 		return subpageTitle;
 	}
@@ -706,7 +791,7 @@ class DoneHandling {
 		wiki = this.statusChange(wiki, '');
 
 		// usunięcie oznaczenia dyskusji
-		wiki = wiki.replace(/\{\{(Załatwione|Zrobione)\}\}/i, '{{s|$1}}');
+		wiki = wiki.replace(/\{\{(Załatwione|Zrobione)\}\}/ig, '{{s|$1}}');
 
 		await apiAsync({
 			url : '/w/api.php',
@@ -839,10 +924,21 @@ class DykForm {
 				+ '<td><tt>[[Plik:</tt><input type="text" id="CzyWieszFile2" name="CzyWieszFile2" style="width: 52%; vertical-align: middle;" disabled><tt>|100px|right]]</tt></td>');
 
 		//author row
-		var $author_row = $('<tr id="CzyWieszAuthorRow"></tr>')
-			.html('<td>Główny autor artykułu<span class="czywiesz-tip" title="Gadżet wstawia autora największej edycji w ciągu ostatnich 10 dni (sprawdź zmiany w ostatnich dniach)."><sup>(?)</sup></span>: </td>'
-				+ '<td><input type="text" id="CzyWieszAuthor" name="CzyWieszAuthor" style="width: 50%;margin-left: 2px;vertical-align: middle;">'
-				+ '&nbsp;&nbsp;<input type="checkbox" id="CzyWieszAuthorInf" name="CzyWieszAuthorInf" style="vertical-align: middle;"><label for="CzyWieszAuthorInf"> poinformować go?</label></td>');
+		var $author_row = $(/*html*/`
+			<tr id="CzyWieszAuthorRow">
+				<td>Główna autor(-ka) artykułu<span class="czywiesz-tip" title="Gadżet ustala autorstwo wg największej edycji w ciągu ostatnich 10 dni (sprawdź zmiany w ostatnich dniach)."><sup>(?)</sup></span>: </td>
+				<td><input type="text" id="CzyWieszAuthor" name="CzyWieszAuthor" style="width: 50%;margin-left: 2px;vertical-align: middle;">
+				&nbsp;&nbsp;<input type="checkbox" checked id="CzyWieszAuthorInf" name="CzyWieszAuthorInf" style="vertical-align: middle;"><label for="CzyWieszAuthorInf"> wysłać powiadomienia?</label></td>
+			</tr>
+			<tr id="CzyWieszAuthor2Row">
+				<td>Druga autor(-ka) artykułu<span class="czywiesz-tip" title="Użyj listy zmian, żeby sprawdzić, czy ktoś jeszcze wprowadzał duże zmiany."><sup>(?)</sup></span>: </td>
+				<td><input type="text" id="CzyWieszAuthor2" name="CzyWieszAuthor2" style="width: 50%;margin-left: 2px;vertical-align: middle;">
+				</td>
+			</tr>
+			<tr id="CzyWieszAuthorInfo">
+				<td colspan=2></td>
+			</tr>
+		`.replace(/\n\t+/g, '').trim());
 
 		var $signature_row = $('<tr></tr>')
 			.html('<td>Twój podpis: </td>'
@@ -919,12 +1015,12 @@ class DykForm {
 		// debug quicky
 		if (D.debugmode) {
 			$('#CzyWieszQuestion').val(`jak testować '''[[${D.wgTitle}]]'''?`);
-			$('#CzyWieszAuthor').parent().append(`
-				<p style="padding:2px;margin:0;font-size:80%;background:wheat"
-						title="Autor dostanie powiadomienie o utworzonej podstronie." 
-					>Uwaga! Dla testów lepiej wpisz siebie (autor dostanie pinga).
-				</p>
-			`);
+			// $('#CzyWieszAuthor').parent().append(`
+			// 	<p style="padding:2px;margin:0;font-size:80%;background:wheat"
+			// 			title="Autor dostanie powiadomienie o utworzonej podstronie." 
+			// 		>Uwaga! Dla testów lepiej wpisz siebie (autor dostanie pinga).
+			// 	</p>
+			// `);
 		}
 
 		//fill wikiprojects list
@@ -1040,11 +1136,11 @@ class DykForm {
 			// add a possible author…
 			if (winner) {
 				$('#CzyWieszAuthor').val(winner.user);
-				$('#CzyWieszAuthor').after('&nbsp;<small id="CzyWieszAuthorTip"><span class="czywiesz-tip" title="Autor największej lub najnowszej dużej edycji z ostatnich 10 dni (dodane ' + winner.added + ' znaków, data: ' + winner.day + ').">(!)</span></small>&nbsp;');
-				if (D.debugmode) {
-					$('#CzyWieszAuthor').width('25%').val(D.wgUserName);
-					$('#CzyWieszAuthor').after(winner.user);
-				}
+				$('#CzyWieszAuthor').after('&nbsp;<small id="CzyWieszAuthorTip"><span class="czywiesz-tip" title="Autorstwo ustalone wg największej lub najnowszej dużej edycji z ostatnich 10 dni (dodane ' + winner.added + ' znaków, data: ' + winner.day + ').">(!)</span></small>&nbsp;');
+				// if (D.debugmode) {
+				// 	$('#CzyWieszAuthor').width('25%').val(D.wgUserName);
+				// 	$('#CzyWieszAuthor').after(winner.user);
+				// }
 			} else {
 				alert(`
 					⚠️ W ciągu ostatnich 10 dni ''nie dokonano wystarczająco dużych zmian''.
@@ -1093,21 +1189,17 @@ class DykForm {
 			}
 			infoTable += `</table>`;
 			const historyHref = mw.util.getUrl(null, {action:'history'});
-			const $tr = $('<tr id="CzyWieszAuthorInfo"></tr>')
-				.insertAfter($('#CzyWieszAuthorRow'))
-				.html(`
-					<td colspan=2>
+			const container = document.querySelector('#CzyWieszAuthorInfo td');
+			container.innerHTML = /*html*/`
 						<a class="dyk-toggle" role="button" href="#">(pokaż zmiany w ostatnich dniach)</a>
 						<div style="display:none" class="dyk-toggle-content">
 							${infoTable}
 							<a href="${historyHref}" class="czywiesz-external" target="_blank">zobacz historię</a>
 						</div>
-					</td>
-				`)
-			;
+			`;
 			// toggle action
-			const $toggleContent = $('.dyk-toggle-content', $tr);
-			$('.dyk-toggle', $tr).click(function(e) {
+			const $toggleContent = $('.dyk-toggle-content', container);
+			$('.dyk-toggle', container).click(function(e) {
 				e.preventDefault();
 				$toggleContent.toggle();
 			});
@@ -1138,6 +1230,7 @@ class DykForm {
 		var REFS = (D.sourced ? '+' : ' ');
 		var AUTHOR = $('#CzyWieszAuthor').val().trim();
 		var AUTHOR_INF = ( $('#CzyWieszAuthorInf').prop('checked') ? true : false );
+		var AUTHOR2 = $('#CzyWieszAuthor2').val().trim();
 		var SIGNATURE = $('#CzyWieszSignature').val().trim();
 		//get the wikiprojects
 		var wikiprojectSet = new Set();
@@ -1225,9 +1318,10 @@ class DykForm {
 			images:      IMAGES,
 			refs:        REFS,
 			author:      AUTHOR,
+			authorInf:   AUTHOR_INF,
+			author2:      AUTHOR2,
 			signature:   SIGNATURE,
 			comment:    COMMENT,
-			authorInf:   AUTHOR_INF,
 			wikiproject: WIKIPROJECT
 		};
 
@@ -1435,7 +1529,8 @@ class DykProcess {
 		| przypisy       = ${Dv.refs}
 		| ilustracje     = ${Dv.images}
 		| 1. autorstwo   = ${Dv.author}
-		| 2. autorstwo   = 
+		| 2. autorstwo   = ${Dv.author2}
+		| strona         = ${subpage}
 		| nominacja      = ${Dv.signature}
 		| status         = 
 		| 1. sprawdzenie = 
@@ -1552,7 +1647,7 @@ class DykProcess {
 		}
 	}
 
-	/** @private Inform author. */
+	/** @private Inform author(s). */
 	async inform_a () {
 		var D = this.core;
 		var Dv = this.values;
@@ -1567,21 +1662,23 @@ class DykProcess {
 		try {
 			sectionTitle_a = D.config.sectionTitle_a.replace('TITLE',D.wgTitle);
 			summary_a = D.config.summary_a.replace('TITLE',D.wgTitle);
-			await apiAsync({
+			const requestData = (author) => ({
 				url : '/w/api.php',
 				type : 'POST',
 				data : {
 					action : 'edit',
 					format : 'json',
-					title : (debug ? config.debugBase + '/autor' : 'Dyskusja wikipedysty:' + Dv.author),
+					title : (debug ? config.debugBase + '/autor' : 'Dyskusja wikipedysty:' + author),
 					section : 'new',
 					sectiontitle : sectionTitle_a,
-					text : (debug ? "debug: '''" + Dv.author + "'''\n" : '') + '{' + '{subst:Czy wiesz - autor0|tytuł strony='+D.wgTitle+'|s='+subpageTitle+'}} ~~' + '~~',
+					text : (debug ? "debug: '''" + author + "'''\n" : '') + '{' + '{subst:Czy wiesz - autor0|tytuł strony='+D.wgTitle+'|s='+subpageTitle+'}} ~~' + '~~',
 					summary : summary_a,
 					watchlist : 'nochange',
 					token : D.edittoken
 				},
-			})
+			});
+			await apiAsync(requestData(Dv.author));
+			await apiAsync(requestData(Dv.author2));
 		} catch (info) {
 			D.errors.push('Błąd informowania autora: ' + info);
 			D.errors.show();
@@ -2163,7 +2260,7 @@ module.exports = { apiAjax, apiAsync };
 
 },{}],12:[function(require,module,exports){
 let versionInfo = {
-	version:'6.2.0',
+	version:'6.2.1',
 	buildDay:'2024-02-04',
 }
 
