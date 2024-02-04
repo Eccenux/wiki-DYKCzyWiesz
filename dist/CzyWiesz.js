@@ -410,12 +410,28 @@ class DoneHandling {
 		// move action
 		let article = link.textContent;
 		if (!alreadyMoved) {
-			this.createButton(item, 'Zakończ', () => {
-				this.handleDone(item, article, isSubpage);
+			let button = this.createButton(item, 'Zakończ', () => {
+				if (button.isDisabled()) {
+					OO.ui.alert('Akcja już wykonana. Możesz spróbować ponownie po odświeżeniu strony.');
+					return;
+				}
+				this.handleDone(item, article, isSubpage).then((done)=>{
+					if (done) {
+						button.setDisabled(true);
+					}
+				});
 			});
 		} else if (addRollback) {
-			this.createButton(item, 'Cofnij do nominacji', () => {
-				this.handleRollback(item, article, isSubpage);
+			let button = this.createButton(item, 'Cofnij do nominacji', () => {
+				if (button.isDisabled()) {
+					OO.ui.alert('Akcja już wykonana. Możesz spróbować ponownie po odświeżeniu strony.');
+					return;
+				}
+				this.handleRollback(item, article, isSubpage).then((done)=>{
+					if (done) {
+						button.setDisabled(true);
+					}
+				});
 			});
 		}
 		return true;
@@ -494,6 +510,7 @@ class DoneHandling {
 				<p><small>Dla pewności możesz sprawdzić <a href="${contribHref}" class="czywiesz-external" target="_blank">swój wkład</a>.</small></p>
 			`);
 			dd.forceResize();
+			return true;
 		}
 	}
 
@@ -542,6 +559,7 @@ class DoneHandling {
 				<p><small>Możesz też sprawdzić <a href="${contribHref}" class="czywiesz-external" target="_blank">swój wkład</a></small>.</p>
 			`);
 			dd.forceResize();
+			return true;
 		}
 	}
 
@@ -828,7 +846,7 @@ class DoneHandling {
 		el.addEventListener('click', handler);
 		// note that adding after is better because it jumps less
 		item.insertAdjacentElement('afterend', el);
-
+		return button;
 	}
 }
 
@@ -2375,7 +2393,7 @@ else if (pageName == 'Wikipedia:Narzędzia/CzyWiesz') {
 }
 
 // zarządzanie propozycjami
-if (pageName.indexOf('/propozycje') > 0) {
+if (pageName.indexOf('/propozycje') > 0 || pageName.indexOf('/ocenione') > 0) {
 	createDyk(DYKnomination);
 	// this can be used to e.g. setup debugmode
 	mw.hook('userjs.DYKnomination.loaded').fire(DYKnomination);

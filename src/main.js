@@ -32,7 +32,7 @@ else if (pageName == 'Wikipedia:Narzędzia/CzyWiesz') {
 }
 
 // zarządzanie propozycjami
-if (pageName.indexOf('/propozycje') > 0) {
+if (pageName.indexOf('/propozycje') > 0 || pageName.indexOf('/ocenione') > 0) {
 	createDyk(DYKnomination);
 	// this can be used to e.g. setup debugmode
 	mw.hook('userjs.DYKnomination.loaded').fire(DYKnomination);
