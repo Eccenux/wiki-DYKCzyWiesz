@@ -1,4 +1,3 @@
-/* global describe, it */
 let { assert } = require('chai');
 let { RevisionList } = require('../src/RevisionList');
 

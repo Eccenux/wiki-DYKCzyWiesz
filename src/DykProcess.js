@@ -126,12 +126,25 @@ class DykProcess {
 		// 	clockStart = editDate.toISOString().slice(0, 10) + ' 23:59:59';
 		// }
 		// making content
+		let tpl = `{{CW/weryfikacja
+		| artykuł        = ${D.wgTitle}
+		| przypisy       = ${Dv.refs}
+		| ilustracje     = ${Dv.images}
+		| 1. autorstwo   = ${Dv.author}
+		| 2. autorstwo   = 
+		| nominacja      = ${Dv.signature}
+		| status         = 
+		| 1. sprawdzenie = 
+		| 2. sprawdzenie = 
+		| 3. sprawdzenie = 
+		| 4. sprawdzenie = 
+		}}`.replace(/\n\t+/g, '\n')
 		let input = `== [[${subpage}|${D.wgTitle}]] ==\n`
 			+ '<!-- artykuł zgłoszony za pomocą gadżetu CzyWiesz -->\n'
 			+ `{{licznik czasu|start=${clockStart}|zdarzenie=Dyskusja|rgz=ż|dni=30}}\n`
 			+ Dv.file         //FILE is already with \n at the end
 			+ Dv.question     //QUESTION is already with \n at the end
-			+ '{' + '{Wikiprojekt:Czy wiesz/weryfikacja|' + D.wgTitle + '|' + Dv.refs + '|' + Dv.images + '|' + Dv.author + '|' + Dv.signature + '|?|?|?}}\n'
+			+ tpl + '\n'
 			+ (Dv.comment ? Dv.comment + ' ' : '') + '~~' + '~~'
 		;
 

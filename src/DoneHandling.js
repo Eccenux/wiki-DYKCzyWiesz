@@ -68,7 +68,7 @@ class DoneHandling {
 
 	/**
 	 * Init done table.
-	 * [[Wikiprojekt:Czy wiesz/weryfikacja]]
+	 * [[Szablon:CW/weryfikacja]]
 	 * @param {Element} item .
 	 * @param {Boolean} isSubpage .
 	 */
@@ -129,7 +129,7 @@ class DoneHandling {
 						<li>Dodaj zgłoszenie <a href="${mw.util.getUrl(D.getBaseDone(), {action:'edit'})}" class="czywiesz-external" target="_blank">do listy ocenionych</a>.
 						<li>W treści zgłoszenia:
 							<ul>
-								<li>W szablonie <code>Wikiprojekt:Czy wiesz/weryfikacja</code> dodaj parametr <code>status=zakończone</code>.
+								<li>W szablonie <code>CW/weryfikacja</code> dodaj parametr <code>status=zakończone</code>.
 								<li>W szablonie <code>licznik czasu</code> zmniejsz liczbę dni (możesz ustawić <code>dni=1</code>).
 								<li>Dopisz komentarz wpisując <code>{{Załatwione}}</code>.
 							</ul>
@@ -169,7 +169,7 @@ class DoneHandling {
 				return;
 			}
 			dd.update(`
-				<p>✅ Cofnięcie udane. <a href="${mw.util.getUrl(subpageTitle, {action:'edit'})}">Zmień licznik i dodaj powód otwarcia zgłoszenia</a>.</p>
+				<p>✅ Cofnięcie udane. <a href="${mw.util.getUrl(subpageTitle, {action:'edit'})}">Zmień licznik i dodaj powód otwarcia zgłoszenia</a> (możesz też ustawić status na „problemy”).</p>
 				<p><small>Możesz też sprawdzić <a href="${contribHref}" class="czywiesz-external" target="_blank">swój wkład</a></small>.</p>
 			`);
 			dd.forceResize();
@@ -353,6 +353,31 @@ class DoneHandling {
 	}
 
 	/**
+	 * Change status in main tpl.
+	 * @private
+	 * @param {String} wiki Wiki code with the template(s).
+	 * @param {String} newStatus .
+	 */
+	statusChange(wiki, newStatus) {
+		// oznaczenie zakończenia w tabeli
+		wiki = wiki.replace(/(\{\{CW\/weryfikacja)([^}]+)(\}\})/g, (a, start, body, end) => {
+			body = body.replace(/ *\| *status *=[^|}]+/g, '');
+			let posPipe = body.indexOf('|');
+			let posEq = body.indexOf('=', posPipe);
+			let padLen = posEq - posPipe;
+			let status = '| status'.padEnd(padLen, ' ') + '= ' + newStatus;
+			let posCheck = body.indexOf('| 1. sprawdzenie');
+			if (posCheck > 0) {
+				body = body.slice(0, posCheck) + status + '\n' + body.slice(posCheck);
+			} else {
+				body = body.replace(/\n+$/, '') + '\n' + status + '\n';
+			}
+			return `${start}${body}${end}`;
+		});
+		return wiki;
+	}
+
+	/**
 	 * Mark subpage as done.
 	 * @param {String} subpageTitle Subpage name / title.
 	 * @param {String} summaryDone Done info.
@@ -371,10 +396,7 @@ class DoneHandling {
 			return endCounter(tpl);
 		});
 		// oznaczenie zakończenia w tabeli
-		wiki = wiki.replace(/(\{\{Wikiprojekt:Czy wiesz\/weryfikacja)([^}]+)(\}\})/g, (a, start, body, end) => {
-			body = body.replace(/ *\| *status *=[^|}]+/g, '');
-			return `${start}|status=zakończone${body}${end}`;
-		});
+		wiki = this.statusChange(wiki, 'zakończone');
 
 		// dodanie oznaczenia dyskusji
 		wiki += '\n\n{{Załatwione}} artykuł oceniony ~~~~.';
@@ -409,10 +431,7 @@ class DoneHandling {
 		});
 
 		// usunięcie statusu zakończenia w tabeli
-		wiki = wiki.replace(/(\{\{Wikiprojekt:Czy wiesz\/weryfikacja)([^}]+)(\}\})/g, (a, start, body, end) => {
-			body = body.replace(/ *\| *status *=[^|}]+/g, '');
-			return `${start}${body}${end}`;
-		});
+		wiki = this.statusChange(wiki, '');
 
 		// usunięcie oznaczenia dyskusji
 		wiki = wiki.replace(/\{\{(Załatwione|Zrobione)\}\}/i, '{{s|$1}}');
