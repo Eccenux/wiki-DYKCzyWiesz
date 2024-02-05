@@ -19,14 +19,14 @@ class Wikiprojects {
 					const list = data.wikiprojects.map(w => ({"name":w.name,"page":w.page}));
 
 					this.list = list;
-			        
-			        this.$select = $('<select class="czywiesz-wikiproject"></select>').css('vertical-align', 'middle');
-			        this.$select.append('<option value="none">-- (żaden) --</option>');
+					
+					this.$select = $('<select class="czywiesz-wikiproject"></select>').css('vertical-align', 'middle');
+					this.$select.append('<option value="none">-- (żaden) --</option>');
 
-			        for (var i=0; i<this.list.length; i++) {
-			            if (typeof(this.list[i]) == 'function') continue; //on IE wikibits adds indexOf method for arrays. skip it.
-			            $('<option>').attr('value',i).text(this.list[i].name).appendTo(this.$select);
-			        }
+					for (var i=0; i<this.list.length; i++) {
+						if (typeof(this.list[i]) == 'function') continue; //on IE wikibits adds indexOf method for arrays. skip it.
+						$('<option>').attr('value',i).text(this.list[i].name).appendTo(this.$select);
+					}
 
 					$('#CzyWieszWikiprojectContainer small').remove();
 					$('#CzyWieszWikiprojectContainer').append(this.$select.clone());

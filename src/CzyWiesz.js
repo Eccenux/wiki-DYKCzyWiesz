@@ -106,13 +106,13 @@ function createDyk(DYKnomination) {
 	DYKnomination.emailauthor = async function (button) {
 		var D = DYKnomination;
 
-        var opis = prompt('Opisz, co się stało. Bez tego twórca nie będzie wiedział, co naprawiać.','');
-        if (!opis) {
-            alert('Nic nie wyślę twórcy, dopóki nie opiszesz błędu swoimi słowami. Bez Twojego opisu twórca nie będzie wiedział co naprawiać.');
-            return;
-        }
-        D.log('DYKnomination.errors: ', D.errors); //add potential errors, before stringifying all logs
-        var emailbody = opis + '\n\n' + JSON.stringify(D.logs);
+		var opis = prompt('Opisz, co się stało. Bez tego twórca nie będzie wiedział, co naprawiać.','');
+		if (!opis) {
+			alert('Nic nie wyślę twórcy, dopóki nie opiszesz błędu swoimi słowami. Bez Twojego opisu twórca nie będzie wiedział co naprawiać.');
+			return;
+		}
+		D.log('DYKnomination.errors: ', D.errors); //add potential errors, before stringifying all logs
+		var emailbody = opis + '\n\n' + JSON.stringify(D.logs);
 		
 		//throbber and cursor-wait – until e-mail sent
 		$('.CzyWieszEmailDoAutoraWyslano').html('<img src="https://upload.wikimedia.org/wikipedia/commons/1/1a/Denken.gif" width="10" height="10">');

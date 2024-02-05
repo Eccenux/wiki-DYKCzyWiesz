@@ -107,13 +107,13 @@ function createDyk(DYKnomination) {
 	DYKnomination.emailauthor = async function (button) {
 		var D = DYKnomination;
 
-        var opis = prompt('Opisz, co się stało. Bez tego twórca nie będzie wiedział, co naprawiać.','');
-        if (!opis) {
-            alert('Nic nie wyślę twórcy, dopóki nie opiszesz błędu swoimi słowami. Bez Twojego opisu twórca nie będzie wiedział co naprawiać.');
-            return;
-        }
-        D.log('DYKnomination.errors: ', D.errors); //add potential errors, before stringifying all logs
-        var emailbody = opis + '\n\n' + JSON.stringify(D.logs);
+		var opis = prompt('Opisz, co się stało. Bez tego twórca nie będzie wiedział, co naprawiać.','');
+		if (!opis) {
+			alert('Nic nie wyślę twórcy, dopóki nie opiszesz błędu swoimi słowami. Bez Twojego opisu twórca nie będzie wiedział co naprawiać.');
+			return;
+		}
+		D.log('DYKnomination.errors: ', D.errors); //add potential errors, before stringifying all logs
+		var emailbody = opis + '\n\n' + JSON.stringify(D.logs);
 		
 		//throbber and cursor-wait – until e-mail sent
 		$('.CzyWieszEmailDoAutoraWyslano').html('<img src="https://upload.wikimedia.org/wikipedia/commons/1/1a/Denken.gif" width="10" height="10">');
@@ -2204,14 +2204,14 @@ class Wikiprojects {
 					const list = data.wikiprojects.map(w => ({"name":w.name,"page":w.page}));
 
 					this.list = list;
-			        
-			        this.$select = $('<select class="czywiesz-wikiproject"></select>').css('vertical-align', 'middle');
-			        this.$select.append('<option value="none">-- (żaden) --</option>');
+					
+					this.$select = $('<select class="czywiesz-wikiproject"></select>').css('vertical-align', 'middle');
+					this.$select.append('<option value="none">-- (żaden) --</option>');
 
-			        for (var i=0; i<this.list.length; i++) {
-			            if (typeof(this.list[i]) == 'function') continue; //on IE wikibits adds indexOf method for arrays. skip it.
-			            $('<option>').attr('value',i).text(this.list[i].name).appendTo(this.$select);
-			        }
+					for (var i=0; i<this.list.length; i++) {
+						if (typeof(this.list[i]) == 'function') continue; //on IE wikibits adds indexOf method for arrays. skip it.
+						$('<option>').attr('value',i).text(this.list[i].name).appendTo(this.$select);
+					}
 
 					$('#CzyWieszWikiprojectContainer small').remove();
 					$('#CzyWieszWikiprojectContainer').append(this.$select.clone());
