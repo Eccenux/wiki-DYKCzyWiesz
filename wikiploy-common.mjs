@@ -8,7 +8,8 @@ import { DeployConfig, userPrompt } from 'wikiploy';
 export function addConfig(configs, site, isRelease) {
 	let deploymentName = isRelease ? 'MediaWiki:Gadget-CzyWiesz' : '~/CzyWiesz-dev';
 	configs.push(new DeployConfig({
-		src: 'dist/CzyWiesz.js',
+		// src: 'dist/CzyWiesz.js',
+		src: 'dist/CzyWiesz.min.js',
 		dst: `${deploymentName}.js`,
 		site,
 		nowiki: true,

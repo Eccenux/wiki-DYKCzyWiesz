@@ -4,7 +4,7 @@
 /* eslint-disable indent */
 /* eslint-disable array-bracket-newline */
 
-/**
+/*!
  * Nominacje do Czy-Wiesza aka DYKnomination (Did You Know).
  * 
  * Instrukcja:
@@ -2278,8 +2278,8 @@ module.exports = { apiAjax, apiAsync };
 
 },{}],12:[function(require,module,exports){
 let versionInfo = {
-	version:'6.2.1',
-	buildDay:'2024-02-04',
+	version:'6.2.2',
+	buildDay:'2024-02-05',
 }
 
 module.exports = { versionInfo };

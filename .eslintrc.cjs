@@ -9,6 +9,9 @@ module.exports = {
 		"$": true,
 		"mw": true,
 	},
+	"ignorePatterns": [
+		"dist/*",
+	],
 	"extends": "eslint:recommended",
 	"overrides": [{
 		"env": {

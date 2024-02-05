@@ -3,7 +3,7 @@
 /* eslint-disable indent */
 /* eslint-disable array-bracket-newline */
 
-/**
+/*!
  * Nominacje do Czy-Wiesza aka DYKnomination (Did You Know).
  * 
  * Instrukcja:
