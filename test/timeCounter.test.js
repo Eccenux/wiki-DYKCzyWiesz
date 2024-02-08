@@ -1,4 +1,3 @@
-/* global describe, it */
 let { assert } = require('chai');
 let { timeCounter, endCounter } = require('../src/timeCounter');
 
@@ -79,6 +78,18 @@ describe('timeCounter', () => {
 			let fakeNow = new Date('2024-01-02 12:00:00'); // past from tpl
 			let result = endCounter(tpl, fakeNow);
 			assert.equal(result, tpl);
+		});
+		it('should keep: nie archiwizuj=tak', () => {
+			let tpl = '{{licznik czasu|start=2024-01-10 12:00:00|nie archiwizuj=tak|dni=30}}';
+			let fakeNow = new Date('2024-01-12 14:00:00');
+			let exp = '{{licznik czasu|start=2024-01-10 12:00:00|nie archiwizuj=tak|dni=2}}';
+			let result = endCounter(tpl, fakeNow);
+			assert.equal(result, exp);
+
+			tpl = '{{licznik czasu|start=2024-01-10 12:00:00|dni=30|nie archiwizuj=tak}}';
+			result = endCounter(tpl, fakeNow);
+			assert.isTrue(result.includes('dni=2'), `${result} should contain dni`);
+			assert.isTrue(result.includes('nie archiwizuj=tak'), `${result} should contain nie archiwizuj`);
 		});
 	});
 });

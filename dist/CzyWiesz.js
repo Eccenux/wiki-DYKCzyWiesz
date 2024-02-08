@@ -1558,7 +1558,7 @@ class DykProcess {
 		}}`.replace(/\n\t+/g, '\n')
 		let input = `== [[${subpage}|${D.wgTitle}]] ==\n`
 			+ '<!-- artykuł zgłoszony za pomocą gadżetu CzyWiesz -->\n'
-			+ `{{licznik czasu|start=${clockStart}|zdarzenie=Dyskusja|rgz=ż|dni=30}}\n`
+			+ `{{licznik czasu|start=${clockStart}|zdarzenie=Dyskusja|rgz=ż|dni=30|nie archiwizuj=tak}}\n`
 			+ Dv.file         //FILE is already with \n at the end
 			+ Dv.question     //QUESTION is already with \n at the end
 			+ tpl + '\n'
@@ -2278,8 +2278,8 @@ module.exports = { apiAjax, apiAsync };
 
 },{}],12:[function(require,module,exports){
 let versionInfo = {
-	version:'6.2.2',
-	buildDay:'2024-02-05',
+	version:'6.2.3',
+	buildDay:'2024-02-08',
 }
 
 module.exports = { versionInfo };
