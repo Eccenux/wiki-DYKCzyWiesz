@@ -142,7 +142,7 @@ class DykProcess {
 		}}`.replace(/\n\t+/g, '\n')
 		let input = `== [[${subpage}|${D.wgTitle}]] ==\n`
 			+ '<!-- artykuł zgłoszony za pomocą gadżetu CzyWiesz -->\n'
-			+ `{{licznik czasu|start=${clockStart}|zdarzenie=Dyskusja|rgz=ż|dni=30}}\n`
+			+ `{{licznik czasu|start=${clockStart}|zdarzenie=Dyskusja|rgz=ż|dni=30|nie archiwizuj=tak}}\n`
 			+ Dv.file         //FILE is already with \n at the end
 			+ Dv.question     //QUESTION is already with \n at the end
 			+ tpl + '\n'
