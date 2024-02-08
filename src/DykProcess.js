@@ -279,8 +279,12 @@ class DykProcess {
 					token : D.edittoken
 				},
 			});
-			await apiAsync(requestData(Dv.author));
-			await apiAsync(requestData(Dv.author2));
+			if (Dv.author.length > 1) {
+				await apiAsync(requestData(Dv.author));
+			}
+			if (Dv.author2.length > 1) {
+				await apiAsync(requestData(Dv.author2));
+			}
 		} catch (info) {
 			D.errors.push('Błąd informowania autora: ' + info);
 			D.errors.show();
