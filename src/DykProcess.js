@@ -143,8 +143,10 @@ class DykProcess {
 		let input = `== [[${subpage}|${D.wgTitle}]] ==\n`
 			+ '<!-- artykuł zgłoszony za pomocą gadżetu CzyWiesz -->\n'
 			+ `{{licznik czasu|start=${clockStart}|zdarzenie=Dyskusja|rgz=ż|dni=30|nie archiwizuj=tak}}\n`
+			+ `<!-- początek zajawki; autorstwo: ${Dv.author} -->\n`
 			+ Dv.file         //FILE is already with \n at the end
 			+ Dv.question     //QUESTION is already with \n at the end
+			+ '<!-- koniec zajawki -->\n'
 			+ tpl + '\n'
 			+ (Dv.comment ? Dv.comment + ' ' : '') + '~~' + '~~'
 		;
