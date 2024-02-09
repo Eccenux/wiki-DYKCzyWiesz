@@ -32,7 +32,7 @@ class DoneHandling {
 	init() {
 		const items = document.querySelectorAll(this.doneSelector);
 		if (items.length) {
-			const isSubpage = items.length == 1;
+			const isSubpage = items.length == 1 && this.canBeSubpage(this.pageName);
 			mw.loader.using( 'oojs-ui-core' ).done(() => {
 				for (const item of items) {
 					this.initItem(item, isSubpage);
@@ -44,6 +44,12 @@ class DoneHandling {
 		}
 	}
 
+	/** @private Check if it seems like a subpage. */
+	canBeSubpage(pageName) {
+		// should we actually check for current+previous year? (don't allow edits for old stuff?)
+		// make sure we don't treat single nomination on /ocenione as a subpage.
+		return pageName.includes('/propozycje/2');
+	}
 
 	/**
 	 * Check if moved to rated.
