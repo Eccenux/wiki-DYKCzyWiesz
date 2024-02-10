@@ -5,10 +5,10 @@
 		"test": "mocha",
 		"build-stamp": "node src/build/versionStamp.js",
 		"build-less": "lessc src/less/main.less dist/CzyWiesz.css",
-		"build-js": "browserify src/main.js -o dist/CzyWiesz.js",
+		"build-js": "gulp build",
 		"build-strip": "node strip.js",
 		"build-full": "npm run build-less && npm run build-js && node -e \"console.log('Build done');\" ",
-		"build": "npm run build-stamp && npm run build-js && npm run build-strip && node -e \"console.log('Build done');\" ",
+		"build": "gulp build",
 		"deploy-dev": "node wikiploy-dev.mjs",
 		"deploy": "node wikiploy.mjs",
 		"rollout-dev": "npm run build && npm run deploy-dev",
@@ -18,9 +18,12 @@
 		"browserify": "17.x",
 		"chai": "4.x",
 		"eslint": "8.x",
+		"gulp": "4.x",
 		"less": "4.x",
 		"mocha": "10.x",
-		"strip-comments": "2.0.x"
+		"strip-comments": "2.0.x",
+		"vinyl-buffer": "1.x",
+		"vinyl-source-stream": "2.x"
 	},
 	"dependencies": {
 		"wikiploy": "1.x"
