@@ -14,15 +14,16 @@
 			"priority": 0
 		},
 		
+		// not using npm build, it is slower
 		{
 			"text": "build",
-			"tooltip": "Run the browserify build.",
+			"tooltip": "Run the gulp build.",
 			"color": "lightgreen",
-			"commandType": "script",
-			"command": "build",
+			"commandType": "palette",
+			"command": "workbench.action.tasks.runTask|Build task",
 			"priority": 0
 		},
-		
+
 		// running deployment as a task (so that prompts work)
 		// note that "Run dev deploy" is a label from tasks.json 
 		{

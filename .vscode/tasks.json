@@ -10,6 +10,16 @@
 			"detail": "mocha"
 		},
 		{
+			"label": "Build task",
+			"command": "node",
+			"args": [
+				"./node_modules/gulp/bin/gulp.js"
+			],
+			"options": {
+			  "cwd": "${workspaceFolder}/"
+			}
+		},
+		{
 			"type": "npm",
 			"script": "deploy-dev",
 			"group": "none",

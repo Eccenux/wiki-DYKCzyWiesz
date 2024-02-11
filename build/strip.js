@@ -35,4 +35,7 @@ function stripJs(filePath) {
 }
 
 // strip
-stripJs('dist/CzyWiesz');
+// stripJs('dist/CzyWiesz');
+
+module.exports = { stripJs };
+

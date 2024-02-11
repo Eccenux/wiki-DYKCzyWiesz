@@ -19,4 +19,6 @@ async function replaceVersionDay() {
 }
 
 // EXECUTE
-replaceVersionDay();
+// replaceVersionDay();
+
+module.exports = { replaceVersionDay };
