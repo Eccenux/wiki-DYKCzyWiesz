@@ -26,12 +26,22 @@
 
 		// running deployment as a task (so that prompts work)
 		// note that "Run dev deploy" is a label from tasks.json 
+
+		// post-build quick rollout
 		{
-			"text": "wikiploy-dev",
-			"tooltip": "Deploy pre-built script.",
+			"text": "(only) deploy-dev",
+			"tooltip": "deploy (wikiploy).",
 			"color": "lightgreen",
 			"commandType": "palette",
 			"command": "workbench.action.tasks.runTask|Run dev deploy",
+			"priority": 0
+		},
+		{
+			"text": "(only) deploy-RELEASE",
+			"tooltip": "deploy (wikiploy).",
+			"color": "#ffbb99",
+			"commandType": "palette",
+			"command": "workbench.action.tasks.runTask|Run deploy",
 			"priority": 0
 		},
 
@@ -47,27 +57,9 @@
 		{
 			"text": "build & deploy-RELEASE",
 			"tooltip": "Build (browserify) and deploy (wikiploy).",
-			"color": "lightgreen",
+			"color": "#ffbb99",
 			"commandType": "palette",
 			"command": "workbench.action.tasks.runTask|Run rollout",
-			"priority": 0
-		},
-
-		// post-build quick rollout
-		{
-			"text": "(only) deploy-dev",
-			"tooltip": "deploy (wikiploy).",
-			"color": "lightgreen",
-			"commandType": "palette",
-			"command": "workbench.action.tasks.runTask|Run dev deploy",
-			"priority": 0
-		},
-		{
-			"text": "(only) deploy-RELEASE",
-			"tooltip": "deploy (wikiploy).",
-			"color": "lightgreen",
-			"commandType": "palette",
-			"command": "workbench.action.tasks.runTask|Run deploy",
 			"priority": 0
 		}
 	]
