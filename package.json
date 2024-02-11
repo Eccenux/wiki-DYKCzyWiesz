@@ -26,6 +26,6 @@
 		"vinyl-source-stream": "2.x"
 	},
 	"dependencies": {
-		"wikiploy": "1.x"
+		"wikiploy": "2.x"
 	}
 }
