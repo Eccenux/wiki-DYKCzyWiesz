@@ -30,16 +30,26 @@ class DoneHandling {
 	/** Init when ready. */
 	init() {
 		const items = document.querySelectorAll(this.doneSelector);
+		let prepare = false;
+		let isSubpage;
+
+		// check where are we
 		if (items.length) {
-			const isSubpage = items.length == 1 && this.canBeSubpage(this.pageName);
+			isSubpage = items.length == 1 && this.canBeSubpage(this.pageName);
+			prepare = true;
+			if (isSubpage && this.setupArchived()) {
+				prepare = false;
+			}
+		}
+
+		// fire when ready
+		if (prepare) {
 			mw.loader.using( 'oojs-ui-core' ).done(() => {
 				for (const item of items) {
 					this.initItem(item, isSubpage);
 				}
 				mw.hook('userjs.DYKnomination.DoneHandling.ready').fire(this);
 			});
-		} else {
-			mw.hook('userjs.DYKnomination.DoneHandling.ready').fire(this);
 		}
 	}
 
@@ -48,6 +58,15 @@ class DoneHandling {
 		// should we actually check for current+previous year? (don't allow edits for old stuff?)
 		// make sure we don't treat single nomination on /ocenione as a subpage.
 		return pageName.includes('/propozycje/2');
+	}
+
+	/** @private Check if subpage was archived and setup. */
+	setupArchived() {
+		if (document.querySelector('.dyk-arch')) {
+			$('.dyk-end-return').hide();
+			return true;
+		}
+		return false;
 	}
 
 	/**
