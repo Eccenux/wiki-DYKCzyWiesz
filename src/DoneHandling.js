@@ -63,7 +63,7 @@ class DoneHandling {
 	/** @private Check if subpage was archived and setup. */
 	setupArchived() {
 		if (document.querySelector('.dyk-arch')) {
-			$('.dyk-end-return').hide();
+			$('.dyk-end-return, .dyk-end-info').hide();
 			return true;
 		}
 		return false;

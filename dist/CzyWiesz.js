@@ -383,7 +383,7 @@ class DoneHandling {
 	/** @private Check if subpage was archived and setup. */
 	setupArchived() {
 		if (document.querySelector('.dyk-arch')) {
-			$('.dyk-end-return').hide();
+			$('.dyk-end-return, .dyk-end-info').hide();
 			return true;
 		}
 		return false;
@@ -2312,7 +2312,7 @@ module.exports = { apiAjax, apiAsync };
 
 },{}],12:[function(require,module,exports){
 let versionInfo = {
-	version:'6.4.0',
+	version:'6.4.1',
 	buildDay:'2024-02-16',
 }
 
