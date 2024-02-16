@@ -4,7 +4,6 @@ const { DoneDialog } = require("./DoneDialog");
 const { apiAsync } = require("./asyncAjax");
 const { stdConfirm } = require("./simpleDialogs");
 const { htmlspecialchars } = require("./stringOps");
-const { endCounter } = require("./timeCounter");
 
 /**
  * Przenoszenie do ocenionych.
@@ -241,7 +240,7 @@ class DoneHandling {
 				return;
 			}
 			dd.update(`
-				<p>✅ Cofnięcie udane. <a href="${mw.util.getUrl(subpageTitle, {action:'edit'})}">Zmień licznik i dodaj powód otwarcia zgłoszenia</a> (możesz też ustawić status na „problemy”).</p>
+				<p>✅ Cofnięcie udane. <a href="${mw.util.getUrl(subpageTitle, {action:'edit'})}">Dodaj powód otwarcia zgłoszenia</a> (możesz też ustawić status na „problemy”).</p>
 				<p><small>Możesz też sprawdzić <a href="${contribHref}" class="czywiesz-external" target="_blank">swój wkład</a></small>.</p>
 			`);
 			dd.forceResize();
@@ -453,8 +452,9 @@ class DoneHandling {
 		});
 
 		// zatrzymanie czasu
-		wiki = wiki.replace(/\{\{licznik czasu[^}]+\}\}/, (tpl) => {
-			return endCounter(tpl);
+		wiki = wiki.replace(/(\{\{licznik czasu)([^/][^}]+)(\}\})/, (a, start, body, end) => {
+			body = body.replace(/\|\s*koniec\s*=[^|}]*/, '');
+			return `${start}/koniec${body}|koniec={{subst:#timel:Y-m-d H:i:s}}${end}`;
 		});
 		// oznaczenie zakończenia w tabeli
 		wiki = this.statusChange(wiki, 'zakończone');
@@ -494,6 +494,11 @@ class DoneHandling {
 		// usunięcie statusu zakończenia w tabeli
 		wiki = this.statusChange(wiki, '');
 
+		// wznowienie czasu
+		wiki = wiki.replace(/(\{\{licznik czasu)\/koniec([^}]+)(\}\})/, (a, start, body, end) => {
+			body = body.replace(/\|\s*koniec\s*=[^|}]*/, '');
+			return `${start}${body}${end}`;
+		});
 		// usunięcie oznaczenia dyskusji
 		wiki = wiki.replace(/\{\{(Załatwione|Zrobione)\}\}/ig, '{{s|$1}}');
 
