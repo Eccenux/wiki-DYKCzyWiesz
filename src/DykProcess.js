@@ -146,6 +146,10 @@ class DykProcess {
 			+ Dv.file         //FILE is already with \n at the end
 			+ Dv.question     //QUESTION is already with \n at the end
 			+ tpl + '\n'
+			+ '<!--\n'
+			+ '	Uwaga! Jeśli artykuł ma istotne błędy, to w CW/weryfikacja ustaw:\n'
+			+ '	status = problemy \n'
+			+ '-->\n'
 			+ (Dv.comment ? Dv.comment + ' ' : '') + '~~' + '~~'
 		;
 

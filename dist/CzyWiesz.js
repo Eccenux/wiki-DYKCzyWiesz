@@ -26,6 +26,10 @@ function createDyk(DYKnomination) {
 	
 	DYKnomination.config = config;
 
+	DYKnomination.options = {
+		enabledClose: false,
+	};
+
 	/** Base page for nominations. */
 	DYKnomination.getBaseNew = function () {
 		return this.debugmode ? config.debugBase + '/propozycje' : 'Wikiprojekt:Czy wiesz/propozycje';
@@ -406,8 +410,9 @@ class DoneHandling {
 		let alreadyMoved = this.checkItemDone(item, isSubpage);
 		let isAdmin = mw.config.get('wgUserGroups').includes('sysop');
 		//let addRollback = isSubpage && isAdmin;
-		let addRollback = isAdmin;
-		if (alreadyMoved && !addRollback) {
+		let addRollback = isAdmin && alreadyMoved;
+		let addClose = this.core.options.enabledClose && !alreadyMoved;
+		if (!addClose && !addRollback) {
 			return false;
 		}
 
@@ -419,7 +424,7 @@ class DoneHandling {
 		}
 		// move action
 		let article = link.textContent;
-		if (!alreadyMoved) {
+		if (addClose) {
 			let button = this.createButton(item, 'Zakończ', () => {
 				if (button.isDisabled()) {
 					OO.ui.alert('Akcja już wykonana. Możesz spróbować ponownie po odświeżeniu strony.');
@@ -431,7 +436,8 @@ class DoneHandling {
 					}
 				});
 			});
-		} else if (addRollback) {
+		}
+		if (addRollback) {
 			let button = this.createButton(item, 'Cofnij do nominacji', () => {
 				if (button.isDisabled()) {
 					OO.ui.alert('Akcja już wykonana. Możesz spróbować ponownie po odświeżeniu strony.');
@@ -1578,6 +1584,10 @@ class DykProcess {
 			+ Dv.file         //FILE is already with \n at the end
 			+ Dv.question     //QUESTION is already with \n at the end
 			+ tpl + '\n'
+			+ '<!--\n'
+			+ '	Uwaga! Jeśli artykuł ma istotne błędy, to w CW/weryfikacja ustaw:\n'
+			+ '	status = problemy \n'
+			+ '-->\n'
 			+ (Dv.comment ? Dv.comment + ' ' : '') + '~~' + '~~'
 		;
 
@@ -2298,7 +2308,7 @@ module.exports = { apiAjax, apiAsync };
 
 },{}],12:[function(require,module,exports){
 let versionInfo = {
-	version:'6.5.0',
+	version:'6.6.0',
 	buildDay:'2024-02-17',
 }
 

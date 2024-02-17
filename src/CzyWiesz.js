@@ -25,6 +25,10 @@ function createDyk(DYKnomination) {
 	
 	DYKnomination.config = config;
 
+	DYKnomination.options = {
+		enabledClose: false,
+	};
+
 	/** Base page for nominations. */
 	DYKnomination.getBaseNew = function () {
 		return this.debugmode ? config.debugBase + '/propozycje' : 'Wikiprojekt:Czy wiesz/propozycje';

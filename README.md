@@ -33,14 +33,25 @@ Więcej info: [*Deploy script* w instrukcji z Wikiploy](https://github.com/Eccen
 Wersja dev z włączonym debug:
 ```js
 // testowa wersja DYK [[Wikipedia:Narzędzia/CzyWiesz]]
-if (mw.config.get('wgNamespaceNumber') === 0 || mw.config.get('wgPageName')=='Wikipedia:Narzędzia/CzyWiesz') {
+if ([0, 2].includes(mw.config.get('wgNamespaceNumber'))) {
 	mw.loader.using("mediawiki.util, jquery.ui, ext.gadget.lib-wikiprojects".split(/, ?/)).then(function() {
 		window.DYKnomination_is_beta = true;
 		mw.hook('userjs.DYKnomination.loaded').add(function (DYKnomination) {
 			console.log('[DYKnomination]', 'loaded v' + DYKnomination.about.version);
+			DYKnomination.options.enabledClose = true;
 			DYKnomination.debugmode = true;
 		});
 		importScript('Wikipedysta:Nux/CzyWiesz-dev.js');
+	});
+}
+// Możliwość normalnego zamykania zgłoszeń (DoneHandling) i test kodu gadżetu
+if ([102].includes(mw.config.get('wgNamespaceNumber'))) {
+	mw.loader.using("mediawiki.util, jquery.ui, ext.gadget.lib-wikiprojects".split(/, ?/)).then(function() {
+		mw.hook('userjs.DYKnomination.loaded').add(function (DYKnomination) {
+			console.log('[DYKnomination]', 'loaded v' + DYKnomination.about.version);
+			DYKnomination.options.enabledClose = true;
+		});
+		importScript('MediaWiki:Gadget-CzyWiesz.js');
 	});
 }
 ```

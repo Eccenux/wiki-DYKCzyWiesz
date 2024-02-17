@@ -100,8 +100,9 @@ class DoneHandling {
 		let alreadyMoved = this.checkItemDone(item, isSubpage);
 		let isAdmin = mw.config.get('wgUserGroups').includes('sysop');
 		//let addRollback = isSubpage && isAdmin;
-		let addRollback = isAdmin;
-		if (alreadyMoved && !addRollback) {
+		let addRollback = isAdmin && alreadyMoved;
+		let addClose = this.core.options.enabledClose && !alreadyMoved;
+		if (!addClose && !addRollback) {
 			return false;
 		}
 
@@ -113,7 +114,7 @@ class DoneHandling {
 		}
 		// move action
 		let article = link.textContent;
-		if (!alreadyMoved) {
+		if (addClose) {
 			let button = this.createButton(item, 'Zakończ', () => {
 				if (button.isDisabled()) {
 					OO.ui.alert('Akcja już wykonana. Możesz spróbować ponownie po odświeżeniu strony.');
@@ -125,7 +126,8 @@ class DoneHandling {
 					}
 				});
 			});
-		} else if (addRollback) {
+		}
+		if (addRollback) {
 			let button = this.createButton(item, 'Cofnij do nominacji', () => {
 				if (button.isDisabled()) {
 					OO.ui.alert('Akcja już wykonana. Możesz spróbować ponownie po odświeżeniu strony.');

@@ -26,6 +26,14 @@
 
 		// running deployment as a task (so that prompts work)
 		// note that "Run dev deploy" is a label from tasks.json 
+		{
+			"text": "build & deploy-dev",
+			"tooltip": "Build (browserify) and deploy (wikiploy).",
+			"color": "lightgreen",
+			"commandType": "palette",
+			"command": "workbench.action.tasks.runTask|Run dev rollout",
+			"priority": 0
+		},
 
 		// post-build quick rollout
 		{
@@ -46,14 +54,6 @@
 		},
 
 		// this is our one-click rollout
-		{
-			"text": "build & deploy-dev",
-			"tooltip": "Build (browserify) and deploy (wikiploy).",
-			"color": "lightgreen",
-			"commandType": "palette",
-			"command": "workbench.action.tasks.runTask|Run dev rollout",
-			"priority": 0
-		},
 		{
 			"text": "build & deploy-RELEASE",
 			"tooltip": "Build (browserify) and deploy (wikiploy).",
