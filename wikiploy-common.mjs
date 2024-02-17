@@ -5,11 +5,11 @@ import { DeployConfig, userPrompt } from 'wikiploy';
  * @param {Array} configs DeployConfig array.
  * @param {String} site Domian of a MW site.
  */
-export function addConfig(configs, site, isRelease) {
+export function addConfig(configs, site, isRelease = false) {
 	let deploymentName = isRelease ? 'MediaWiki:Gadget-CzyWiesz' : '~/CzyWiesz-dev';
+	let ext = isRelease ? '.prod.js' : '.min.js';
 	configs.push(new DeployConfig({
-		// src: 'dist/CzyWiesz.js',
-		src: 'dist/CzyWiesz.min.js',
+		src: 'dist/CzyWiesz' + ext,
 		dst: `${deploymentName}.js`,
 		site,
 		nowiki: true,

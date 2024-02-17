@@ -3,15 +3,11 @@
 	"type": "commonjs",
 	"scripts": {
 		"test": "mocha",
-		"build-stamp": "node src/build/versionStamp.js",
-		"build-less": "lessc src/less/main.less dist/CzyWiesz.css",
-		"build-js": "gulp build",
-		"build-strip": "node strip.js",
-		"build-full": "npm run build-less && npm run build-js && node -e \"console.log('Build done');\" ",
+		"build-dev": "gulp buildDev",
 		"build": "gulp build",
 		"deploy-dev": "node wikiploy-dev.mjs",
 		"deploy": "node wikiploy.mjs",
-		"rollout-dev": "npm run build && npm run deploy-dev",
+		"rollout-dev": "npm run build-dev && npm run deploy-dev",
 		"rollout": "npm run build && npm run deploy"
 	},
 	"devDependencies": {
@@ -21,7 +17,7 @@
 		"gulp": "4.x",
 		"less": "4.x",
 		"mocha": "10.x",
-		"strip-comments": "2.0.x",
+		"uglify-js": "^3.17.4",
 		"vinyl-buffer": "1.x",
 		"vinyl-source-stream": "2.x"
 	},

@@ -4,20 +4,6 @@
 /* eslint-disable indent */
 /* eslint-disable array-bracket-newline */
 
-/*!
- * Nominacje do Czy-Wiesza aka DYKnomination (Did You Know).
- * 
- * Instrukcja:
- * [[Wikipedia:Narzędzia/CzyWiesz]]
- * 
- * Historia zmian:
- * https://pl.wikipedia.org/w/index.php?title=MediaWiki:Gadget-CzyWiesz.js&action=history
- * 
- * Repozytorium:
- * https://github.com/Eccenux/wiki-DYKCzyWiesz
- * 
- * Wdrożone za pomocą: [[Wikipedia:Wikiploy]]
- */
 var DYKnomination = {};
 
 const { versionInfo } = require("./build/version");
@@ -2312,8 +2298,8 @@ module.exports = { apiAjax, apiAsync };
 
 },{}],12:[function(require,module,exports){
 let versionInfo = {
-	version:'6.4.1',
-	buildDay:'2024-02-16',
+	version:'6.5.0',
+	buildDay:'2024-02-17',
 }
 
 module.exports = { versionInfo };

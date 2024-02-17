@@ -1,37 +1,51 @@
 const fs = require('fs');
-const strip = require('strip-comments');
+const UglifyJS = require("uglify-js");
+
+const devOptions = {
+	compress: false,
+	mangle: false,
+	output: {
+		// preserve_line: true,
+		preamble: "",
+		// comments: /^!/,
+		// braces: false,
+		quote_style: 3,
+		beautify: true,
+		indent_level: "\t",	// only with beautify
+	}
+};
+// production/release
+const proOptions = {
+	compress: false,
+	mangle: {},
+	output: {},
+};
+
 
 /**
  * Strip JS, but keep readable.
  * @param {String} filePath Path without extension.
  */
-function stripJs(filePath) {
+function stripJs(filePath, headerPath="", dev=true) {
 	// Read the original JavaScript file
-	const originalCode = fs.readFileSync(filePath + '.js', 'utf8');
+	const code = fs.readFileSync(filePath + '.js', 'utf8');
 
-	// Options to preserve protected comments
-	const options = {
-		keepProtected: true,
-	};
+	// Options
+	const ext = dev ? '.min.js' : '.prod.js';
+	const options = structuredClone(dev ? devOptions : proOptions);
+	if (headerPath.length) {
+		options.output.preamble = fs.readFileSync(headerPath, 'utf8');
+	}
 
-	// Strip comments
-	let minifiedCode = strip(originalCode, options);
-	console.log('comments:', {before:originalCode.length, after:minifiedCode.length});
-	// Whitespace
-	// (note: could affect template strings in general, but should not be dangerous in this project)
-	const before = minifiedCode.length;
-	minifiedCode = minifiedCode
-		.replace(/\r/g, '')	// Windows
-		.replace(/[ \t]+\n/g, '\n')	// Line endings
-		.replace(/\n{2,}/g, '\n')	// Multiline
-	;
-	const after = minifiedCode.length
-	console.log('whitespace:', {before, after});
+	// Minify
+	const re = UglifyJS.minify(code, options);
+	if (re.error) console.error(re.error);
+	console.log('strip:', {before:code.length, after:re.code.length});
 
 	// Write the minified code to the new file
-	fs.writeFileSync(filePath + '.min.js', minifiedCode);
+	fs.writeFileSync(filePath + ext, re.code);
 
-	console.log('Comments stripped and the script saved as *.min.js.');
+	// console.log('Comments stripped and the script saved as *.min.js.');
 }
 
 // strip

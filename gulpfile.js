@@ -21,9 +21,15 @@ async function stamp(cb) {
 	await replaceVersionDay(); // Assuming replaceVersionDay is an async function
 	cb();
 }
-/** Very simply minify. */
-async function strip(cb) {
-	await stripJs('dist/CzyWiesz');
+/** Dev minify. */
+async function stripDev(cb) {
+	await stripJs('dist/CzyWiesz', 'src/_header.js');
+	cb();
+}
+/** Pro minify. */
+async function stripPro(cb) {
+	const dev = false;
+	await stripJs('dist/CzyWiesz', 'src/_header.js', dev);
 	cb();
 }
 
@@ -78,10 +84,14 @@ function compileTask(cb) {
 	return compile(false, cb);
 }
 
-const build = gulp.series(stamp, compileTask, strip);
+const buildDev = gulp.series(stamp, compileTask, stripDev);
+const buildPro = gulp.series(stamp, compileTask, stripPro);
+const build = gulp.series(stamp, compileTask, stripDev, stripPro);
 // Babel+uglify
-// const build = gulp.series(stamp, compileTask);
+// const buildPro = gulp.series(stamp, compileTask);
 
 exports.watch = gulp.series(stamp, watchTask);
+exports.buildDev = buildDev;
+exports.buildPro = buildPro;
 exports.build = build;
 exports.default = build;

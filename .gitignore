@@ -3,3 +3,4 @@
 *.priv.*
 bot.config.*
 !_copy_file.priv.sh
+dist/CzyWiesz.prod.js
