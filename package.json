@@ -19,9 +19,7 @@
 		"mocha": "10.x",
 		"uglify-js": "^3.17.4",
 		"vinyl-buffer": "1.x",
-		"vinyl-source-stream": "2.x"
-	},
-	"dependencies": {
+		"vinyl-source-stream": "2.x",
 		"wikiploy": "2.x"
 	}
 }
