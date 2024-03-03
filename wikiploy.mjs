@@ -1,10 +1,10 @@
-import { WikiployLite } from 'wikiploy';
+import { Wikiploy, setupSummary } from 'wikiploy';
 
 import * as botpass from './bot.config.mjs';
-const ployBot = new WikiployLite(botpass);
+const ployBot = new Wikiploy(botpass);
 
 // common deploy function(s)
-import { addConfig, addConfigRelease, setupSummary } from './wikiploy-common.mjs';
+import { addConfig, addConfigRelease } from './wikiploy-common.mjs';
 
 // run asynchronously to be able to wait for results
 (async () => {

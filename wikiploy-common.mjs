@@ -1,4 +1,4 @@
-import { DeployConfig, userPrompt } from 'wikiploy';
+import { DeployConfig } from 'wikiploy';
 
 /**
  * Add config.
@@ -22,17 +22,4 @@ export function addConfig(configs, site, isRelease = false) {
 }
 export function addConfigRelease(configs, site) {
 	addConfig(configs, site, true);
-}
-
-/**
- * Read and setup summary.
- * @param {WikiployLite} ployBot 
- */
-export async function setupSummary(ployBot) {
-	const summary = await userPrompt('Summary of changes (empty for default summary):');
-	if (typeof summary === 'string' && summary.length) {
-		ployBot.summary = () => {
-			return summary;
-		};
-	}
 }

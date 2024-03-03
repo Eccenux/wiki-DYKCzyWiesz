@@ -1,10 +1,10 @@
-import { WikiployLite } from 'wikiploy';
+import { Wikiploy } from 'wikiploy';
 
 import * as botpass from './bot.config.mjs';
-const ployBot = new WikiployLite(botpass);
+const ployBot = new Wikiploy(botpass);
 
 // common deploy function(s)
-import { addConfig, setupSummary } from './wikiploy-common.mjs';
+import { addConfig } from './wikiploy-common.mjs';
 import { versionInfo } from './src/build/version.js';
 
 // run asynchronously to be able to wait for results
@@ -13,7 +13,7 @@ import { versionInfo } from './src/build/version.js';
 	// await setupSummary(ployBot);
 	// temp for v6 quick tests
 	ployBot.summary = () => {
-		return `v${versionInfo.version} info @Github`;
+		return `v${versionInfo.version} changes from Github`;
 	};
 
 	// push out file(s) to wiki

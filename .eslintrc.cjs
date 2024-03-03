@@ -13,18 +13,32 @@ module.exports = {
 		"dist/*",
 	],
 	"extends": "eslint:recommended",
-	"overrides": [{
-		"env": {
-			"node": true,
-			"browser": true,
+	"overrides": [
+		{
+			"env": {
+				"node": true,
+				"browser": true,
+			},
+			"files": [
+				".eslintrc.{js,cjs}"
+			],
+			"parserOptions": {
+				"sourceType": "script"
+			}
 		},
-		"files": [
-			".eslintrc.{js,cjs}"
-		],
-		"parserOptions": {
-			"sourceType": "script"
+		{
+			"env": {
+				"node": true,
+				"browser": false,
+			},
+			"files": [
+				"*.mjs",
+			],
+			"parserOptions": {
+				"sourceType": "module"
+			}
 		}
-	}],
+	],
 	"rules": {
 		"no-prototype-builtins": "off",
 		"indent": [
