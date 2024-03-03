@@ -30,6 +30,7 @@ module.exports = {
 			"env": {
 				"node": true,
 				"browser": false,
+				"es2021": true,
 			},
 			"files": [
 				"*.mjs",
@@ -37,7 +38,7 @@ module.exports = {
 			"parserOptions": {
 				"sourceType": "module"
 			}
-		}
+		},
 	],
 	"rules": {
 		"no-prototype-builtins": "off",
