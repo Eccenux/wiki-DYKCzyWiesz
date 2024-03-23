@@ -1,4 +1,19 @@
-.CzyWiesz {
-  background-color: #217dbb;
-  color: white;
+#CzyWieszGallery {
+	display: grid;
+	grid-gap: 4px;
+	grid-template-columns: repeat(auto-fill, minmax(100px, 1fr) ) ;
+	background-color: #F2F5F7;
+	color: black;
+	align-items: center;
+}
+#CzyWieszGallery fig {
+	height: 100px;
+	background-color: antiquewhite;
+	display: flex;
+}
+#CzyWieszGallery img {
+	width: 100%;
+	height: auto;
+	max-height: 100px;
+	object-fit: contain;
 }

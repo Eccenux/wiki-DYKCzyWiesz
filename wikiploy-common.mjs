@@ -14,11 +14,11 @@ export function addConfig(configs, site, isRelease = false) {
 		site,
 		nowiki: true,
 	}));
-	// configs.push(new DeployConfig({
-	// 	src: 'dist/CzyWiesz.css',
-	// 	dst: `${deploymentName}.css`,
-	// 	site,
-	// }));
+	configs.push(new DeployConfig({
+		src: 'dist/CzyWiesz.css',
+		dst: `${deploymentName}.css`,
+		site,
+	}));
 }
 export function addConfigRelease(configs, site) {
 	addConfig(configs, site, true);

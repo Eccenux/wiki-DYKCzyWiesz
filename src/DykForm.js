@@ -34,11 +34,11 @@ class DykForm {
 		D.wgUserName = mw.config.get('wgUserName');
 		D.wgTitle = mw.config.get('wgTitle');
 
-		var IMG_ARR = $.merge(
-			$.merge(
-				$('#mw-content-text .infobox span[typeof="mw:File"] a.mw-file-description img'),
-				$('#mw-content-text figure[typeof="mw:File/Thumb"] img')),
-			$('#mw-content-text .gallery span[typeof="mw:File"] img'));
+		var IMG_ARR = $(/*css*/`
+			.infobox span[typeof="mw:File"] a.mw-file-description img
+			,figure[typeof="mw:File/Thumb"] img
+			,.gallery span[typeof="mw:File"] img
+		`, $('#mw-content-text'));
 		var IMAGES = IMG_ARR.length;
 		var REFS = {
 			warn:	D.config.no + '&nbsp;&nbsp;<strong style="color: red;">Brak źródeł dyskwalifikuje artykuł ze zgłoszenia!</strong> <small>(<a href="#" role="button">info</a>)</small>',
@@ -212,16 +212,13 @@ class DykForm {
 			$('#CzyWieszGalleryToggler').toggle();
 			$('#CzyWieszGalleryToggler a').click(function(){
 				var GALLERY = '<div id="CzyWieszGalleryHolder">'
-						+ '<div id="CzyWieszGallery" style="background-color: #F2F5F7;">'
-						+ '<table><tbody>';
+						+ `<div id="CzyWieszGallery">`;
 						for (var i=0; i<IMG_ARR.length; i++) {
-							if (i%5 == 0) {GALLERY += '<tr>';}
-							GALLERY += '<td>';
-							GALLERY += IMG_ARR[i].outerHTML.replace(/\swidth=\"\d+\"/,' width="100"').replace(/\sheight=\"[^\"]*\"/,'').replace(/\sclass=\"[^\"]*\"/g,'');
-							GALLERY += '</td>';
-							if (i%5 == 4) {GALLERY += '</tr>';}
+							GALLERY += '<fig>';
+							GALLERY += IMG_ARR[i].outerHTML.replace(/\swidth=\"\d+\"/,'').replace(/\sheight=\"[^\"]*\"/,'').replace(/\sclass=\"[^\"]*\"/g,'');
+							GALLERY += '</fig>';
 						}
-				GALLERY	+= '</tbody></table> </div> </div>';
+				GALLERY	+= '</div> </div>';
 
 				$(GALLERY).dialog({
 					width: 547,
