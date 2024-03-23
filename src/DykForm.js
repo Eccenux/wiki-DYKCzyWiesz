@@ -34,7 +34,11 @@ class DykForm {
 		D.wgUserName = mw.config.get('wgUserName');
 		D.wgTitle = mw.config.get('wgTitle');
 
-		var IMG_ARR = $.merge($('#mw-content-text .infobox span[typeof="mw:File"] a.mw-file-description img'),$('#mw-content-text figure[typeof="mw:File/Thumb"] img'));
+		var IMG_ARR = $.merge(
+			$.merge(
+				$('#mw-content-text .infobox span[typeof="mw:File"] a.mw-file-description img'),
+				$('#mw-content-text figure[typeof="mw:File/Thumb"] img')),
+			$('#mw-content-text .gallery span[typeof="mw:File"] img'));
 		var IMAGES = IMG_ARR.length;
 		var REFS = {
 			warn:	D.config.no + '&nbsp;&nbsp;<strong style="color: red;">Brak źródeł dyskwalifikuje artykuł ze zgłoszenia!</strong> <small>(<a href="#" role="button">info</a>)</small>',
