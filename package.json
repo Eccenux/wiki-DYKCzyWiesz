@@ -14,7 +14,7 @@
 		"browserify": "17.x",
 		"chai": "4.x",
 		"eslint": "8.x",
-		"gulp": "4.x",
+		"gulp": "5.x",
 		"less": "4.x",
 		"mocha": "10.x",
 		"uglify-js": "^3.17.4",
