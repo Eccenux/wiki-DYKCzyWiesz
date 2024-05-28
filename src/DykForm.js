@@ -46,7 +46,7 @@ class DykForm {
 			ar2:	['Bibliografia','Przypisy']
 		};
 			$('.mw-headline').each(function(){
-				REFS.ar1.push( $(this).html().replace(/<span class="mw-headline-number"[^>]*>\d+<\/span> */,'') );
+				REFS.ar1.push( $(this).html() );
 			});
 			REFS.ar1 = REFS.ar1.join('#') + '#';
 			D.sourced = false;
