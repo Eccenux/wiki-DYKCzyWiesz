@@ -921,8 +921,8 @@ class DykForm {
 			ar1:	[''],
 			ar2:	['Bibliografia','Przypisy']
 		};
-			$('.mw-headline').each(function(){
-				REFS.ar1.push( $(this).html().replace(/<span class="mw-headline-number"[^>]*>\d+<\/span> */,'') );
+			$('.mw-headline, .mw-heading > [id]').each(function(){
+				REFS.ar1.push( $(this).html() );
 			});
 			REFS.ar1 = REFS.ar1.join('#') + '#';
 			D.sourced = false;
@@ -2309,8 +2309,8 @@ module.exports = { apiAjax, apiAsync };
 
 },{}],12:[function(require,module,exports){
 let versionInfo = {
-	version:'6.7.0',
-	buildDay:'2024-04-07',
+	version:'6.8.0',
+	buildDay:'2024-05-29',
 }
 
 module.exports = { versionInfo };

@@ -22,6 +22,8 @@ npm run test
 npm run build
 ```
 
+Uwaga! Pamiętaj o zmianie **wersji gadżetu**: `src\build\version.js`. Wersje powinny być semantyczne (proste bugi to ostatnia liczba, po środku nowe aspekty i funkcje, a pierwsza liczba to znaczące rozbudowy i przebudowy) 
+
 Do wdrażania potrzebny jest `bot.config.mjs` (o ile chcesz wdrażać jednym kliknięciem).
 - Hasło utworzysz w: https://test.wikipedia.org/wiki/Special:BotPasswords/Wikiploy
 - Przykład konfiguracji: https://github.com/Eccenux/Wikiploy/blob/main/assets/public--bot.config.mjs

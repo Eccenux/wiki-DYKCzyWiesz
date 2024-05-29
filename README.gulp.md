@@ -1,10 +1,10 @@
 # Gulp
 
-Gulp is used for building JS. Technically for running tasks of which are used to build JS.
+Gulp is used for building JS. Technically, it runs tasks, some of which are used to build JS.
 
 ## Why Gulp
 
-Gulp is rather old but also much faster then running multiple `npm run` commands. Starting node can take a second or two and running a task can take milliseconds. So running all tasks in single node call just makes sense.
+Gulp is much faster than running multiple `npm run` commands. Starting Node can take a second or two, while running a task can take milliseconds. So, running all tasks in a single Node call just makes sense.
 
 ## Running gulp
 
