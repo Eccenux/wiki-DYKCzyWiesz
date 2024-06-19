@@ -307,12 +307,13 @@ class DykForm {
 				// 	$('#CzyWieszAuthor').after(winner.user);
 				// }
 			} else {
-				alert(`
-					⚠️ W ciągu ostatnich 10 dni ''nie dokonano wystarczająco dużych zmian''.
-					Skumulowany rozmiar: ${editSize} bajtów, edycje: ${revisions.length-1}.
+				// Message turned off experimentally per [[pl:Special:Diff/74053529]]
+				// alert(`
+				// 	⚠️ W ciągu ostatnich 10 dni ''nie dokonano wystarczająco dużych zmian''.
+				// 	Skumulowany rozmiar: ${editSize} bajtów, edycje: ${revisions.length-1}.
 
-					Jeszcze raz rozważ zgłaszanie tego artykułu, gdyż może to być niezgodne z regulaminem.
-				`.replace(/\n\t+/g, '\n'));
+				// 	Jeszcze raz rozważ zgłaszanie tego artykułu, gdyż może to być niezgodne z regulaminem.
+				// `.replace(/\n\t+/g, '\n'));
 			}
 		}
 		// there are no edits in last 10 days
@@ -320,11 +321,12 @@ class DykForm {
 			// we should still get one revision
 			D.log(JSON.stringify(revisions));
 			editSize = revisions[0].size;
-			alert(`
-				⚠️ W ciągu ostatnich 10 dni ''nie wykonano żadnych zmian''.
+			// The same as above message
+			// alert(`
+			// 	⚠️ W ciągu ostatnich 10 dni ''nie wykonano żadnych zmian''.
 
-				Jeszcze raz rozważ zgłaszanie tego artykułu, gdyż może to być niezgodne z regulaminem.
-			`.replace(/\n\t+/g, '\n'));
+			// 	Jeszcze raz rozważ zgłaszanie tego artykułu, gdyż może to być niezgodne z regulaminem.
+			// `.replace(/\n\t+/g, '\n'));
 		}
 
 		D.articlesize = {
