@@ -1,28 +1,41 @@
 /**
  * Reads wiki-JSON pages.
  * 
- * @todo cache in LS
- * 
  * @example
 	(async () => {
-		const configHelper = new ReadJsonCached();
-		const data = await configHelper.getConfig();
+		var globalKey = "my-gadget-options";
+		var titleMap = {
+			"Wikiprojekt:Czy_wiesz/konfiguracja/opcje.json": "options",
+			"Wikiprojekt:Czy_wiesz/konfiguracja/akcje.json": "events",
+		};
+		var configHelper = new ReadJsonCached(titleMap, globalKey);
+		var data = await configHelper.getConfig();
 		console.log(data);
 	})();
 * 
 */
 class ReadJsonCached {
 	
-	constructor(titles) {
+	/**
+	 * Pre-init.
+	 * @param {Object} titles Map: {"Page title" : "objectKey"}.
+	 * @param {String} cacheKey Globally unique(!) caching key.
+	 */
+	constructor(titles, cacheKey = 'dyk-options') {
 		/** @private Combined data. */
 		this.cachedData = null;
-		/** @private JS DT. */
+		/** @private Number from 1970. */
 		this.cacheTimestamp = null;
-		/** Max age in hours. */
-		this.cacheMaxAge = 24;
 
 		/** The API url. */
 		this.apiUrl = "https://pl.wikipedia.org/w/api.php";
+		
+		/** Max age in hours. */
+		this.cacheMaxAge = 24;
+
+		/** Globally unique caching key. */
+		this.cacheKey = cacheKey;
+
 		/** Mapping: page titles to object keys. */
 		this.titles = {
 			"Wikiprojekt:Czy_wiesz/konfiguracja/opcje.json": "options",
@@ -85,19 +98,58 @@ class ReadJsonCached {
 		// Update cache
 		this.cachedData = combinedData;
 		this.cacheTimestamp = Date.now();
+		this.storageSave();
 
 		return combinedData;
+	}
+
+	/** @private Temporary debug. */
+	debug(arg1='', arg2='') {
+		console.log('[DYK-opt]', arg1, arg2);
+	}
+
+	/** @private Store in ~permanent storage. */
+	storageSave() {
+		if (typeof mw ==='object' && mw.storage) {
+			this.debug('store');
+			mw.storage.setObject(this.cacheKey, {
+				cachedData: this.cachedData,
+				cacheTimestamp: this.cacheTimestamp,
+			});
+		}
+	}
+	/** @private Restore from ~permanent storage. */
+	storageRestore() {
+		if (typeof mw ==='object' && mw.storage) {
+			let data = mw.storage.getObject(this.cacheKey);
+			this.debug('restore', data);
+			if (!data || !data.cachedData || !data.cacheTimestamp) {
+				return false;
+			}
+			this.cachedData = data.cachedData;
+			this.cacheTimestamp = data.cacheTimestamp;
+			return true;
+		}
+		return false;
 	}
 
 	/**
 	 * @private Check if there is cache.
 	 */
 	isCacheValid() {
+		// has internal cache
 		if (!this.cachedData || !this.cacheTimestamp) {
-			return false;
+			this.debug('not in internal');
+			// check perma-storage
+			let restored = this.storageRestore();
+			if (!restored) {
+				this.debug('no cache');
+				return false;
+			}
 		}
 
 		let cacheAge = (Date.now() - this.cacheTimestamp) / (1000 * 60 * 60); // convert milliseconds to hours
+		this.debug('cache age:', cacheAge);
 		return cacheAge < this.cacheMaxAge;
 	}
 
@@ -107,8 +159,10 @@ class ReadJsonCached {
 	 */
 	async getConfig() {
 		if (this.isCacheValid()) {
+			this.debug('from cache');
 			return this.cachedData;
 		} else {
+			this.debug('from wiki api');
 			return await this.fetchConfig();
 		}
 	}
