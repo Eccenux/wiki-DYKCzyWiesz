@@ -1,5 +1,5 @@
 let versionInfo = {
-	version:'6.8.0',
+	version:'6.9.0',
 	buildDay:'2024-05-29',
 }
 
