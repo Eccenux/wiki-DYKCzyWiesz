@@ -2,6 +2,27 @@ var config = {
 	interp:		'.,:;!?…-–—()[]{}⟨⟩\'"„”«»/\\', // [\s] must be added directly!; ['] & [\] escaped due to js limits, [\s] means [space]
 	miesiacArr:	['stycznia', 'lutego', 'marca', 'kwietnia', 'maja', 'czerwca', 'lipca', 'sierpnia', 'września', 'października', 'listopada', 'grudnia'],
 
+	/** Gloablly unique cache key */
+	wikiConfigKey: 'dyk-extra-options',
+	/** Pages combined to `wiki` config. */
+	wikiConfigTitles: {
+		"Wikiprojekt:Czy_wiesz/konfiguracja/opcje.json": "options",
+		"Wikiprojekt:Czy_wiesz/konfiguracja/akcje.json": "events",
+	},
+	/** Options configurable on wiki. */
+	wiki: {
+		// Akcje edycyjne
+		events: [],
+		options: {
+			// liczba dni dla których pojawia się alert
+			hardLimitDays: 30,
+			// liczba dni dla których pojawia się ostrzeżenie
+			warnLimitDays: 10,
+			// duża edycja w bajtach (minimum uznawane za OK)
+			bigEdit: 2048,
+		},
+	},
+
 	/** Debug base page. */
 	// debugBase: 'Wikipedysta:Kaligula/js/CzyWiesz.js',
 	debugBase: 'Wikipedysta:Nux/CzyWieszTest',

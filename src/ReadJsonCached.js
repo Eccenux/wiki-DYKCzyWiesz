@@ -21,7 +21,7 @@ class ReadJsonCached {
 	 * @param {Object} titles Map: {"Page title" : "objectKey"}.
 	 * @param {String} cacheKey Globally unique(!) caching key.
 	 */
-	constructor(titles, cacheKey = 'dyk-options') {
+	constructor(titles, cacheKey) {
 		/** @private Combined data. */
 		this.cachedData = null;
 		/** @private Number from 1970. */
@@ -37,10 +37,7 @@ class ReadJsonCached {
 		this.cacheKey = cacheKey;
 
 		/** Mapping: page titles to object keys. */
-		this.titles = {
-			"Wikiprojekt:Czy_wiesz/konfiguracja/opcje.json": "options",
-			"Wikiprojekt:Czy_wiesz/konfiguracja/akcje.json": "events",
-		};
+		this.titles = {};
 		// optionally from constructor (for other projects)
 		if (typeof titles === 'object') {
 			this.titles = titles;
@@ -168,13 +165,19 @@ class ReadJsonCached {
 	}
 }
 
+// eslint-disable-next-line no-unused-vars
 async function quickCheck() {
 	// Example usage:
-	const configHelper = new ReadJsonCached();
-	const data = await configHelper.getConfig();
+	var globalKey = "test-gadget-options";
+	var titleMap = {
+		"Wikiprojekt:Czy_wiesz/konfiguracja/opcje.json": "options",
+		"Wikiprojekt:Czy_wiesz/konfiguracja/akcje.json": "events",
+	};
+	var configHelper = new ReadJsonCached(titleMap, globalKey);
+	var data = await configHelper.getConfig();
 	console.log(data);
 	console.log('Done');
 }
-quickCheck();
+// quickCheck();
 
 module.exports = { ReadJsonCached };
