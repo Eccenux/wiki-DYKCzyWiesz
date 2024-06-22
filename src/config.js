@@ -14,9 +14,9 @@ var config = {
 		// Akcje edycyjne
 		events: [],
 		options: {
-			// liczba dni dla których pojawia się alert
+			// liczba dni, dla których pojawia się silne ostrzeżenie (max rok)
 			hardLimitDays: 30,
-			// liczba dni dla których pojawia się ostrzeżenie
+			// liczba dni, dla których pojawia się ostrzeżenie
 			warnLimitDays: 10,
 			// duża edycja w bajtach (minimum uznawane za OK)
 			bigEdit: 2048,

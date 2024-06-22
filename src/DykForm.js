@@ -3,6 +3,7 @@
 /* eslint-disable indent */
 /* eslint-disable array-bracket-newline */
 const { RevisionList } = require("./RevisionList");
+const { DykConfigExtra } = require("./DykConfigExtra");
 
 function strToRegExp (str) {
 	return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
@@ -19,6 +20,7 @@ class DykForm {
 	constructor(core) {
 		this.core = core;
 		this.revisionList = new RevisionList();
+		this.configHelper = new DykConfigExtra(this.core.config);
 	}
 
 	/**
@@ -283,48 +285,68 @@ class DykForm {
 	/** Page revisions and author data. */
 	async pagerevs () {
 		const D = this.core;
-		const bigEdit = 2048; // big/min edit
 
-		const {revisions, records} = await this.revisionList.readRevs(D.wgTitle, 10);
-		D.log('revisions in last 10 days + 1 edit:', revisions.length);
-		D.log('day-users in last 10 days:', records.length);
+		// this.configHelper = new DykConfigExtra(D.config);
+		const extraConfig = await this.configHelper.getConfig();
+
+		const bigEdit = extraConfig.options.bigEdit;
+		let checkDays = extraConfig.options.hardLimitDays > 365 ? 365 : extraConfig.options.hardLimitDays;
+		let warnLimitDays = extraConfig.options.warnLimitDays >= checkDays ? -1 : extraConfig.options.warnLimitDays;
+
+		const {revisions, records} = await this.revisionList.readRevs(D.wgTitle, checkDays);
+		D.log('revisions in last days + 1 edit:', revisions.length);
+		D.log('day-users in last days:', records.length);
+
 		let editSize = 0;
-		// found edits
+		let message = '';
+		let fatalMessage = false;
+		// found edits in last checkDays
 		if (records.length > 0) {
 			// find a winner edit/author
 			let {record:winner, size} = this.revisionList.findWinner(records, bigEdit);
 			D.log(JSON.stringify(winner), size);
 
-			// find size on the day of edit
+			// size on the day of edit
 			editSize = size;
 
 			// add a possible author…
 			if (winner) {
-				$('#CzyWieszAuthor').val(winner.user);
-				$('#CzyWieszAuthor').after('&nbsp;<small id="CzyWieszAuthorTip"><span class="czywiesz-tip" title="Autorstwo ustalone wg największej lub najnowszej dużej edycji z ostatnich 10 dni (dodane ' + winner.added + ' znaków, data: ' + winner.day + ').">(!)</span></small>&nbsp;');
-				// if (D.debugmode) {
-				// 	$('#CzyWieszAuthor').width('25%').val(D.wgUserName);
-				// 	$('#CzyWieszAuthor').after(winner.user);
-				// }
-			} else {
-				alert(`
-					⚠️ W ciągu ostatnich 10 dni ''nie dokonano wystarczająco dużych zmian''.
-					Skumulowany rozmiar: ${editSize} bajtów, edycje: ${revisions.length-1}.
+				// check if winner (latests big edit) is old
+				if (warnLimitDays > 0) {
+					let editDays = this.revisionList.daysAgo(winner.day);
+					if (editDays > warnLimitDays) {
+						message = `
+							W ciągu ostatnich ${warnLimitDays} dni nie dokonano dużych zmian.
+							Ostatnia duża zmiana jest z ${winner.day} (${editSize} bajtów).
+						`.replace(/\n\t+/g, '\n');
+					}
+				}
 
-					Jeszcze raz rozważ zgłaszanie tego artykułu, gdyż może to być niezgodne z regulaminem.
-				`.replace(/\n\t+/g, '\n'));
+				$('#CzyWieszAuthor').val(winner.user);
+				$('#CzyWieszAuthor').after('&nbsp;<small id="CzyWieszAuthorTip"><span class="czywiesz-tip" title="Autorstwo ustalone wg największej lub najnowszej dużej edycji z ostatnich dni (dodane ' + winner.added + ' znaków, data: ' + winner.day + ').">(!)</span></small>&nbsp;');
+			} else {
+				fatalMessage = true;
+				message = `
+					⚠️ W ciągu ostatnich ${checkDays} dni ''nie dokonano wystarczająco dużych zmian''.
+					Skumulowany rozmiar: ${editSize} bajtów, edycje: ${revisions.length-1}.
+				`.replace(/\n\t+/g, '\n');
 			}
 		}
-		// there are no edits in last 10 days
+		// there are no edits in last checkDays
 		else {
 			// we should still get one revision
 			D.log(JSON.stringify(revisions));
 			editSize = revisions[0].size;
-			alert(`
-				⚠️ W ciągu ostatnich 10 dni ''nie wykonano żadnych zmian''.
+			fatalMessage = true;
+			message = `⚠️ W ciągu ostatnich ${checkDays} dni ''nie wykonano żadnych zmian''.`.replace(/\n\t+/g, '\n');
+		}
 
-				Jeszcze raz rozważ zgłaszanie tego artykułu, gdyż może to być niezgodne z regulaminem.
-			`.replace(/\n\t+/g, '\n'));
+		// final message
+		if (message.length) {
+			if (fatalMessage) {
+				message += '\n\nJeszcze raz rozważ zgłaszanie tego artykułu, gdyż może to być niezgodne z regulaminem.';
+			}
+			alert(message);
 		}
 
 		D.articlesize = {

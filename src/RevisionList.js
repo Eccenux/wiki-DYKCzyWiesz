@@ -32,7 +32,6 @@ class RevisionList {
 		const dt = new Date();
 		dt.setDate(dt.getDate() - days);
 		const from = dt.toISOString();
-		console.log({from});
 	
 		let data;
 		// get ids to figure out correct limit
@@ -59,7 +58,6 @@ class RevisionList {
 		const revisions = this.firstPage(data).revisions;
 		if (ids && ids.length) {
 			const records = this.prepareData(revisions, dt);
-			console.log({data, revisions, records});
 			return {revisions, records};
 		} else {
 			// no recent edits, old article
@@ -165,6 +163,26 @@ class RevisionList {
 		}
 		return {record:false, size};
 	}
+
+	/** @returns Days diff from now. */
+	daysAgo(isoDate, today = new Date()) {
+		const givenDate = new Date(isoDate);
+		const differenceInTime = today - givenDate;
+		const differenceInDays = Math.floor(differenceInTime / (1000 * 60 * 60 * 24));
+		return differenceInDays;
+	}
+
+	/** @returns records within X days. */
+	cutToDays(records, limitDays) {
+		let result = [];
+		for (const record of records) {
+			if (this.daysAgo(record.day) > limitDays) {
+				break;
+			}
+			result.push(record);
+		}
+		return result;
+	}	
 }
 
 module.exports = { RevisionList };

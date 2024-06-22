@@ -129,4 +129,61 @@ describe('RevisionList', () => {
 		});
 
 	});
+
+	describe('cutToDays', () => {
+		function getDateMinusDays(days, baseDate = new Date()) {
+			const date = new Date(baseDate);  // clone
+			date.setDate(date.getDate() - days);
+			return date.toISOString().substring(0,10);
+		}
+
+		it('should keep all new', () => {
+			let records = [
+				{"day":getDateMinusDays(1),"user":"Nux","added":1100,"removed":10,"edits":2},
+				{"day":getDateMinusDays(2),"user":"MalarzBOT","added":100,"removed":100,"edits":1},
+				{"day":getDateMinusDays(4),"user":"Czupirek","added":2100,"removed":5,"edits":2},
+				{"day":getDateMinusDays(8),"user":"Nux","added":6150,"removed":0,"edits":0}
+			];
+			let expected = records;
+			let result = revisionList.cutToDays(records, 10);
+			assert.equal(result.length, expected.length, 'all should be within given limit');
+			assert.deepEqual(result, expected);
+		});
+
+		it('should clip by days', () => {
+			let records = [
+				{"day":getDateMinusDays(1),"user":"Nux","added":1100,"removed":10,"edits":2},
+				{"day":getDateMinusDays(2),"user":"MalarzBOT","added":100,"removed":100,"edits":1},
+				{"day":getDateMinusDays(3),"user":"Czupirek","added":2100,"removed":5,"edits":2},
+				{"day":getDateMinusDays(5),"user":"Nux","added":6150,"removed":0,"edits":0}
+			];
+			let expected = [
+				records[0],
+				records[1],
+				records[2],
+			];
+			let result = revisionList.cutToDays(records, 3);
+			console.log(formatedJson(result));
+			assert.equal(result.length, expected.length);
+			assert.deepEqual(result, expected);
+
+			expected = [
+				records[0],
+				records[1],
+			];
+			result = revisionList.cutToDays(records, 2);
+			console.log(formatedJson(result));
+			assert.equal(result.length, expected.length);
+			assert.deepEqual(result, expected);
+
+			expected = [
+				records[0],
+			];
+			result = revisionList.cutToDays(records, 1);
+			console.log(formatedJson(result));
+			assert.equal(result.length, expected.length);
+			assert.deepEqual(result, expected);
+		});
+	});
+
 });
