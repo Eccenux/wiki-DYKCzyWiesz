@@ -156,7 +156,7 @@ function createFullDyk(DYKnomination) {
 
 module.exports = { DYKnomination, createDyk, createFullDyk };
 
-},{"./DykMain":5,"./ErrorInfo":7,"./asyncAjax":11,"./build/version":12,"./config":13}],2:[function(require,module,exports){
+},{"./DykMain":6,"./ErrorInfo":8,"./asyncAjax":13,"./build/version":14,"./config":15}],2:[function(require,module,exports){
 /* global OO */
 
 /**
@@ -873,12 +873,108 @@ class DoneHandling {
 }
 
 module.exports = { DoneHandling };
-},{"./DoneDialog":2,"./asyncAjax":11,"./simpleDialogs":15,"./stringOps":16}],4:[function(require,module,exports){
+},{"./DoneDialog":2,"./asyncAjax":13,"./simpleDialogs":17,"./stringOps":18}],4:[function(require,module,exports){
+const { ReadJsonCached } = require("./ReadJsonCached");
+
+/**
+ * Reads extra config from wiki (JSON).
+ * 
+ * Some defaults in 
+ */
+class DykConfigExtra {
+	constructor(coreConfig) {
+		this.coreConfig = coreConfig;
+		this.configHelper = new ReadJsonCached(coreConfig.wikiConfigTitles, coreConfig.wikiConfigKey);
+		this.data = coreConfig.wiki;
+		this.parsed = false;
+	}
+
+	async getConfig() {
+		if (this.parsed) {
+			return this.data;
+		}
+		try {
+			const data = await this.configHelper.getConfig();
+			this.merge(this.data, data);
+			this.parsed = true;
+		} catch (error) {
+			console.error("Error fetching configuration:", error);
+		}
+		return this.data;
+	}
+
+	/** @private @static Validate and merge into `base` object. */
+	merge(base, data) {
+		if (!data) {
+			return;
+		}
+		if (Array.isArray(data.events)) {
+			for (const event of data.events) {
+				if (typeof event.code === 'string' && typeof event.name === 'string') {
+					base.events.push({ code: event.code, name: event.name });
+				} else {
+					console.warn('[DYK] Invalid event:', event);
+				}
+			}
+		}
+		if (data.options && typeof data.options === 'object') {
+			$.extend(base.options, data.options);
+		}
+	}
+}
+
+// eslint-disable-next-line no-unused-vars
+async function quickCheck() {
+	const config = {
+		wikiConfigKey: 'dyk-extra-options',
+		wikiConfigTitles: {
+			"Wikiprojekt:Czy_wiesz/konfiguracja/opcje.json": "options",
+			"Wikiprojekt:Czy_wiesz/konfiguracja/akcje.json": "events",
+		},
+		wiki: {
+			events: [],
+			options: {
+				hardLimitDays: 30,
+				warnLimitDays: 10,
+			},
+		},
+	};
+	var configHelper = new DykConfigExtra(config);
+	var extraConfig = await configHelper.getConfig();
+	console.log(extraConfig);
+
+	// merge?
+	var base = {
+		events: [],
+		options: {
+			hardLimitDays: 123,
+			warnLimitDays: 34,
+		},
+	};
+	configHelper.merge(base, {events:[
+		{name:"Tytuł"},
+		{code:'test', name:"Testowy"},
+	]});
+	console.log(base);
+
+	configHelper.merge(base, {events:[
+		{code:'test1', name:"Testowy1"},
+		{code:'test2', name:"Testowy2"},
+	]});
+	console.log(base);
+
+	console.log('Done');
+}
+// quickCheck();
+
+module.exports = { DykConfigExtra };
+},{"./ReadJsonCached":10}],5:[function(require,module,exports){
 /* eslint-disable no-useless-escape */
 /* eslint-disable no-mixed-spaces-and-tabs */
 /* eslint-disable indent */
 /* eslint-disable array-bracket-newline */
 const { RevisionList } = require("./RevisionList");
+const { DykConfigExtra } = require("./DykConfigExtra");
 
 function strToRegExp (str) {
 	return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
@@ -895,6 +991,7 @@ class DykForm {
 	constructor(core) {
 		this.core = core;
 		this.revisionList = new RevisionList();
+		this.configHelper = new DykConfigExtra(this.core.config);
 	}
 
 	/**
@@ -1159,48 +1256,68 @@ class DykForm {
 	/** Page revisions and author data. */
 	async pagerevs () {
 		const D = this.core;
-		const bigEdit = 2048; // big/min edit
 
-		const {revisions, records} = await this.revisionList.readRevs(D.wgTitle, 10);
-		D.log('revisions in last 10 days + 1 edit:', revisions.length);
-		D.log('day-users in last 10 days:', records.length);
+		// this.configHelper = new DykConfigExtra(D.config);
+		const extraConfig = await this.configHelper.getConfig();
+
+		const bigEdit = extraConfig.options.bigEdit;
+		let checkDays = extraConfig.options.hardLimitDays > 365 ? 365 : extraConfig.options.hardLimitDays;
+		let warnLimitDays = extraConfig.options.warnLimitDays >= checkDays ? -1 : extraConfig.options.warnLimitDays;
+
+		const {revisions, records} = await this.revisionList.readRevs(D.wgTitle, checkDays);
+		D.log('revisions in last days + 1 edit:', revisions.length);
+		D.log('day-users in last days:', records.length);
+
 		let editSize = 0;
-		// found edits
+		let message = '';
+		let fatalMessage = false;
+		// found edits in last checkDays
 		if (records.length > 0) {
 			// find a winner edit/author
 			let {record:winner, size} = this.revisionList.findWinner(records, bigEdit);
 			D.log(JSON.stringify(winner), size);
 
-			// find size on the day of edit
+			// size on the day of edit
 			editSize = size;
 
 			// add a possible author…
 			if (winner) {
-				$('#CzyWieszAuthor').val(winner.user);
-				$('#CzyWieszAuthor').after('&nbsp;<small id="CzyWieszAuthorTip"><span class="czywiesz-tip" title="Autorstwo ustalone wg największej lub najnowszej dużej edycji z ostatnich 10 dni (dodane ' + winner.added + ' znaków, data: ' + winner.day + ').">(!)</span></small>&nbsp;');
-				// if (D.debugmode) {
-				// 	$('#CzyWieszAuthor').width('25%').val(D.wgUserName);
-				// 	$('#CzyWieszAuthor').after(winner.user);
-				// }
-			} else {
-				alert(`
-					⚠️ W ciągu ostatnich 10 dni ''nie dokonano wystarczająco dużych zmian''.
-					Skumulowany rozmiar: ${editSize} bajtów, edycje: ${revisions.length-1}.
+				// check if winner (latests big edit) is old
+				if (warnLimitDays > 0) {
+					let editDays = this.revisionList.daysAgo(winner.day);
+					if (editDays > warnLimitDays) {
+						message = `
+							W ciągu ostatnich ${warnLimitDays} dni nie dokonano dużych zmian.
+							Ostatnia duża zmiana jest z ${winner.day} (${editSize} bajtów).
+						`.replace(/\n\t+/g, '\n');
+					}
+				}
 
-					Jeszcze raz rozważ zgłaszanie tego artykułu, gdyż może to być niezgodne z regulaminem.
-				`.replace(/\n\t+/g, '\n'));
+				$('#CzyWieszAuthor').val(winner.user);
+				$('#CzyWieszAuthor').after('&nbsp;<small id="CzyWieszAuthorTip"><span class="czywiesz-tip" title="Autorstwo ustalone wg największej lub najnowszej dużej edycji z ostatnich dni (dodane ' + winner.added + ' znaków, data: ' + winner.day + ').">(!)</span></small>&nbsp;');
+			} else {
+				fatalMessage = true;
+				message = `
+					⚠️ W ciągu ostatnich ${checkDays} dni ''nie dokonano wystarczająco dużych zmian''.
+					Skumulowany rozmiar: ${editSize} bajtów, edycje: ${revisions.length-1}.
+				`.replace(/\n\t+/g, '\n');
 			}
 		}
-		// there are no edits in last 10 days
+		// there are no edits in last checkDays
 		else {
 			// we should still get one revision
 			D.log(JSON.stringify(revisions));
 			editSize = revisions[0].size;
-			alert(`
-				⚠️ W ciągu ostatnich 10 dni ''nie wykonano żadnych zmian''.
+			fatalMessage = true;
+			message = `⚠️ W ciągu ostatnich ${checkDays} dni ''nie wykonano żadnych zmian''.`.replace(/\n\t+/g, '\n');
+		}
 
-				Jeszcze raz rozważ zgłaszanie tego artykułu, gdyż może to być niezgodne z regulaminem.
-			`.replace(/\n\t+/g, '\n'));
+		// final message
+		if (message.length) {
+			if (fatalMessage) {
+				message += '\n\nJeszcze raz rozważ zgłaszanie tego artykułu, gdyż może to być niezgodne z regulaminem.';
+			}
+			alert(message);
 		}
 
 		D.articlesize = {
@@ -1373,7 +1490,7 @@ class DykForm {
 
 module.exports = { DykForm };
 
-},{"./RevisionList":9}],5:[function(require,module,exports){
+},{"./DykConfigExtra":4,"./RevisionList":11}],6:[function(require,module,exports){
 /* eslint-disable no-useless-escape */
 /* eslint-disable no-mixed-spaces-and-tabs */
 /* eslint-disable indent */
@@ -1436,7 +1553,7 @@ class DykMain {
 
 module.exports = { DykMain };
 
-},{"./DykForm":4,"./DykProcess":6,"./Wikiprojects":10}],6:[function(require,module,exports){
+},{"./DykForm":5,"./DykProcess":7,"./Wikiprojects":12}],7:[function(require,module,exports){
 /* eslint-disable no-useless-escape */
 /* eslint-disable no-mixed-spaces-and-tabs */
 /* eslint-disable indent */
@@ -1904,7 +2021,7 @@ class DykProcess {
 
 module.exports = { DykProcess };
 
-},{"./Loadbar":8,"./asyncAjax":11,"./config":13}],7:[function(require,module,exports){
+},{"./Loadbar":9,"./asyncAjax":13,"./config":15}],8:[function(require,module,exports){
 /**
  * D.errors info.
  */
@@ -1968,7 +2085,7 @@ class ErrorInfo {
 
 module.exports = { ErrorInfo };
 
-},{}],8:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 /* eslint-disable no-useless-escape */
 /* eslint-disable no-mixed-spaces-and-tabs */
 /* eslint-disable indent */
@@ -2042,7 +2159,191 @@ class Loadbar {
 
 module.exports = { Loadbar };
 
-},{}],9:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
+/**
+ * Reads wiki-JSON pages.
+ * 
+ * @example
+	(async () => {
+		var globalKey = "my-gadget-options";
+		var titleMap = {
+			"Wikiprojekt:Czy_wiesz/konfiguracja/opcje.json": "options",
+			"Wikiprojekt:Czy_wiesz/konfiguracja/akcje.json": "events",
+		};
+		var configHelper = new ReadJsonCached(titleMap, globalKey);
+		var data = await configHelper.getConfig();
+		console.log(data);
+	})();
+* 
+*/
+class ReadJsonCached {
+	
+	/**
+	 * Pre-init.
+	 * @param {Object} titles Map: {"Page title" : "objectKey"}.
+	 * @param {String} cacheKey Globally unique(!) caching key.
+	 */
+	constructor(titles, cacheKey) {
+		/** @private Combined data. */
+		this.cachedData = null;
+		/** @private Number from 1970. */
+		this.cacheTimestamp = null;
+
+		/** The API url. */
+		this.apiUrl = "https://pl.wikipedia.org/w/api.php";
+		
+		/** Max age in hours. */
+		this.cacheMaxAge = 24;
+
+		/** Globally unique caching key. */
+		this.cacheKey = cacheKey;
+
+		/** Mapping: page titles to object keys. */
+		this.titles = {};
+		// optionally from constructor (for other projects)
+		if (typeof titles === 'object') {
+			this.titles = titles;
+		}
+	}
+
+	/**
+	 * Loads pages specified by `this.titles`.
+	 * 
+	 * @private
+	 * 
+	 * @returns Combined JSON.
+	 */
+	async fetchConfig() {
+		const url = this.apiUrl;
+		const params = new URLSearchParams({
+			action: "query",
+			prop: "revisions",
+			titles: Object.keys(this.titles).join('|'),
+			rvprop: "content",
+			format: "json"
+		});
+
+		const response = await fetch(`${url}?${params.toString()}`);
+		const data = await response.json();
+
+		// Process the fetched data
+		const pages = data.query.pages;
+		const combinedData = {};
+
+		// De-normalized translation map
+		let normalized = {};
+		if (data.query.normalized) {
+			data.query.normalized.forEach(normalization => {
+				normalized[normalization.to] = normalization.from;
+			});
+		}
+		
+		for (const pageId in pages) {
+			if (pages.hasOwnProperty(pageId)) {
+				const page = pages[pageId];
+				let title = page.title;
+				if (title in this.titles) {
+					title = this.titles[title];
+				} else if (title in normalized) {
+					title = this.titles[normalized[title]];
+				} else {
+					console.warn('title not found', title);
+				}
+				let content = page.revisions[0]["*"];
+				combinedData[title] = JSON.parse(content);
+			}
+		}
+
+		// Update cache
+		this.cachedData = combinedData;
+		this.cacheTimestamp = Date.now();
+		this.storageSave();
+
+		return combinedData;
+	}
+
+	/** @private Temporary debug. */
+	debug(arg1='', arg2='') {
+		console.log('[DYK-opt]', arg1, arg2);
+	}
+
+	/** @private Store in ~permanent storage. */
+	storageSave() {
+		if (typeof mw ==='object' && mw.storage) {
+			this.debug('store');
+			mw.storage.setObject(this.cacheKey, {
+				cachedData: this.cachedData,
+				cacheTimestamp: this.cacheTimestamp,
+			});
+		}
+	}
+	/** @private Restore from ~permanent storage. */
+	storageRestore() {
+		if (typeof mw ==='object' && mw.storage) {
+			let data = mw.storage.getObject(this.cacheKey);
+			this.debug('restore', data);
+			if (!data || !data.cachedData || !data.cacheTimestamp) {
+				return false;
+			}
+			this.cachedData = data.cachedData;
+			this.cacheTimestamp = data.cacheTimestamp;
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * @private Check if there is cache.
+	 */
+	isCacheValid() {
+		// has internal cache
+		if (!this.cachedData || !this.cacheTimestamp) {
+			this.debug('not in internal');
+			// check perma-storage
+			let restored = this.storageRestore();
+			if (!restored) {
+				this.debug('no cache');
+				return false;
+			}
+		}
+
+		let cacheAge = (Date.now() - this.cacheTimestamp) / (1000 * 60 * 60); // convert milliseconds to hours
+		this.debug('cache age:', cacheAge);
+		return cacheAge < this.cacheMaxAge;
+	}
+
+	/**
+	 * Get full config.
+	 * @returns Config object from cache or wiki.
+	 */
+	async getConfig() {
+		if (this.isCacheValid()) {
+			this.debug('from cache');
+			return this.cachedData;
+		} else {
+			this.debug('from wiki api');
+			return await this.fetchConfig();
+		}
+	}
+}
+
+// eslint-disable-next-line no-unused-vars
+async function quickCheck() {
+	// Example usage:
+	var globalKey = "test-gadget-options";
+	var titleMap = {
+		"Wikiprojekt:Czy_wiesz/konfiguracja/opcje.json": "options",
+		"Wikiprojekt:Czy_wiesz/konfiguracja/akcje.json": "events",
+	};
+	var configHelper = new ReadJsonCached(titleMap, globalKey);
+	var data = await configHelper.getConfig();
+	console.log(data);
+	console.log('Done');
+}
+// quickCheck();
+
+module.exports = { ReadJsonCached };
+},{}],11:[function(require,module,exports){
 /**
  * Revision list reader and parser.
  */
@@ -2077,7 +2378,6 @@ class RevisionList {
 		const dt = new Date();
 		dt.setDate(dt.getDate() - days);
 		const from = dt.toISOString();
-		console.log({from});
 	
 		let data;
 		// get ids to figure out correct limit
@@ -2104,7 +2404,6 @@ class RevisionList {
 		const revisions = this.firstPage(data).revisions;
 		if (ids && ids.length) {
 			const records = this.prepareData(revisions, dt);
-			console.log({data, revisions, records});
 			return {revisions, records};
 		} else {
 			// no recent edits, old article
@@ -2210,10 +2509,30 @@ class RevisionList {
 		}
 		return {record:false, size};
 	}
+
+	/** @returns Days diff from now. */
+	daysAgo(isoDate, today = new Date()) {
+		const givenDate = new Date(isoDate);
+		const differenceInTime = today - givenDate;
+		const differenceInDays = Math.floor(differenceInTime / (1000 * 60 * 60 * 24));
+		return differenceInDays;
+	}
+
+	/** @returns records within X days. */
+	cutToDays(records, limitDays) {
+		let result = [];
+		for (const record of records) {
+			if (this.daysAgo(record.day) > limitDays) {
+				break;
+			}
+			result.push(record);
+		}
+		return result;
+	}	
 }
 
 module.exports = { RevisionList };
-},{}],10:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 /* eslint-disable no-useless-escape */
 /* eslint-disable no-mixed-spaces-and-tabs */
 /* eslint-disable indent */
@@ -2254,7 +2573,7 @@ class Wikiprojects {
 
 module.exports = { Wikiprojects };
 
-},{}],11:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 /**
  * MW API call.
  * 
@@ -2307,18 +2626,39 @@ function apiAsync(call) {
 
 module.exports = { apiAjax, apiAsync };
 
-},{}],12:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 let versionInfo = {
-	version:'6.8.0',
-	buildDay:'2024-05-29',
+	version:'6.9.0',
+	buildDay:'2024-06-22',
 }
 
 module.exports = { versionInfo };
 
-},{}],13:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 var config = {
 	interp:		'.,:;!?…-–—()[]{}⟨⟩\'"„”«»/\\', // [\s] must be added directly!; ['] & [\] escaped due to js limits, [\s] means [space]
 	miesiacArr:	['stycznia', 'lutego', 'marca', 'kwietnia', 'maja', 'czerwca', 'lipca', 'sierpnia', 'września', 'października', 'listopada', 'grudnia'],
+
+	/** Gloablly unique cache key */
+	wikiConfigKey: 'dyk-extra-options',
+	/** Pages combined to `wiki` config. */
+	wikiConfigTitles: {
+		"Wikiprojekt:Czy_wiesz/konfiguracja/opcje.json": "options",
+		"Wikiprojekt:Czy_wiesz/konfiguracja/akcje.json": "events",
+	},
+	/** Options configurable on wiki. */
+	wiki: {
+		// Akcje edycyjne
+		events: [],
+		options: {
+			// liczba dni, dla których pojawia się silne ostrzeżenie (max rok)
+			hardLimitDays: 30,
+			// liczba dni, dla których pojawia się ostrzeżenie
+			warnLimitDays: 10,
+			// duża edycja w bajtach (minimum uznawane za OK)
+			bigEdit: 2048,
+		},
+	},
 
 	/** Debug base page. */
 	// debugBase: 'Wikipedysta:Kaligula/js/CzyWiesz.js',
@@ -2389,7 +2729,7 @@ var config = {
 
 module.exports = { config };
 
-},{}],14:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 const { DYKnomination, createDyk, createFullDyk } = require("./CzyWiesz");
 const { DoneHandling } = require("./DoneHandling");
 
@@ -2443,7 +2783,7 @@ if (pageName.indexOf('/propozycje') > 0 || pageName.indexOf('/ocenione') > 0) {
 // expose to others
 window.DYKnomination = DYKnomination;
 
-},{"./CzyWiesz":1,"./DoneHandling":3}],15:[function(require,module,exports){
+},{"./CzyWiesz":1,"./DoneHandling":3}],17:[function(require,module,exports){
 /* global OO */
 
 /**
@@ -2462,7 +2802,7 @@ function stdConfirm(html, isText) {
 }
 
 module.exports = { stdConfirm };
-},{}],16:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 /** Encode user string for JS. */
 function htmlspecialchars(text) {
 	return text.toString()
@@ -2475,4 +2815,4 @@ function htmlspecialchars(text) {
 }
 
 module.exports = { htmlspecialchars };
-},{}]},{},[14]);
+},{}]},{},[16]);

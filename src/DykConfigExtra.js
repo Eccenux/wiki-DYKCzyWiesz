@@ -29,7 +29,10 @@ class DykConfigExtra {
 
 	/** @private @static Validate and merge into `base` object. */
 	merge(base, data) {
-		if (data && Array.isArray(data.events)) {
+		if (!data) {
+			return;
+		}
+		if (Array.isArray(data.events)) {
 			for (const event of data.events) {
 				if (typeof event.code === 'string' && typeof event.name === 'string') {
 					base.events.push({ code: event.code, name: event.name });
@@ -37,6 +40,9 @@ class DykConfigExtra {
 					console.warn('[DYK] Invalid event:', event);
 				}
 			}
+		}
+		if (data.options && typeof data.options === 'object') {
+			$.extend(base.options, data.options);
 		}
 	}
 }
