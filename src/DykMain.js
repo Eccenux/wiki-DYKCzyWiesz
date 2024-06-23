@@ -4,7 +4,6 @@
 /* eslint-disable array-bracket-newline */
 const { DykProcess } = require("./DykProcess");
 const { DykForm } = require("./DykForm");
-const { Wikiprojects } = require("./Wikiprojects");
 
 /**
  * Nominations main class (~controller).
@@ -20,11 +19,9 @@ class DykMain {
 		this.core = core;
 		this.dykProcess = new DykProcess(core);
 		this.dykForm = new DykForm(core);
-		this.wikiprojects = new Wikiprojects();
 		// ~mixin
 		this.core.askuser = () => this.askuser();
 		this.core.debug = () => this.debug();
-		this.core.wikiprojects = this.wikiprojects;
 	}
 
 	// for main.js

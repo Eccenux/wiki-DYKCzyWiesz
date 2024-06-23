@@ -13,12 +13,29 @@ class DykConfigExtra {
 		this.parsed = false;
 	}
 
+	/** @private Temporary debug. */
+	debug(arg1='', arg2='') {
+		console.log('[DYK-opt]', arg1, arg2);
+	}
+
+	/**
+	 * Load config from wiki or cache.
+	 * 
+	 * WARNING!!! When called twice from async you might end up doing 2 requests...
+	 * ...and you might merge events twice...
+	 * 
+	 * @returns 
+	 */
 	async getConfig() {
+		this.debug('getConfig starts');
 		if (this.parsed) {
+			this.debug('getConfig already parsed');
 			return this.data;
 		}
 		try {
+			this.debug('getConfig awaiting...');
 			const data = await this.configHelper.getConfig();
+			this.debug('getConfig read data', data.events);
 			this.merge(this.data, data);
 			this.parsed = true;
 		} catch (error) {

@@ -4,6 +4,7 @@
 /* eslint-disable array-bracket-newline */
 const { RevisionList } = require("./RevisionList");
 const { DykConfigExtra } = require("./DykConfigExtra");
+const { Wikiprojects } = require("./Wikiprojects");
 
 function strToRegExp (str) {
 	return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
@@ -20,6 +21,7 @@ class DykForm {
 	constructor(core) {
 		this.core = core;
 		this.revisionList = new RevisionList();
+		this.wikiprojects = new Wikiprojects();
 		this.configHelper = new DykConfigExtra(this.core.config);
 	}
 
@@ -115,11 +117,25 @@ class DykForm {
 				+ '<td><input type="text" id="CzyWieszSignature" name="CzyWieszSignature" value="' 
 				+ SIGNATURE.name + '" style="width: 50%;margin-left: 2px;"' + SIGNATURE.disabled + '></td>');
 
-		//wikiproject row (filled later by D.wikiprojects.load())
-		var $wikiproject_row = $('<span id="CzyWieszWikiprojectContainer"><small>(trwa ładowanie…)</small></span>');
-		$wikiproject_row = $('<td></td>').append($wikiproject_row)
-			.append('<a id="CzyWieszWikiprojectAdd">(+)</a>');
-		$wikiproject_row = $('<tr></tr>').append('<td>Powiadom wikiprojekt(y): </td>').append($wikiproject_row);
+		//wikiproject row (filled later by wikiprojects.load())
+		const $wikiproject_row = $(/*html*/`
+			<tr id="CzyWieszWikiprojectRow">
+				<td>Powiadom wikiprojekt(y): </td>
+				<td>
+					<span id="CzyWieszWikiprojectContainer"><small>(trwa ładowanie…)</small></span>
+					<a id="CzyWieszWikiprojectAdd">(+)</a>
+				</td>
+			</tr>
+		`.replace(/\n\t+/g, '').trim());
+
+		const $events_row = $(/*html*/`
+			<tr id="CzyWieszEventsRow">
+				<td>Akcja edycyjna: </td>
+				<td class="czywiesz-value">
+					<span class="czywiesz-info"><small>(trwa ładowanie…)</small></span>
+				</td>
+			</tr>
+		`);
 
 		/* need addidtional comment?
 		 *  check → #CzyWieszGadget.height+30, #CzyWieszGadget.parent.height+20
@@ -152,10 +168,13 @@ class DykForm {
 				+ '<div id="CzyWieszLoaderBarInner" style="width: 0; height: 20px; background-color: #ABEC46; border: none; border-radius: 3px;"></div>');
 
 		//build the dialog
-		var $dialog = $('<table></table>').css('width','100%').append($ref_row).append($images_row).append($file_row)
-			.append($author_row).append($signature_row).append($wikiproject_row);
-		$dialog = $('<div id="CzyWieszGadget"></div>').append($title_paragraph).append($question_paragraph).append($question_textarea_paragraph)
-			.append($dialog).append($comment_paragraph).append($comment_textarea_paragraph).append($rules_paragraph).append($loading_bar);
+		const $main_table = $('<table></table>').css('width','100%')
+			.append($ref_row).append($images_row).append($file_row)
+			.append($author_row).append($signature_row).append($wikiproject_row)
+			.append($events_row)
+		;
+		const $dialog = $('<div id="CzyWieszGadget"></div>').append($title_paragraph).append($question_paragraph).append($question_textarea_paragraph)
+			.append($main_table).append($comment_paragraph).append($comment_textarea_paragraph).append($rules_paragraph).append($loading_bar);
  
 		//main buttons
 		var buttons = {
@@ -193,12 +212,9 @@ class DykForm {
 			// `);
 		}
 
-		//fill wikiprojects list
-		D.wikiprojects.load();
+		// start loading data in background
+		this.loadData();
 
-		// check size of article and make a tip for the possible author
-		this.pagerevs();
-		
 		if ($('#CzyWieszStyleTag').length == 0) {
 			D.config.styletag.appendTo('head');
 		}
@@ -268,8 +284,8 @@ class DykForm {
 		});
 
 		// click on (+) near wikiprojects combo box → add new combo box and enlarge the dialog window
-		$('#CzyWieszWikiprojectAdd').click(function(){
-			$('#CzyWieszWikiprojectContainer').append(D.wikiprojects.$select.clone());
+		$('#CzyWieszWikiprojectAdd').click(()=>{
+			$('#CzyWieszWikiprojectContainer').append(this.wikiprojects.$select.clone());
 			$('#CzyWieszLoaderBar').parent().css({height: '+=24'});
 		});
 
@@ -282,12 +298,43 @@ class DykForm {
 		
 	}
 
-	/** Page revisions and author data. */
-	async pagerevs () {
-		const D = this.core;
-
-		// this.configHelper = new DykConfigExtra(D.config);
+	/** Load various data and init extra fields/info. */
+	async loadData () {
+		// make sure config is loaded
 		const extraConfig = await this.configHelper.getConfig();
+
+		// check size of article and make a tip for the possible author
+		this.pagerevs(extraConfig);
+
+		//fill wikiprojects list
+		this.wikiprojects.load();
+
+		// fill events list
+		this.initEvents(extraConfig);
+	}
+
+	/** Editing events. */
+	async initEvents (extraConfig) {
+		const {events} = extraConfig;
+		if (!events || !events.length) {
+			$('#CzyWieszEventsRow .czywiesz-info').html('<i>brak aktywnych akcji</i>');
+			return;
+		}
+
+		const $select = $('<select class="czywiesz-select"></select>');
+		$select.append('<option value="none">-- (standardowe zgłoszenie) --</option>');
+
+		for (const event of events) {
+			$('<option>').attr('value',event.code).text(event.name).appendTo($select);
+		}
+
+		$('#CzyWieszEventsRow .czywiesz-info').remove();
+		$('#CzyWieszEventsRow .czywiesz-value').append($select);
+	}
+
+	/** Page revisions and author data. */
+	async pagerevs (extraConfig) {
+		const D = this.core;
 
 		const bigEdit = extraConfig.options.bigEdit;
 		let checkDays = extraConfig.options.hardLimitDays > 365 ? 365 : extraConfig.options.hardLimitDays;
@@ -419,6 +466,7 @@ class DykForm {
 		var AUTHOR_INF = ( $('#CzyWieszAuthorInf').prop('checked') ? true : false );
 		var AUTHOR2 = $('#CzyWieszAuthor2').val().trim();
 		var SIGNATURE = $('#CzyWieszSignature').val().trim();
+
 		//get the wikiprojects
 		var wikiprojectSet = new Set();
 		$('.czywiesz-wikiproject').each( function() {
@@ -427,7 +475,18 @@ class DykForm {
 				wikiprojectSet.add(val);
 			}
 		});
-		var WIKIPROJECT = Array.from(wikiprojectSet).map(v=>D.wikiprojects.list[v]);
+		var WIKIPROJECT = Array.from(wikiprojectSet).map(v=>this.wikiprojects.list[v]);
+
+		//get the selected event
+		const specialEvent = {code:'', name:''};
+		$('#CzyWieszEventsRow .czywiesz-select').each((i, sel)=>{
+			var code = sel.value;
+			if (code != 'none') {
+				specialEvent.code = code;
+				specialEvent.name = sel.options[sel.selectedIndex].text;
+			}
+		});
+		console.log(specialEvent);
 
 		var COMMENT = ( $('#CzyWieszCommentCheckbox').prop('checked') ? $('#CzyWieszComment').val().trim() : false );
 
@@ -509,7 +568,8 @@ class DykForm {
 			author2:      AUTHOR2,
 			signature:   SIGNATURE,
 			comment:    COMMENT,
-			wikiproject: WIKIPROJECT
+			wikiproject: WIKIPROJECT,
+			specialEvent,
 		};
 
 		return {invalid, values};
