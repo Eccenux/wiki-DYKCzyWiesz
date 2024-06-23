@@ -1290,7 +1290,7 @@ class DykForm {
 				return;
 			}
 			let $input = $(targetSelector);
-			let pageTitle = mw.config.get('wgPageName');
+			let pageTitle = mw.config.get('wgTitle'); // title, not page name (needs to have whitespace)
 			$input.textSelection('encapsulateSelection', {pre: `'''[[${pageTitle}|`, post: `]]'''`});
 		});
 		
