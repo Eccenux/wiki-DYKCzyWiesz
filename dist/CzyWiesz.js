@@ -1764,7 +1764,7 @@ class DykProcess {
 		| 2. autorstwo   = ${Dv.author2}
 		| strona         = ${subpage}
 		| akcja kod      = ${Dv.specialEvent.code}
-		| akcja nazwa    = ${Dv.specialEvent.name}
+		| akcja          = ${Dv.specialEvent.name}
 		| nominacja      = ${Dv.signature}
 		| status         = 
 		| 1. sprawdzenie = 
