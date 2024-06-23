@@ -1059,12 +1059,14 @@ class DykForm {
 		`);
 		var $question_textarea_paragraph = $('<p></p>')
 			.html(`
+				<p>
 				<textarea id="CzyWieszQuestion" style="width: 570px;" rows="2" value="" 
 					placeholder="Możesz wpisać kilka pytań, każde w osobnej linijce. Pamiętaj, żeby w każdym dodać pogrubiony link."
 					autofocus
 				></textarea>
 			`)
 		;
+		$question_textarea_paragraph.append('<button id="CzyWieszInsertLink" data-target="#CzyWieszQuestion">wstaw link</button>')
 
 		var $ref_row = $('<tr id="CzyWieszRefs"></tr>')
 			.html('<td>Źródła: </td>'
@@ -1280,6 +1282,18 @@ class DykForm {
 		$('#CzyWieszCommentCheckbox').change(function(){
 			$('#CzyWieszCommentContainer').toggle();
 		});
+
+		$('#CzyWieszInsertLink').on( "click", function() {
+			let targetSelector = this.getAttribute('data-target');
+			if (!targetSelector && !targetSelector.length) {
+				console.warn('[DYK] selector empty');
+				return;
+			}
+			let $input = $(targetSelector);
+			let pageTitle = mw.config.get('wgPageName');
+			$input.textSelection('encapsulateSelection', {pre: `'''[[${pageTitle}|`, post: `]]'''`});
+		});
+		
 
 		//$('#CzyWieszQuestion').keyup();
 		$('#CzyWieszQuestion').focus();
@@ -2704,7 +2718,7 @@ module.exports = { apiAjax, apiAsync };
 
 },{}],14:[function(require,module,exports){
 let versionInfo = {
-	version:'6.10.0',
+	version:'6.11.0',
 	buildDay:'2024-06-23',
 }
 
