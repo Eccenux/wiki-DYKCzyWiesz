@@ -1014,6 +1014,55 @@ class DykForm {
 	}
 
 	/**
+	 * Check if the article has references.
+	 * 
+	 * test:
+	 * hasRefs({refSectionsArr:['Bibliografia']})
+	 * hasRefs({refSectionsArr:['BIBLIOGRAFIA']})
+	 * hasRefs({refSectionsArr:['bibliografia']})
+	 * 
+	 * @private @static
+	 */
+	hasRefs(config) {
+		// has <references> with ref(s)
+		let refCountTotal = document.querySelectorAll('ol.references li').length;
+		if (refCountTotal > 0)  {
+			// don't count refs in navboxes
+			// e.g. https://pl.wikipedia.org/w/index.php?title=US_Catanzaro_1929&oldid=70793795
+			let refCountNav = document.querySelectorAll('.navbox ol.references li').length;
+			// total must be higher then nav
+			// e.g. https://pl.wikipedia.org/w/index.php?title=Calcio_Padova&oldid=73650399
+			if (refCountTotal > refCountNav)  {
+				return true;
+			}
+		}
+		// has specific section(s)
+		if (Array.isArray(config.refSectionsArr)) {
+			const ids = config.refSectionsArr;
+			const container = document.querySelector('#bodyContent,.mw-body,#content');
+			if (!container) {
+				return false;
+			}
+			// check case-sensitive
+			let idSelector = '#' + ids.join(',#');
+			if (container.querySelector(idSelector)) {
+				return true;
+			}
+			// insenstive check (just in case)
+			const idElements = container.querySelectorAll('.mw-heading [id]');
+			if (idElements && idElements.length) {
+				const lowerIds = ids.map(s => s.toLowerCase());
+				for (const el of idElements) {
+					if (lowerIds.includes(el.id.toLowerCase())) {
+						return true;
+					}
+				}
+			}
+		}
+		return false;
+	}
+
+	/**
 	 * Function called when user clicks the link of the gadget.
 	 */
 	askuser () {
@@ -1032,19 +1081,12 @@ class DykForm {
 			,.gallery span[typeof="mw:File"] img
 		`, $('#mw-content-text'));
 		var IMAGES = IMG_ARR.length;
+
 		var REFS = {
 			warn:	D.config.no + '&nbsp;&nbsp;<strong style="color: red;">Brak źródeł dyskwalifikuje artykuł ze zgłoszenia!</strong> <small>(<a href="#" role="button">info</a>)</small>',
-			ar1:	[''],
-			ar2:	['Bibliografia','Przypisy']
 		};
-			$('.mw-headline, .mw-heading > [id]').each(function(){
-				REFS.ar1.push( $(this).html() );
-			});
-			REFS.ar1 = REFS.ar1.join('#') + '#';
-			D.sourced = false;
-			for (var i=0; i < REFS.ar2.length; i++) {
-				if ( REFS.ar1.match('#' + REFS.ar2[i] + '#') ) {D.sourced = true; break;}
-			}
+		D.sourced = this.hasRefs(this.core.config);
+
 		var SIGNATURE = (D.wgUserName ? {name: D.wgUserName, disabled: ' disabled'} : {name: '~~' + '~', disabled: ' disabled'} );
 
 		//workaround for Opera - the textarea must be inserted to a visible element
@@ -1460,14 +1502,14 @@ class DykForm {
 		var D = this.core;
 
 		//get the question
-		var QUESTION = $('#CzyWieszQuestion').val();
-		var FILE = ( $('#CzyWieszFile1').prop('checked') ? $('#CzyWieszFile2').val().trim() : '' );
-		var IMAGES = $('#CzyWieszImages').val().trim();
-		var REFS = (D.sourced ? '+' : ' ');
-		var AUTHOR = $('#CzyWieszAuthor').val().trim();
-		var AUTHOR_INF = ( $('#CzyWieszAuthorInf').prop('checked') ? true : false );
-		var AUTHOR2 = $('#CzyWieszAuthor2').val().trim();
-		var SIGNATURE = $('#CzyWieszSignature').val().trim();
+		let QUESTION = $('#CzyWieszQuestion').val();
+		let FILE = ( $('#CzyWieszFile1').prop('checked') ? $('#CzyWieszFile2').val().trim() : '' );
+		let IMAGES = $('#CzyWieszImages').val().trim();
+		let REFS = (D.sourced ? '+' : ' ');
+		let AUTHOR = $('#CzyWieszAuthor').val().trim();
+		let AUTHOR_INF = ( $('#CzyWieszAuthorInf').prop('checked') ? true : false );
+		let AUTHOR2 = $('#CzyWieszAuthor2').val().trim();
+		let SIGNATURE = $('#CzyWieszSignature').val().trim();
 
 		//get the wikiprojects
 		var wikiprojectSet = new Set();
@@ -2718,8 +2760,8 @@ module.exports = { apiAjax, apiAsync };
 
 },{}],14:[function(require,module,exports){
 let versionInfo = {
-	version:'6.11.0',
-	buildDay:'2024-06-23',
+	version:'6.12.0',
+	buildDay:'2024-09-11',
 }
 
 module.exports = { versionInfo };
@@ -2728,6 +2770,8 @@ module.exports = { versionInfo };
 var config = {
 	interp:		'.,:;!?…-–—()[]{}⟨⟩\'"„”«»/\\', // [\s] must be added directly!; ['] & [\] escaped due to js limits, [\s] means [space]
 	miesiacArr:	['stycznia', 'lutego', 'marca', 'kwietnia', 'maja', 'czerwca', 'lipca', 'sierpnia', 'września', 'października', 'listopada', 'grudnia'],
+
+	refSectionsArr:	['Bibliografia','Przypisy'],	// this should be ids of the required sections (one from this list is required)
 
 	/** Gloablly unique cache key */
 	wikiConfigKey: 'dyk-extra-options',

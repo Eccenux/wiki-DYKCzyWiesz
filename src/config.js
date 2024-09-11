@@ -2,6 +2,8 @@ var config = {
 	interp:		'.,:;!?…-–—()[]{}⟨⟩\'"„”«»/\\', // [\s] must be added directly!; ['] & [\] escaped due to js limits, [\s] means [space]
 	miesiacArr:	['stycznia', 'lutego', 'marca', 'kwietnia', 'maja', 'czerwca', 'lipca', 'sierpnia', 'września', 'października', 'listopada', 'grudnia'],
 
+	refSectionsArr:	['Bibliografia','Przypisy'],	// this should be ids of the required sections (one from this list is required)
+
 	/** Gloablly unique cache key */
 	wikiConfigKey: 'dyk-extra-options',
 	/** Pages combined to `wiki` config. */
