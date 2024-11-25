@@ -279,7 +279,7 @@ class DykProcess {
 					title : (debug ? config.debugBase + '/autor' : 'Dyskusja wikipedysty:' + author),
 					section : 'new',
 					sectiontitle : sectionTitle_a,
-					text : (debug ? "debug: '''" + author + "'''\n" : '') + '{' + '{subst:Czy wiesz - autor0|tytuł strony='+D.wgTitle+'|s='+subpageTitle+'}} ~~' + '~~',
+					text : (debug ? "debug: '''" + author + "'''\n" : '') + '{' + '{Czy wiesz - autor0|tytuł strony='+D.wgTitle+'|data={{subst:#timel:Y-m-d}}|s='+subpageTitle+'}} ~~' + '~~',
 					summary : summary_a,
 					watchlist : 'nochange',
 					token : D.edittoken
