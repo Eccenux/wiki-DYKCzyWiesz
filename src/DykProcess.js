@@ -260,7 +260,6 @@ class DykProcess {
 		var D = this.core;
 		var Dv = this.values;
 		var debug = D.debugmode;
-		var sectionTitle_a,summary_a;
 
 		if ( !Dv.authorInf ) {
 			return;
@@ -268,8 +267,20 @@ class DykProcess {
 
 		let subpageTitle = this.setupNominationPage();
 		try {
-			sectionTitle_a = D.config.sectionTitle_a.replace('TITLE',D.wgTitle);
-			summary_a = D.config.summary_a.replace('TITLE',D.wgTitle);
+			let sectionTitle_a = D.config.sectionTitle_a.replace('TITLE',D.wgTitle);
+			let summary_a = D.config.summary_a.replace('TITLE',D.wgTitle);
+			let text = `
+					{{Czy wiesz - informacja o zgłoszeniu dla autora
+					|tytuł strony = [[${D.wgTitle}]]
+					|data = {{subst:#timel:Y-m-d}}
+					|s = ${subpageTitle}
+					}}
+					Dziękujemy i prosimy o więcej, ~~~~
+				`
+				.trim()
+				.replace(/[\r\n]+[ \t]+([|}])/g, ' $1')	// zwiń szablon
+				.replace(/[\r\n]+[ \t]+/g, '\n')	// zwiń indent
+			;
 			const requestData = (author) => ({
 				url : '/w/api.php',
 				type : 'POST',
@@ -279,7 +290,7 @@ class DykProcess {
 					title : (debug ? config.debugBase + '/autor' : 'Dyskusja wikipedysty:' + author),
 					section : 'new',
 					sectiontitle : sectionTitle_a,
-					text : (debug ? "debug: '''" + author + "'''\n" : '') + '{' + '{Czy wiesz - autor0|tytuł strony='+D.wgTitle+'|data={{subst:#timel:Y-m-d}}|s='+subpageTitle+'}} ~~' + '~~',
+					text : (debug ? "debug: '''" + author + "'''\n" : '') + text,
 					summary : summary_a,
 					watchlist : 'nochange',
 					token : D.edittoken
