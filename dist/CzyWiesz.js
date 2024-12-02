@@ -2043,7 +2043,7 @@ class DykProcess {
 
 		let mainCall;
 		let subpageTitle = this.setupNominationPage();
-		let infoTpl = `{{Czy wiesz - wikiprojekt|${D.wgTitle}|s=${subpageTitle}}}`;
+		let infoTpl = `{{Czy wiesz - informacja o zgłoszeniu dla wikiprojektu|tytuł strony=[[${D.wgTitle}]]|s=${subpageTitle}}}`;
 		if (!debug) {
 			// get page source [to edit]
 			let data;
@@ -2771,8 +2771,8 @@ module.exports = { apiAjax, apiAsync };
 
 },{}],14:[function(require,module,exports){
 let versionInfo = {
-	version:'6.13.0',
-	buildDay:'2024-11-26',
+	version:'6.13.1',
+	buildDay:'2024-12-02',
 }
 
 module.exports = { versionInfo };

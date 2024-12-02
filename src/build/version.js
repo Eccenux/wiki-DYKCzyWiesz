@@ -1,6 +1,6 @@
 let versionInfo = {
-	version:'6.13.0',
-	buildDay:'2024-11-26',
+	version:'6.13.1',
+	buildDay:'2024-12-02',
 }
 
 module.exports = { versionInfo };
