@@ -202,8 +202,8 @@ class DykForm {
 
 		//rules paragraph
 		var $rules_paragraph = $('<p id="CzyWieszRules"></p>')
-			.html(`<small>Reguły: Zgłaszaj hasła, które powstały lub zostały rozbudowane nie dawniej niż 10 dni temu.
-				Hasła muszą posiadać źródła (najlepiej w formie przypisów) oraz muszą zawierać co najmniej 2 kB samej treści.</small>`)
+			.html(`<small>Reguły: Zgłaszaj hasła, które powstały lub zostały rozbudowane nie dawniej niż <xd>10</xd> dni temu.
+				Hasła muszą posiadać źródła w formie przypisów oraz muszą zawierać co najmniej <xkb>1</xkb> kB samej treści.</small>`)
 			.css({border: '1px solid #F0F080', backgroundColor: '#FFFFE0', paddingLeft: '5px'});
  
 		var $loading_bar = $('<div id="CzyWieszLoaderBar"></div>')
@@ -388,6 +388,13 @@ class DykForm {
 		$('#CzyWieszEventsRow .czywiesz-value').append($select);
 	}
 
+	/** Super round bytes. */
+	formatBytes(bytes) {
+		const kb = bytes / 1024;
+		const rounded = Math.round(kb * 10) / 10;
+		return (rounded % 1 === 0) ? rounded.toFixed(0) : rounded.toFixed(1).replace('.', ',');
+	}
+
 	/** Page revisions and author data. */
 	async pagerevs (extraConfig) {
 		const D = this.core;
@@ -396,6 +403,10 @@ class DykForm {
 		let checkDays = extraConfig.options.hardLimitDays > 365 ? 365 : extraConfig.options.hardLimitDays;
 		let warnLimitDays = extraConfig.options.warnLimitDays >= checkDays ? -1 : extraConfig.options.warnLimitDays;
 
+		// xd
+		$('#CzyWieszRules xd').text(warnLimitDays);
+		$('#CzyWieszRules xkb').text(this.formatBytes(bigEdit));
+		
 		const {revisions, records} = await this.revisionList.readRevs(D.wgTitle, checkDays);
 		D.log('revisions in last days + 1 edit:', revisions.length);
 		D.log('day-users in last days:', records.length);
