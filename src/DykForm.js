@@ -438,6 +438,10 @@ class DykForm {
 
 				$('#CzyWieszAuthor').val(winner.user);
 				$('#CzyWieszAuthor').after('&nbsp;<small id="CzyWieszAuthorTip"><span class="czywiesz-tip" title="Autorstwo ustalone wg największej lub najnowszej dużej edycji z ostatnich dni (dodane ' + winner.added + ' znaków, data: ' + winner.day + ').">(!)</span></small>&nbsp;');
+			
+				if (winner.user == D.wgUserName) {
+					$('#CzyWieszAuthorInf').prop('checked', false);
+				}
 			} else {
 				fatalMessage = true;
 				message = `
