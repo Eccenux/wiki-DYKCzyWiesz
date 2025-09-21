@@ -1426,6 +1426,10 @@ class DykForm {
 
 				$('#CzyWieszAuthor').val(winner.user);
 				$('#CzyWieszAuthor').after('&nbsp;<small id="CzyWieszAuthorTip"><span class="czywiesz-tip" title="Autorstwo ustalone wg największej lub najnowszej dużej edycji z ostatnich dni (dodane ' + winner.added + ' znaków, data: ' + winner.day + ').">(!)</span></small>&nbsp;');
+			
+				if (winner.user == D.wgUserName) {
+					$('#CzyWieszAuthorInf').prop('checked', false);
+				}
 			} else {
 				fatalMessage = true;
 				message = `
@@ -2782,8 +2786,8 @@ module.exports = { apiAjax, apiAsync };
 
 },{}],14:[function(require,module,exports){
 let versionInfo = {
-	version:'6.14.0',
-	buildDay:'2025-07-24',
+	version:'6.15.0',
+	buildDay:'2025-09-21',
 }
 
 module.exports = { versionInfo };
