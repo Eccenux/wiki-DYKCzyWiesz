@@ -1,3 +1,4 @@
+/* global OO */
 /* eslint-disable no-useless-escape */
 /* eslint-disable no-mixed-spaces-and-tabs */
 /* eslint-disable indent */
@@ -434,33 +435,34 @@ class DykProcess {
 		let subpageTitle = this.setupNominationPage();
 
 		// end dialog: "Finished!"
-		$(/* html */`
-			<div id="CzyWieszSuccess">
-				<div class="floatright">${D.config.CWicon}</div>
-				<p style="margin-left: 10px;">Dziękujemy za 
-				<a id="CzyWieszLinkAfter" href="/wiki/${encodeURIComponent(subpageTitle)}" class="czywiesz-external" target="_blank">zgłoszenie</a>.
-				<br /><br />
-				Dla pewności możesz sprawdzić 
-				<a href="/wiki/Specjalna:Wk%C5%82ad/${encodeURIComponent(Dv.signature)}" class="czywiesz-external" target="_blank">swój wkład</a>,
-				czy wszystko poszło zgodnie z planem.<br />
-				<small><a class="CzyWieszEmailDoAutoraToggle">(Coś nie działa?)</a></small>
-				<div class="CzyWieszEmailDoAutoraInfo" style="display:none;">
-					Jeśli coś poszło nie tak, to <a href="#" role="button" class="CzyWieszEmailDoAutoraWyslij">kliknij tutaj</a>,
-					aby wysłać twórcy gadżetu e-mail z opisem błędu, a gadżet dołączy do niego szczegóły techniczne.
-					<span class="CzyWieszEmailDoAutoraWyslano"></span>
-				</div>
-			<br />
-			<a href="/wiki/Wikiprojekt:Czy_wiesz" title="Wikiprojekt:Czy wiesz">Wikiprojekt Czy wiesz</a></p></div>
-		`)
-		.dialog({
-			modal: true,
-			dialogClass: "wikiEditor-toolbar-dialog",
-			title: D.config.tmpldone,
-			close: function() {
-				$(this).dialog("destroy");
-				$(this).remove();
-				$('#CzyWieszGadget').dialog("destroy");
-				$('#CzyWieszGadget').remove();
+		OO.ui.alert(
+			$(/* html */`
+				<div id="CzyWieszSuccess">
+					<div class="floatright">${D.config.CWicon}</div>
+					<p style="margin-left: 10px;">Dziękujemy za 
+					<a id="CzyWieszLinkAfter" href="/wiki/${encodeURIComponent(subpageTitle)}" class="czywiesz-external" target="_blank">zgłoszenie</a>.
+					<br /><br />
+					Dla pewności możesz sprawdzić 
+					<a href="/wiki/Specjalna:Wk%C5%82ad/${encodeURIComponent(Dv.signature)}" class="czywiesz-external" target="_blank">swój wkład</a>,
+					czy wszystko poszło zgodnie z planem.<br />
+					<small><a class="CzyWieszEmailDoAutoraToggle">(Coś nie działa?)</a></small>
+					<div class="CzyWieszEmailDoAutoraInfo" style="display:none;">
+						Jeśli coś poszło nie tak, to <a href="#" role="button" class="CzyWieszEmailDoAutoraWyslij">kliknij tutaj</a>,
+						aby wysłać twórcy gadżetu e-mail z opisem błędu, a gadżet dołączy do niego szczegóły techniczne.
+						<span class="CzyWieszEmailDoAutoraWyslano"></span>
+					</div>
+				<br />
+				<a href="/wiki/Wikiprojekt:Czy_wiesz" title="Wikiprojekt:Czy wiesz">Wikiprojekt Czy wiesz</a></p></div>
+			`),
+			{
+				title: D.config.tmpldone,
+				size: 'large'
+			}
+		).done(function () {
+			for (let el of document.querySelectorAll('.dyk-dialog')) {
+				if (el.uSdd) {
+					el.uSdd.close();
+				}
 			}
 		});
 		$('#CzyWieszSuccess a.CzyWieszEmailDoAutoraToggle').click(function() {

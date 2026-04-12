@@ -106,7 +106,7 @@ function createDyk(DYKnomination) {
 		
 		//throbber and cursor-wait – until e-mail sent
 		$('.CzyWieszEmailDoAutoraWyslano').html('<img src="https://upload.wikimedia.org/wikipedia/commons/1/1a/Denken.gif" width="10" height="10">');
-		$('#CzyWieszErrorDialog, #CzyWieszSuccess').addClass('wait-im-sending-email');
+		$('#CzyWieszErrorDialog, #CzyWieszSuccess').addClass('dyk-wait-still-sending');
 
 		// disable
 		button.classList.add('dyk-button-off');
@@ -129,7 +129,7 @@ function createDyk(DYKnomination) {
 			},
 		})
 			.then(function(){
-				$('#CzyWieszErrorDialog, #CzyWieszSuccess').removeClass('wait-im-sending-email');
+				$('#CzyWieszErrorDialog, #CzyWieszSuccess').removeClass('dyk-wait-still-sending');
 				$('.CzyWieszEmailDoAutoraWyslano').html(' <strong>Wysłano!</strong>');
 			})
 			.catch(function(info){

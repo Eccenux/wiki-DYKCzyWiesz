@@ -57,7 +57,7 @@ var config = {
 	/** style for this gadget */
 	styletag:	$('<style id="CzyWieszStyleTag">'
 					+ /* css */`
-						.wikiEditor-toolbar-dialog .czy-wiesz-gallery-chosen { border: solid 2px red; }
+						.dyk-gallery-chosen { border: solid 2px red; }
 						#CzyWieszWikiprojectAdd {cursor: pointer; }
 						#CzyWieszGadget .czywiesz-tip {
 							cursor: help;
@@ -75,7 +75,7 @@ var config = {
 							pointer-events: none;
 							opacity: .5;
 						}
-						#CzyWieszErrorDialog.wait-im-sending-email, #CzyWieszSuccess.wait-im-sending-email {
+						.dyk-wait-still-sending {
 							cursor: wait; 
 						}
 					`

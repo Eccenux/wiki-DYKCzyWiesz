@@ -1,3 +1,4 @@
+/* global SimpleDragDialog, OO */
 /* eslint-disable no-useless-escape */
 /* eslint-disable no-mixed-spaces-and-tabs */
 /* eslint-disable indent */
@@ -220,6 +221,9 @@ class DykForm {
 		const $dialog = $('<div id="CzyWieszGadget"></div>').append($title_paragraph).append($question_paragraph).append($question_textarea_paragraph)
 			.append($main_table).append($comment_paragraph).append($comment_textarea_paragraph).append($rules_paragraph).append($loading_bar);
  
+		// actual dialog
+		const sddMain = new SimpleDragDialog();
+
 		//main buttons
 		var buttons = {
 			"Zgłoś": function() {
@@ -231,19 +235,17 @@ class DykForm {
 				}
 			},
 			"Anuluj" : function() {
-				$(this).dialog("close");
+				sddMain.close();
 			}
 		};
  
-		$dialog.dialog({
-		  width: 600,
-		  modal: true,
-		  title: (window.DYKnomination_is_beta===true?'BETA: ':'')+'Zgłoszenie artykułu do rubryki „Czy wiesz…”' + (debug ? ' &nbsp; (<small id="CzyWieszDialogDebug" style="color: red;">TRYB DEBUG</small>)' : ''),
-		  draggable: true,
-		  dialogClass: "wikiEditor-toolbar-dialog",
-		  close: function() { $(this).dialog("destroy"); $(this).remove();},
-		  buttons: buttons
+		let title = (window.DYKnomination_is_beta===true?'BETA: ':'')+'Zgłoszenie artykułu do rubryki „Czy wiesz…”' + (debug ? ' &nbsp; (<small style="color: red;">TRYB DEBUG</small>)' : '');
+		sddMain.create({
+			dialogClass: "dyk-dialog dyk-main-dialog",
 		});
+		sddMain.dialog.querySelector('.u-title').innerHTML = title;
+		$(sddMain.body).append($dialog);
+		this.appendActions(sddMain, buttons);
 
 		// debug quicky
 		if (D.debugmode) {
@@ -273,7 +275,7 @@ class DykForm {
 		if (IMAGES > 0) {
 			$('#CzyWieszGalleryToggler').toggle();
 			$('#CzyWieszGalleryToggler a').click(function(){
-				var GALLERY = '<div id="CzyWieszGalleryHolder">'
+				let GALLERY = '<div id="CzyWieszGalleryHolder">'
 						+ `<div id="CzyWieszGallery">`;
 						for (var i=0; i<IMG_ARR.length; i++) {
 							GALLERY += '<fig>';
@@ -282,35 +284,34 @@ class DykForm {
 						}
 				GALLERY	+= '</div> </div>';
 
-				$(GALLERY).dialog({
-					width: 547,
-					modal: true,
+				const sddGal = new SimpleDragDialog();
+				sddGal.create({
+					dialogClass: "dyk-dialog dyk-gallery-dialog",
 					title: 'Wybierz grafikę:',
-					draggable: true,
-					dialogClass: "wikiEditor-toolbar-dialog",
-					close: function() { $(this).dialog("destroy"); $(this).remove();},
-					buttons: {
+				});
+				sddGal.body.innerHTML = GALLERY;
+				this.appendActions(sddGal,
+					{
 						"Wybierz": function() {
 							if ($('#CzyWieszFile1').length > 0) {
 								$('#CzyWieszFile1').prop('checked',true);
 								$('#CzyWieszFile2').prop('disabled', false);
-								$('#CzyWieszFile2').val( $('.czy-wiesz-gallery-chosen').length == 0 ? '' : decodeURIComponent($('.czy-wiesz-gallery-chosen')[0].src.match(/\/\/upload\.wikimedia\.org\/wikipedia\/commons(\/thumb)?\/.\/..\/([^\/]+)\/?/)[2]).replace(/_/g,' ') ); // ← extract file name
+								$('#CzyWieszFile2').val( $('.dyk-gallery-chosen').length == 0 ? '' : decodeURIComponent($('.dyk-gallery-chosen')[0].src.match(/\/\/upload\.wikimedia\.org\/wikipedia\/commons(\/thumb)?\/.\/..\/([^\/]+)\/?/)[2]).replace(/_/g,' ') ); // ← extract file name
 							}
 
-							$(this).dialog("destroy");
-							$(this).remove();
+							sddGal.close();
 						},
 						"Anuluj" : function() {
-							$(this).dialog("close");
+							sddGal.close();
 						}
 					}
-				});
+				);
 				$('#CzyWieszGallery img').each(function(){
 					$(this).click(function(){
-						$('.czy-wiesz-gallery-chosen').each(function(){
-							$(this).toggleClass('czy-wiesz-gallery-chosen');
+						$('.dyk-gallery-chosen').each(function(){
+							$(this).toggleClass('dyk-gallery-chosen');
 						});
-						$(this).toggleClass('czy-wiesz-gallery-chosen');
+						$(this).toggleClass('dyk-gallery-chosen');
 					});
 				});
 			});
@@ -318,13 +319,20 @@ class DykForm {
 
 		// if there are no refs (or they're badly named) → append this dialog to a link in $ref_row
 		$('#CzyWieszRefs small a').click(function(){
-			$(/*html*/`<div>
-				<div class="floatright">${D.config.CWicon}</div>
-				<p style="margin-left: 10px;">Zgodnie z wytycznymi <a class="czywiesz-external" target="_blank" href="/wiki/Wikiprojekt:Czy_wiesz" title="Wikiprojekt:Czy wiesz">Wikiprojektu Czy wiesz</a> zgłaszane hasło powinno posiadać źródła w formie bibliografii lub przypisów.
-				<a class="czywiesz-external" target="_blank" href="/wiki/Wikiprojekt:Czy_wiesz/pomoc#Zg.C5.82aszanie_propozycji_i_poprawa_hase.C5.82" title="Wikiprojekt:Czy wiesz/pomoc#Zgłaszanie propozycji i poprawa haseł">Więcej informacji w instrukcji</a>
-				<br /><small>Możliwe, że w artykule sekcje ze źródłami są błędnie nazwane – w takim wypadku popraw je.</small></p>
-			</div>`)
-			.dialog({ modal: true, dialogClass: "wikiEditor-toolbar-dialog", close: function() { $(this).dialog("destroy"); $(this).remove();} });
+			OO.ui.alert(
+				$(/*html*/`<div>
+					<div class="floatright">${D.config.CWicon}</div>
+					<p style="margin-left: 10px;">Zgodnie z wytycznymi 
+					<a class="czywiesz-external" target="_blank" href="/wiki/Wikiprojekt:Czy_wiesz" title="Wikiprojekt:Czy wiesz">Wikiprojektu Czy wiesz</a>
+					zgłaszane hasło powinno posiadać źródła w formie przypisów (lub biografii z odnośnikami przypisowymi).
+					<a class="czywiesz-external" target="_blank" href="/wiki/Wikiprojekt:Czy_wiesz/pomoc#Zg.C5.82aszanie_propozycji_i_poprawa_hase.C5.82" title="Wikiprojekt:Czy wiesz/pomoc#Zgłaszanie propozycji i poprawa haseł">Więcej informacji w instrukcji</a>
+					<br /><small>Możliwe, że w artykule sekcje ze źródłami są błędnie nazwane – w takim wypadku popraw je.</small></p>
+				</div>`),
+				{
+					title: 'Wymagane przypisy',
+					size: 'medium'
+				}
+			);
 		});
 
 		// click on (+) near wikiprojects combo box → add new combo box and enlarge the dialog window
@@ -644,6 +652,28 @@ class DykForm {
 		};
 
 		return {invalid, values};
+	}
+
+	/**
+	 * Add jQueryUI-style actions/buttons to `SimpleDragDialog`.
+	 * @param {SimpleDragDialog} sdd Created dialog.
+	 * @param {Object} buttons {label: onClick, ...}.
+	 */
+	appendActions (sdd, buttons) {
+		let buttonsEl = document.createElement('div');
+		buttonsEl.className = 'u-actions';
+		for (const label in buttons) {
+			if (!Object.hasOwn(buttons, label)) continue;
+			const onClick = buttons[label];
+
+			const el = document.createElement('input');
+			el.type = 'button';
+			el.value = label;
+			el.addEventListener('click', onClick);
+
+			buttonsEl.appendChild(el);
+		}
+		sdd.body.appendChild(buttonsEl);
 	}
 
 }
