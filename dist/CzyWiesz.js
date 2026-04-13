@@ -1262,8 +1262,9 @@ class DykForm {
 
 		// if there are images in article → add link to small gallery to quickly choose an image from article
 		if (IMG_ARR.length > 0) {
-			$('#CzyWieszGalleryToggler').toggle();
-			$('#CzyWieszGalleryToggler a').click(() => {
+			$('#CzyWieszGalleryToggler').show();
+			$('#CzyWieszGalleryToggler a').click((e) => {
+				e.preventDefault();
 				this.showGallery(IMG_ARR);
 			});
 		}
@@ -1350,10 +1351,11 @@ class DykForm {
 						$('#CzyWieszFile2').prop('disabled', false); // enable name input
 						let fileName = choosen[0].src.match(/\/\/upload\.wikimedia\.org\/wikipedia\/commons(\/thumb)?\/.\/..\/([^\/]+)\/?/)[2];
 						$('#CzyWieszFile2').val( decodeURIComponent( fileName ).replace(/_/g,' ') );
-
-						// this.closest('.dyk-dialog').remove();
-						sddGal.hide();
+					} else {
+						$('#CzyWieszFile1').prop('checked', false); // tick img checkbox
+						$('#CzyWieszFile2').val( '' );
 					}
+					sddGal.hide();
 				},
 				"Anuluj" : function() {
 					//this.closest('.dyk-dialog').remove();
@@ -1363,8 +1365,11 @@ class DykForm {
 		);
 		$('#CzyWieszGallery img').each(function(){
 			$(this).click(function(){
+				let current = this;
 				$('.dyk-gallery-chosen').each(function(){
-					$(this).removeClass('dyk-gallery-chosen');
+					if (this !== current) {
+						$(this).removeClass('dyk-gallery-chosen');
+					}
 				});
 				$(this).toggleClass('dyk-gallery-chosen');
 			});
