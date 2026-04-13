@@ -107,7 +107,7 @@ function createDyk(DYKnomination) {
 		
 		//throbber and cursor-wait – until e-mail sent
 		$('.CzyWieszEmailDoAutoraWyslano').html('<img src="https://upload.wikimedia.org/wikipedia/commons/1/1a/Denken.gif" width="10" height="10">');
-		$('#CzyWieszErrorDialog, #CzyWieszSuccess').addClass('wait-im-sending-email');
+		$('#CzyWieszErrorDialog, #CzyWieszSuccess').addClass('dyk-wait-still-sending');
 
 		// disable
 		button.classList.add('dyk-button-off');
@@ -130,7 +130,7 @@ function createDyk(DYKnomination) {
 			},
 		})
 			.then(function(){
-				$('#CzyWieszErrorDialog, #CzyWieszSuccess').removeClass('wait-im-sending-email');
+				$('#CzyWieszErrorDialog, #CzyWieszSuccess').removeClass('dyk-wait-still-sending');
 				$('.CzyWieszEmailDoAutoraWyslano').html(' <strong>Wysłano!</strong>');
 			})
 			.catch(function(info){
@@ -986,6 +986,7 @@ async function quickCheck() {
 
 module.exports = { DykConfigExtra };
 },{"./ReadJsonCached":10}],5:[function(require,module,exports){
+/* global SimpleDragDialog, OO */
 /* eslint-disable no-useless-escape */
 /* eslint-disable no-mixed-spaces-and-tabs */
 /* eslint-disable indent */
@@ -1075,12 +1076,11 @@ class DykForm {
 		D.wgUserName = mw.config.get('wgUserName');
 		D.wgTitle = mw.config.get('wgTitle');
 
-		var IMG_ARR = $(/*css*/`
+		const IMG_ARR = Array.from(document.querySelector('#mw-content-text').querySelectorAll(`
 			.infobox span[typeof="mw:File"] a.mw-file-description img
 			,figure[typeof="mw:File/Thumb"] img
 			,.gallery span[typeof="mw:File"] img
-		`, $('#mw-content-text'));
-		var IMAGES = IMG_ARR.length;
+		`));
 
 		var REFS = {
 			warn:	D.config.no + '&nbsp;&nbsp;<strong style="color: red;">Brak źródeł dyskwalifikuje artykuł ze zgłoszenia!</strong> <small>(<a href="#" role="button">info</a>)</small>',
@@ -1119,7 +1119,7 @@ class DykForm {
 
 		var $images_row = $('<tr></tr>')
 			.html('<td>Liczba grafik w artykule: </td>'
-				+ '<td><input type="number" min="0" id="CzyWieszImages" name="CzyWieszImages" value="' + IMAGES + '"' 
+				+ '<td><input type="number" min="0" id="CzyWieszImages" name="CzyWieszImages" value="' + IMG_ARR.length + '"' 
 				+ 'style="width: 3.5em;">'
 				+ '<span id="CzyWieszGalleryToggler" style="display: none;"> &nbsp;<small><a href="#" role="button">(zaproponuj grafikę z artykułu)</a></small></span>');
 
@@ -1208,6 +1208,9 @@ class DykForm {
 		const $dialog = $('<div id="CzyWieszGadget"></div>').append($title_paragraph).append($question_paragraph).append($question_textarea_paragraph)
 			.append($main_table).append($comment_paragraph).append($comment_textarea_paragraph).append($rules_paragraph).append($loading_bar);
  
+		// actual dialog
+		const sddMain = new SimpleDragDialog();
+
 		//main buttons
 		var buttons = {
 			"Zgłoś": function() {
@@ -1219,19 +1222,19 @@ class DykForm {
 				}
 			},
 			"Anuluj" : function() {
-				$(this).dialog("close");
+				sddMain.dialog.remove();
 			}
 		};
  
-		$dialog.dialog({
-		  width: 600,
-		  modal: true,
-		  title: (window.DYKnomination_is_beta===true?'BETA: ':'')+'Zgłoszenie artykułu do rubryki „Czy wiesz…”' + (debug ? ' &nbsp; (<small id="CzyWieszDialogDebug" style="color: red;">TRYB DEBUG</small>)' : ''),
-		  draggable: true,
-		  dialogClass: "wikiEditor-toolbar-dialog",
-		  close: function() { $(this).dialog("destroy"); $(this).remove();},
-		  buttons: buttons
+		let title = (window.DYKnomination_is_beta===true?'BETA: ':'')+'Zgłoszenie artykułu do rubryki „Czy wiesz…”' + (debug ? ' &nbsp; (<small style="color: red;">TRYB DEBUG</small>)' : '');
+		sddMain.create({
+			dialogClass: "dyk-dialog dyk-main-dialog",
 		});
+		sddMain.dialog.querySelector('.u-title').innerHTML = title;
+		$(sddMain.body).append($dialog);
+		this.appendActions(sddMain, buttons);
+		sddMain.show();
+		sddMain.center();
 
 		// debug quicky
 		if (D.debugmode) {
@@ -1258,61 +1261,29 @@ class DykForm {
 		});
 
 		// if there are images in article → add link to small gallery to quickly choose an image from article
-		if (IMAGES > 0) {
+		if (IMG_ARR.length > 0) {
 			$('#CzyWieszGalleryToggler').toggle();
-			$('#CzyWieszGalleryToggler a').click(function(){
-				var GALLERY = '<div id="CzyWieszGalleryHolder">'
-						+ `<div id="CzyWieszGallery">`;
-						for (var i=0; i<IMG_ARR.length; i++) {
-							GALLERY += '<fig>';
-							GALLERY += IMG_ARR[i].outerHTML.replace(/\swidth=\"\d+\"/,'').replace(/\sheight=\"[^\"]*\"/,'').replace(/\sclass=\"[^\"]*\"/g,'');
-							GALLERY += '</fig>';
-						}
-				GALLERY	+= '</div> </div>';
-
-				$(GALLERY).dialog({
-					width: 547,
-					modal: true,
-					title: 'Wybierz grafikę:',
-					draggable: true,
-					dialogClass: "wikiEditor-toolbar-dialog",
-					close: function() { $(this).dialog("destroy"); $(this).remove();},
-					buttons: {
-						"Wybierz": function() {
-							if ($('#CzyWieszFile1').length > 0) {
-								$('#CzyWieszFile1').prop('checked',true);
-								$('#CzyWieszFile2').prop('disabled', false);
-								$('#CzyWieszFile2').val( $('.czy-wiesz-gallery-chosen').length == 0 ? '' : decodeURIComponent($('.czy-wiesz-gallery-chosen')[0].src.match(/\/\/upload\.wikimedia\.org\/wikipedia\/commons(\/thumb)?\/.\/..\/([^\/]+)\/?/)[2]).replace(/_/g,' ') ); // ← extract file name
-							}
-
-							$(this).dialog("destroy");
-							$(this).remove();
-						},
-						"Anuluj" : function() {
-							$(this).dialog("close");
-						}
-					}
-				});
-				$('#CzyWieszGallery img').each(function(){
-					$(this).click(function(){
-						$('.czy-wiesz-gallery-chosen').each(function(){
-							$(this).toggleClass('czy-wiesz-gallery-chosen');
-						});
-						$(this).toggleClass('czy-wiesz-gallery-chosen');
-					});
-				});
+			$('#CzyWieszGalleryToggler a').click(() => {
+				this.showGallery(IMG_ARR);
 			});
 		}
 
 		// if there are no refs (or they're badly named) → append this dialog to a link in $ref_row
 		$('#CzyWieszRefs small a').click(function(){
-			$(/*html*/`<div>
-				<div class="floatright">${D.config.CWicon}</div>
-				<p style="margin-left: 10px;">Zgodnie z wytycznymi <a class="czywiesz-external" target="_blank" href="/wiki/Wikiprojekt:Czy_wiesz" title="Wikiprojekt:Czy wiesz">Wikiprojektu Czy wiesz</a> zgłaszane hasło powinno posiadać źródła w formie bibliografii lub przypisów.
-				<a class="czywiesz-external" target="_blank" href="/wiki/Wikiprojekt:Czy_wiesz/pomoc#Zg.C5.82aszanie_propozycji_i_poprawa_hase.C5.82" title="Wikiprojekt:Czy wiesz/pomoc#Zgłaszanie propozycji i poprawa haseł">Więcej informacji w instrukcji</a>
-				<br /><small>Możliwe, że w artykule sekcje ze źródłami są błędnie nazwane – w takim wypadku popraw je.</small></p>
-			</div>`)
-			.dialog({ modal: true, dialogClass: "wikiEditor-toolbar-dialog", close: function() { $(this).dialog("destroy"); $(this).remove();} });
+			OO.ui.alert(
+				$(/*html*/`<div>
+					<div class="floatright">${D.config.CWicon}</div>
+					<p style="margin-left: 10px;">Zgodnie z wytycznymi 
+					<a class="czywiesz-external" target="_blank" href="/wiki/Wikiprojekt:Czy_wiesz" title="Wikiprojekt:Czy wiesz">Wikiprojektu Czy wiesz</a>
+					zgłaszane hasło powinno posiadać źródła w formie przypisów (lub biografii z odnośnikami przypisowymi).
+					<a class="czywiesz-external" target="_blank" href="/wiki/Wikiprojekt:Czy_wiesz/pomoc#Zg.C5.82aszanie_propozycji_i_poprawa_hase.C5.82" title="Wikiprojekt:Czy wiesz/pomoc#Zgłaszanie propozycji i poprawa haseł">Więcej informacji w instrukcji</a>
+					<br /><small>Możliwe, że w artykule sekcje ze źródłami są błędnie nazwane – w takim wypadku popraw je.</small></p>
+				</div>`),
+				{
+					title: 'Wymagane przypisy',
+					size: 'medium'
+				}
+			);
 		});
 
 		// click on (+) near wikiprojects combo box → add new combo box and enlarge the dialog window
@@ -1340,6 +1311,66 @@ class DykForm {
 		//$('#CzyWieszQuestion').keyup();
 		$('#CzyWieszQuestion').focus();
 		
+	}
+
+	/**
+	 * Show gallery for the current article.
+	 * @private
+	 */
+	showGallery(IMG_ARR) {
+		let galEl = document.querySelector('.dyk-gallery-dialog');
+		if (galEl) {
+			galEl.uSdd.show();
+			return;
+		}
+
+		let GALLERY = `<div id="CzyWieszGalleryHolder">
+			Wybierz jedną z poniższych grafik i zatwierdź.
+			<div id="CzyWieszGallery">
+		`;
+		for (const img of IMG_ARR) {
+			GALLERY += '<fig>';
+			GALLERY += img.outerHTML.replace(/\swidth=\"\d+\"/,'').replace(/\sheight=\"[^\"]*\"/,'').replace(/\sclass=\"[^\"]*\"/g,'');
+			GALLERY += '</fig>';
+		}
+		GALLERY	+= '</div> </div>';
+
+		const sddGal = new SimpleDragDialog();
+		sddGal.create({
+			dialogClass: "dyk-dialog dyk-gallery-dialog",
+			title: 'Wybierz grafikę',
+		});
+		sddGal.body.innerHTML = GALLERY;
+		this.appendActions(sddGal,
+			{
+				"Zatwierdź": function() {
+					let choosen = sddGal.body.querySelectorAll('.dyk-gallery-chosen');
+					if (choosen.length > 0) {
+						$('#CzyWieszFile1').prop('checked', true); // tick img checkbox
+						$('#CzyWieszFile2').prop('disabled', false); // enable name input
+						let fileName = choosen[0].src.match(/\/\/upload\.wikimedia\.org\/wikipedia\/commons(\/thumb)?\/.\/..\/([^\/]+)\/?/)[2];
+						$('#CzyWieszFile2').val( decodeURIComponent( fileName ).replace(/_/g,' ') );
+
+						// this.closest('.dyk-dialog').remove();
+						sddGal.hide();
+					}
+				},
+				"Anuluj" : function() {
+					//this.closest('.dyk-dialog').remove();
+					sddGal.hide();
+				}
+			}
+		);
+		$('#CzyWieszGallery img').each(function(){
+			$(this).click(function(){
+				$('.dyk-gallery-chosen').each(function(){
+					$(this).removeClass('dyk-gallery-chosen');
+				});
+				$(this).toggleClass('dyk-gallery-chosen');
+			});
+		});
+		sddGal.show();
+		sddGal.center();
 	}
 
 	/** Load various data and init extra fields/info. */
@@ -1634,6 +1665,28 @@ class DykForm {
 		return {invalid, values};
 	}
 
+	/**
+	 * Add jQueryUI-style actions/buttons to `SimpleDragDialog`.
+	 * @param {SimpleDragDialog} sdd Created dialog.
+	 * @param {Object} buttons {label: onClick, ...}.
+	 */
+	appendActions (sdd, buttons) {
+		let buttonsEl = document.createElement('div');
+		buttonsEl.className = 'u-actions';
+		for (const label in buttons) {
+			if (!Object.hasOwn(buttons, label)) continue;
+			const onClick = buttons[label];
+
+			const el = document.createElement('input');
+			el.type = 'button';
+			el.value = label;
+			el.addEventListener('click', onClick);
+
+			buttonsEl.appendChild(el);
+		}
+		sdd.body.appendChild(buttonsEl);
+	}
+
 }
 
 module.exports = { DykForm };
@@ -1699,6 +1752,7 @@ class DykMain {
 module.exports = { DykMain };
 
 },{"./DykForm":5,"./DykProcess":7}],7:[function(require,module,exports){
+/* global OO */
 /* eslint-disable no-useless-escape */
 /* eslint-disable no-mixed-spaces-and-tabs */
 /* eslint-disable indent */
@@ -2135,33 +2189,34 @@ class DykProcess {
 		let subpageTitle = this.setupNominationPage();
 
 		// end dialog: "Finished!"
-		$(/* html */`
-			<div id="CzyWieszSuccess">
-				<div class="floatright">${D.config.CWicon}</div>
-				<p style="margin-left: 10px;">Dziękujemy za 
-				<a id="CzyWieszLinkAfter" href="/wiki/${encodeURIComponent(subpageTitle)}" class="czywiesz-external" target="_blank">zgłoszenie</a>.
-				<br /><br />
-				Dla pewności możesz sprawdzić 
-				<a href="/wiki/Specjalna:Wk%C5%82ad/${encodeURIComponent(Dv.signature)}" class="czywiesz-external" target="_blank">swój wkład</a>,
-				czy wszystko poszło zgodnie z planem.<br />
-				<small><a class="CzyWieszEmailDoAutoraToggle">(Coś nie działa?)</a></small>
-				<div class="CzyWieszEmailDoAutoraInfo" style="display:none;">
-					Jeśli coś poszło nie tak, to <a href="#" role="button" class="CzyWieszEmailDoAutoraWyslij">kliknij tutaj</a>,
-					aby wysłać twórcy gadżetu e-mail z opisem błędu, a gadżet dołączy do niego szczegóły techniczne.
-					<span class="CzyWieszEmailDoAutoraWyslano"></span>
-				</div>
-			<br />
-			<a href="/wiki/Wikiprojekt:Czy_wiesz" title="Wikiprojekt:Czy wiesz">Wikiprojekt Czy wiesz</a></p></div>
-		`)
-		.dialog({
-			modal: true,
-			dialogClass: "wikiEditor-toolbar-dialog",
-			title: D.config.tmpldone,
-			close: function() {
-				$(this).dialog("destroy");
-				$(this).remove();
-				$('#CzyWieszGadget').dialog("destroy");
-				$('#CzyWieszGadget').remove();
+		OO.ui.alert(
+			$(/* html */`
+				<div id="CzyWieszSuccess">
+					<div class="floatright">${D.config.CWicon}</div>
+					<p style="margin-left: 10px;">Dziękujemy za 
+					<a id="CzyWieszLinkAfter" href="/wiki/${encodeURIComponent(subpageTitle)}" class="czywiesz-external" target="_blank">zgłoszenie</a>.
+					<br /><br />
+					Dla pewności możesz sprawdzić 
+					<a href="/wiki/Specjalna:Wk%C5%82ad/${encodeURIComponent(Dv.signature)}" class="czywiesz-external" target="_blank">swój wkład</a>,
+					czy wszystko poszło zgodnie z planem.<br />
+					<small><a class="CzyWieszEmailDoAutoraToggle">(Coś nie działa?)</a></small>
+					<div class="CzyWieszEmailDoAutoraInfo" style="display:none;">
+						Jeśli coś poszło nie tak, to <a href="#" role="button" class="CzyWieszEmailDoAutoraWyslij">kliknij tutaj</a>,
+						aby wysłać twórcy gadżetu e-mail z opisem błędu, a gadżet dołączy do niego szczegóły techniczne.
+						<span class="CzyWieszEmailDoAutoraWyslano"></span>
+					</div>
+				<br />
+				<a href="/wiki/Wikiprojekt:Czy_wiesz" title="Wikiprojekt:Czy wiesz">Wikiprojekt Czy wiesz</a></p></div>
+			`),
+			{
+				title: D.config.tmpldone,
+				size: 'large'
+			}
+		).done(function () {
+			for (let el of document.querySelectorAll('.dyk-dialog')) {
+				if (el.uSdd) {
+					el.uSdd.close();
+				}
 			}
 		});
 		$('#CzyWieszSuccess a.CzyWieszEmailDoAutoraToggle').click(function() {
@@ -2180,6 +2235,7 @@ class DykProcess {
 module.exports = { DykProcess };
 
 },{"./Loadbar":9,"./asyncAjax":13,"./config":15}],8:[function(require,module,exports){
+/* global SimpleDragDialog */
 /**
  * D.errors info.
  */
@@ -2200,7 +2256,7 @@ class ErrorInfo {
 		this.errors.length = 0;
 	}
 
-	/** Add error message. */
+	/** Add TEXT error message. */
 	push(message) {
 		this.errors.push(message);
 	}
@@ -2212,32 +2268,35 @@ class ErrorInfo {
 	
 	/** Show errors. */
 	show() {
-		let list = $('<ul></ul>');
-		for (let i=0; i < this.errors.length; i++) {
-			list.append( $('<li></li>').html(this.errors[i]) );
+		let list = document.createElement('ul');
+		for (let message of this.errors) {
+			let li = document.createElement('li');
+			li.textContent = message;
+			list.appendChild(li);
 		}
-		let dialog = $('<div id="CzyWieszErrorDialog"></div>')
-			.append(list)
-			.append( $(/* html */`
+
+		const content = document.createElement('div');
+		content.id = 'CzyWieszErrorDialog';
+		content.appendChild(list);
+		content.innerHTML = /* html */`
 				<p>Coś poszło nie tak. Jeśli powyższa lista nie wyjaśnia problemu, to więcej informacji jest w konsoli przeglądarki.</p>
 				<p>Jeśli problem jest nietypowy, to <a href="#" role="button" class="CzyWieszEmailDoAutoraWyslij">wyślij e-mail programiście z danymi błędu</a> (szybka wysyłka logów mailem).<span class="CzyWieszEmailDoAutoraWyslano"></span></p>
 				<p>Możesz też opisać co się stało na <a href="https://pl.wikipedia.org/wiki/WP:BAR:TE" class="czywiesz-external" target="_blank">w kawiarence technicznej</a>.</p>
-			`) )
-		;
+		`;
 		
-		dialog.dialog({
-			width: 400,
-			modal: true,
-			title: 'Wystąpił błąd',
-			draggable: true,
-			dialogClass: "wikiEditor-toolbar-dialog",
-			close: function() { $(this).dialog("destroy"); $(this).remove();}
+		let sdd = new SimpleDragDialog();
+		sdd.create({
+			title:'Wystąpił błąd',
+			dialogClass: "dyk-dialog dyk-error-dialog",
+			content,
 		});
-		const D = this;
-		$('#CzyWieszErrorDialog a.CzyWieszEmailDoAutoraWyslij').click(function(e) {
+		const me = this;
+		$('a.CzyWieszEmailDoAutoraWyslij', content).click(function(e) {
 			e.preventDefault();
-			D.emailSupport(this);
+			me.emailSupport(this);
 		});
+		sdd.show();
+		sdd.center();
 	}
 }
 
@@ -2786,8 +2845,8 @@ module.exports = { apiAjax, apiAsync };
 
 },{}],14:[function(require,module,exports){
 let versionInfo = {
-	version:'6.15.0',
-	buildDay:'2025-09-21',
+	version:'7.0.0',
+	buildDay:'2026-04-13',
 }
 
 module.exports = { versionInfo };
@@ -2852,11 +2911,21 @@ var config = {
 	/** style for this gadget */
 	styletag:	$('<style id="CzyWieszStyleTag">'
 					+ /* css */`
-						.wikiEditor-toolbar-dialog .czy-wiesz-gallery-chosen { border: solid 2px red; }
+						.dyk-gallery-chosen { border: solid 2px red; }
 						#CzyWieszWikiprojectAdd {cursor: pointer; }
 						#CzyWieszGadget .czywiesz-tip {
 							cursor: help;
 							color: #d05700;
+						}
+						.dyk-dialog {
+							max-width: 850px;
+							
+							.u-actions {
+								padding-top: 1em;
+								display: flex;
+								gap: .5em;
+								flex-wrap: wrap;
+							}
 						}
 						a.czywiesz-external { 
 							color: #0645AD;
@@ -2870,7 +2939,7 @@ var config = {
 							pointer-events: none;
 							opacity: .5;
 						}
-						#CzyWieszErrorDialog.wait-im-sending-email, #CzyWieszSuccess.wait-im-sending-email {
+						.dyk-wait-still-sending {
 							cursor: wait; 
 						}
 					`
