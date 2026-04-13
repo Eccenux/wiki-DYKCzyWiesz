@@ -63,6 +63,16 @@ var config = {
 							cursor: help;
 							color: #d05700;
 						}
+						.dyk-dialog {
+							max-width: 850px;
+							
+							.u-actions {
+								padding-top: 1em;
+								display: flex;
+								gap: .5em;
+								flex-wrap: wrap;
+							}
+						}
 						a.czywiesz-external { 
 							color: #0645AD;
 							text-decoration: underline;

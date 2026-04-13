@@ -58,6 +58,8 @@ class ErrorInfo {
 			e.preventDefault();
 			me.emailSupport(this);
 		});
+		sdd.show();
+		sdd.center();
 	}
 }
 

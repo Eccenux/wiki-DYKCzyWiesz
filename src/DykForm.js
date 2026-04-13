@@ -88,12 +88,11 @@ class DykForm {
 		D.wgUserName = mw.config.get('wgUserName');
 		D.wgTitle = mw.config.get('wgTitle');
 
-		var IMG_ARR = $(/*css*/`
+		const IMG_ARR = Array.from(document.querySelector('#mw-content-text').querySelectorAll(`
 			.infobox span[typeof="mw:File"] a.mw-file-description img
 			,figure[typeof="mw:File/Thumb"] img
 			,.gallery span[typeof="mw:File"] img
-		`, $('#mw-content-text'));
-		var IMAGES = IMG_ARR.length;
+		`));
 
 		var REFS = {
 			warn:	D.config.no + '&nbsp;&nbsp;<strong style="color: red;">Brak źródeł dyskwalifikuje artykuł ze zgłoszenia!</strong> <small>(<a href="#" role="button">info</a>)</small>',
@@ -132,7 +131,7 @@ class DykForm {
 
 		var $images_row = $('<tr></tr>')
 			.html('<td>Liczba grafik w artykule: </td>'
-				+ '<td><input type="number" min="0" id="CzyWieszImages" name="CzyWieszImages" value="' + IMAGES + '"' 
+				+ '<td><input type="number" min="0" id="CzyWieszImages" name="CzyWieszImages" value="' + IMG_ARR.length + '"' 
 				+ 'style="width: 3.5em;">'
 				+ '<span id="CzyWieszGalleryToggler" style="display: none;"> &nbsp;<small><a href="#" role="button">(zaproponuj grafikę z artykułu)</a></small></span>');
 
@@ -235,7 +234,7 @@ class DykForm {
 				}
 			},
 			"Anuluj" : function() {
-				sddMain.close();
+				sddMain.dialog.remove();
 			}
 		};
  
@@ -246,6 +245,8 @@ class DykForm {
 		sddMain.dialog.querySelector('.u-title').innerHTML = title;
 		$(sddMain.body).append($dialog);
 		this.appendActions(sddMain, buttons);
+		sddMain.show();
+		sddMain.center();
 
 		// debug quicky
 		if (D.debugmode) {
@@ -272,48 +273,10 @@ class DykForm {
 		});
 
 		// if there are images in article → add link to small gallery to quickly choose an image from article
-		if (IMAGES > 0) {
+		if (IMG_ARR.length > 0) {
 			$('#CzyWieszGalleryToggler').toggle();
-			$('#CzyWieszGalleryToggler a').click(function(){
-				let GALLERY = '<div id="CzyWieszGalleryHolder">'
-						+ `<div id="CzyWieszGallery">`;
-						for (var i=0; i<IMG_ARR.length; i++) {
-							GALLERY += '<fig>';
-							GALLERY += IMG_ARR[i].outerHTML.replace(/\swidth=\"\d+\"/,'').replace(/\sheight=\"[^\"]*\"/,'').replace(/\sclass=\"[^\"]*\"/g,'');
-							GALLERY += '</fig>';
-						}
-				GALLERY	+= '</div> </div>';
-
-				const sddGal = new SimpleDragDialog();
-				sddGal.create({
-					dialogClass: "dyk-dialog dyk-gallery-dialog",
-					title: 'Wybierz grafikę:',
-				});
-				sddGal.body.innerHTML = GALLERY;
-				this.appendActions(sddGal,
-					{
-						"Wybierz": function() {
-							if ($('#CzyWieszFile1').length > 0) {
-								$('#CzyWieszFile1').prop('checked',true);
-								$('#CzyWieszFile2').prop('disabled', false);
-								$('#CzyWieszFile2').val( $('.dyk-gallery-chosen').length == 0 ? '' : decodeURIComponent($('.dyk-gallery-chosen')[0].src.match(/\/\/upload\.wikimedia\.org\/wikipedia\/commons(\/thumb)?\/.\/..\/([^\/]+)\/?/)[2]).replace(/_/g,' ') ); // ← extract file name
-							}
-
-							sddGal.close();
-						},
-						"Anuluj" : function() {
-							sddGal.close();
-						}
-					}
-				);
-				$('#CzyWieszGallery img').each(function(){
-					$(this).click(function(){
-						$('.dyk-gallery-chosen').each(function(){
-							$(this).toggleClass('dyk-gallery-chosen');
-						});
-						$(this).toggleClass('dyk-gallery-chosen');
-					});
-				});
+			$('#CzyWieszGalleryToggler a').click(() => {
+				this.showGallery(IMG_ARR);
 			});
 		}
 
@@ -360,6 +323,66 @@ class DykForm {
 		//$('#CzyWieszQuestion').keyup();
 		$('#CzyWieszQuestion').focus();
 		
+	}
+
+	/**
+	 * Show gallery for the current article.
+	 * @private
+	 */
+	showGallery(IMG_ARR) {
+		let galEl = document.querySelector('.dyk-gallery-dialog');
+		if (galEl) {
+			galEl.uSdd.show();
+			return;
+		}
+
+		let GALLERY = `<div id="CzyWieszGalleryHolder">
+			Wybierz jedną z poniższych grafik i zatwierdź.
+			<div id="CzyWieszGallery">
+		`;
+		for (const img of IMG_ARR) {
+			GALLERY += '<fig>';
+			GALLERY += img.outerHTML.replace(/\swidth=\"\d+\"/,'').replace(/\sheight=\"[^\"]*\"/,'').replace(/\sclass=\"[^\"]*\"/g,'');
+			GALLERY += '</fig>';
+		}
+		GALLERY	+= '</div> </div>';
+
+		const sddGal = new SimpleDragDialog();
+		sddGal.create({
+			dialogClass: "dyk-dialog dyk-gallery-dialog",
+			title: 'Wybierz grafikę',
+		});
+		sddGal.body.innerHTML = GALLERY;
+		this.appendActions(sddGal,
+			{
+				"Zatwierdź": function() {
+					let choosen = sddGal.body.querySelectorAll('.dyk-gallery-chosen');
+					if (choosen.length > 0) {
+						$('#CzyWieszFile1').prop('checked', true); // tick img checkbox
+						$('#CzyWieszFile2').prop('disabled', false); // enable name input
+						let fileName = choosen[0].src.match(/\/\/upload\.wikimedia\.org\/wikipedia\/commons(\/thumb)?\/.\/..\/([^\/]+)\/?/)[2];
+						$('#CzyWieszFile2').val( decodeURIComponent( fileName ).replace(/_/g,' ') );
+
+						// this.closest('.dyk-dialog').remove();
+						sddGal.hide();
+					}
+				},
+				"Anuluj" : function() {
+					//this.closest('.dyk-dialog').remove();
+					sddGal.hide();
+				}
+			}
+		);
+		$('#CzyWieszGallery img').each(function(){
+			$(this).click(function(){
+				$('.dyk-gallery-chosen').each(function(){
+					$(this).removeClass('dyk-gallery-chosen');
+				});
+				$(this).toggleClass('dyk-gallery-chosen');
+			});
+		});
+		sddGal.show();
+		sddGal.center();
 	}
 
 	/** Load various data and init extra fields/info. */
