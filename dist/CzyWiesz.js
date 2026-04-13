@@ -1092,7 +1092,7 @@ class DykForm {
 		//workaround for Opera - the textarea must be inserted to a visible element
 
 		var $title_paragraph = $('<p></p>')
-			.html('Tytuł artykułu: &nbsp;&nbsp;<input type="text" id="CzyWieszTitle" name="CzyWieszTitle" value="' + D.wgTitle + '" style="width: 476px;" disabled>');
+			.html('Tytuł artykułu: &nbsp;&nbsp;<input type="text" id="CzyWieszTitle" name="CzyWieszTitle" value="' + D.wgTitle + '" disabled>');
 
 		// Trzeba zasugerować zgłaszającym, żeby podać różne formy pytania, żeby dodający ekspozycję mieli więcej możliwości
 		var $question_paragraph = $(`<p><strong>Dokończ pytanie: „Czy wiesz…”</strong></p>
@@ -1102,7 +1102,7 @@ class DykForm {
 		var $question_textarea_paragraph = $('<p></p>')
 			.html(`
 				<p>
-				<textarea id="CzyWieszQuestion" style="width: 570px;" rows="2" value="" 
+				<textarea id="CzyWieszQuestion" rows="5" value="" 
 					placeholder="Możesz wpisać kilka pytań, każde w osobnej linijce. Pamiętaj, żeby w każdym dodać pogrubiony link."
 					autofocus
 				></textarea>
@@ -1186,7 +1186,7 @@ class DykForm {
 		});
 		var $comment_paragraph = $('<p></p>').append($comment_paragraph_checkbox).append('<label for="CzyWieszCommentCheckbox"> Potrzebujesz zamieścić dodatkowy komentarz? (Twój podpis zostanie dodany automatycznie)</label>');
 		var $comment_textarea_paragraph = $('<p id="CzyWieszCommentContainer" style="display: none;"></p>')
-			.html('<textarea id="CzyWieszComment" style="width: 570px;" rows="2" value=""></textarea>');
+			.html('<textarea id="CzyWieszComment" rows="2" value=""></textarea>');
 
 		//rules paragraph
 		var $rules_paragraph = $('<p id="CzyWieszRules"></p>')
@@ -1200,7 +1200,7 @@ class DykForm {
 				+ '<div id="CzyWieszLoaderBarInner" style="width: 0; height: 20px; background-color: #ABEC46; border: none; border-radius: 3px;"></div>');
 
 		//build the dialog
-		const $main_table = $('<table></table>').css('width','100%')
+		const $main_table = $('<table class="dyk-form-tbl"></table>')
 			.append($ref_row).append($images_row).append($file_row)
 			.append($author_row).append($signature_row).append($wikiproject_row)
 			.append($events_row)
@@ -2924,13 +2924,23 @@ var config = {
 						}
 						.dyk-dialog {
 							max-width: 850px;
-							
+
 							.u-actions {
 								padding-top: 1em;
 								display: flex;
 								gap: .5em;
 								flex-wrap: wrap;
 							}
+						}
+						#CzyWieszQuestion,
+						#CzyWieszComment,
+						#CzyWieszTitle {
+							max-width: 600px;
+							width: 100%;
+							box-sizing: border-box;
+						}
+						.dyk-form-tbl {
+							width: 100%;
 						}
 						a.czywiesz-external { 
 							color: #0645AD;

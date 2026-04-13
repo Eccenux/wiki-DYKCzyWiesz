@@ -65,13 +65,23 @@ var config = {
 						}
 						.dyk-dialog {
 							max-width: 850px;
-							
+
 							.u-actions {
 								padding-top: 1em;
 								display: flex;
 								gap: .5em;
 								flex-wrap: wrap;
 							}
+						}
+						#CzyWieszQuestion,
+						#CzyWieszComment,
+						#CzyWieszTitle {
+							max-width: 600px;
+							width: 100%;
+							box-sizing: border-box;
+						}
+						.dyk-form-tbl {
+							width: 100%;
 						}
 						a.czywiesz-external { 
 							color: #0645AD;
