@@ -72,6 +72,46 @@ var config = {
 								gap: .5em;
 								flex-wrap: wrap;
 							}
+							input {
+								vertical-align: middle
+							}
+							.u-lbl {
+								width: 30%;
+								padding-right: 2px;
+							}
+							.u-data {
+								padding-left: 2px;
+								select {
+									width: 25em;
+								}
+								.czywiesz-wikiproject + .czywiesz-wikiproject {
+									margin-top: 2px;
+								}
+							}
+							code {
+								vertical-align: middle;
+							}
+						}
+						#CzyWieszGalleryToggler {
+							margin-left: 1em;
+							font-size: 85%;
+						}
+						#CzyWieszImages {
+							width: 3.5em;
+						}
+						#CzyWieszFile2 {
+							width: 52%;
+						}
+						#CzyWieszAuthor2,
+						#CzyWieszAuthor {
+							width: 25em;
+						}
+						#CzyWieszAuthorInf {
+							margin-left: .5em;
+						}
+						#CzyWieszAuthorTip,
+						#CzyWieszWikiprojectAdd {
+							margin-inline: .5em;
 						}
 						#CzyWieszQuestion,
 						#CzyWieszComment,

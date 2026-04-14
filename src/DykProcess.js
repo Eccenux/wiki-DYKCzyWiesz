@@ -136,7 +136,7 @@ class DykProcess {
 		| strona         = ${subpage}
 		| akcja kod      = ${Dv.specialEvent.code}
 		| akcja          = ${Dv.specialEvent.name}
-		| nominacja      = ${Dv.signature}
+		| nominacja      = ${mw.config.get('wgUserName')}
 		| status         = 
 		| 1. sprawdzenie = 
 		| 2. sprawdzenie = 
@@ -422,7 +422,6 @@ class DykProcess {
 	/** Finalize nomination (might actually show errors if there were any). */
 	success () {
 		var D = this.core;
-		var Dv = this.values;
 
 		if (!D.errors.isEmpty()) {
 			D.errors.show();
@@ -443,7 +442,7 @@ class DykProcess {
 					<a id="CzyWieszLinkAfter" href="/wiki/${encodeURIComponent(subpageTitle)}" class="czywiesz-external" target="_blank">zgłoszenie</a>.
 					<br /><br />
 					Dla pewności możesz sprawdzić 
-					<a href="/wiki/Specjalna:Wk%C5%82ad/${encodeURIComponent(Dv.signature)}" class="czywiesz-external" target="_blank">swój wkład</a>,
+					<a href="/wiki/Specjalna:Wk%C5%82ad/${encodeURIComponent(mw.config.get('wgUserName'))}" class="czywiesz-external" target="_blank">swój wkład</a>,
 					czy wszystko poszło zgodnie z planem.<br />
 					<small><a class="CzyWieszEmailDoAutoraToggle">(Coś nie działa?)</a></small>
 					<div class="CzyWieszEmailDoAutoraInfo" style="display:none;">

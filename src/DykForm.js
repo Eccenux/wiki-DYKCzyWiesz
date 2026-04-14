@@ -99,8 +99,6 @@ class DykForm {
 		};
 		D.sourced = this.hasRefs(this.core.config);
 
-		var SIGNATURE = (D.wgUserName ? {name: D.wgUserName, disabled: ' disabled'} : {name: '~~' + '~', disabled: ' disabled'} );
-
 		//workaround for Opera - the textarea must be inserted to a visible element
 
 		var $title_paragraph = $('<p></p>')
@@ -129,26 +127,24 @@ class DykForm {
 				$ref_row.css({display: 'none'});
 			}
 
-		var $images_row = $('<tr></tr>')
-			.html('<td>Liczba grafik w artykule: </td>'
-				+ '<td><input type="number" min="0" id="CzyWieszImages" name="CzyWieszImages" value="' + IMG_ARR.length + '"' 
-				+ 'style="width: 3.5em;">'
-				+ '<span id="CzyWieszGalleryToggler" style="display: none;"> &nbsp;<small><a href="#" role="button">(zaproponuj grafikę z artykułu)</a></small></span>');
+		var $images_row = $('<tr class="u-img-row"></tr>')
+			.html('<td class="u-lbl">Liczba grafik w artykule: </td>'
+				+ '<td class="u-data"><input type="number" min="0" id="CzyWieszImages" name="CzyWieszImages" value="' + IMG_ARR.length + '">'
+				+ '<span id="CzyWieszGalleryToggler" style="display: none;"><a href="#" role="button">(zaproponuj grafikę z artykułu)</a></span>');
 
-		var $file_row = $('<tr></tr>')
-			.html('<td style="width: 30%;"><input type="checkbox" id="CzyWieszFile1" name="CzyWieszFile1" style="vertical-align: middle;"><label for="CzyWieszFile1"> Zaproponuj grafikę: </label></td>' // style="width: 36%;
-				+ '<td><tt>[[Plik:</tt><input type="text" id="CzyWieszFile2" name="CzyWieszFile2" style="width: 52%; vertical-align: middle;" disabled><tt>|100px|right]]</tt></td>');
+		var $file_row = $('<tr class="u-file-row"></tr>')
+			.html('<td class="u-lbl"><input type="checkbox" id="CzyWieszFile1" name="CzyWieszFile1"><label for="CzyWieszFile1"> Zaproponuj grafikę: </label></td>'
+				+ '<td class="u-data"><code>[[Plik:</code><input type="text" id="CzyWieszFile2" name="CzyWieszFile2" disabled><code>|100px|right]]</code></td>');
 
 		//author row
 		var $author_row = $(/*html*/`
-			<tr id="CzyWieszAuthorRow">
-				<td>Główna autor(-ka) artykułu<span class="czywiesz-tip" title="Gadżet ustala autorstwo wg największej edycji w ciągu ostatnich 10 dni (sprawdź zmiany w ostatnich dniach)."><sup>(?)</sup></span>: </td>
-				<td><input type="text" id="CzyWieszAuthor" name="CzyWieszAuthor" style="width: 50%;margin-left: 2px;vertical-align: middle;">
-				&nbsp;&nbsp;<input type="checkbox" checked id="CzyWieszAuthorInf" name="CzyWieszAuthorInf" style="vertical-align: middle;"><label for="CzyWieszAuthorInf"> wysłać powiadomienia?</label></td>
+			<tr id="CzyWieszAuthorRow" class="u-author-row">
+				<td class="u-lbl">Główna autor(-ka) artykułu<span class="czywiesz-tip" title="Gadżet ustala autorstwo wg największej edycji w ciągu ostatnich 10 dni (sprawdź zmiany w ostatnich dniach)."><sup>(?)</sup></span>: </td>
+				<td class="u-data"><input type="text" id="CzyWieszAuthor" name="CzyWieszAuthor"><input type="checkbox" checked id="CzyWieszAuthorInf" name="CzyWieszAuthorInf"><label for="CzyWieszAuthorInf"> wysłać powiadomienia?</label></td>
 			</tr>
 			<tr id="CzyWieszAuthor2Row">
-				<td>Druga autor(-ka) artykułu<span class="czywiesz-tip" title="Użyj listy zmian, żeby sprawdzić, czy ktoś jeszcze wprowadzał duże zmiany."><sup>(?)</sup></span>: </td>
-				<td><input type="text" id="CzyWieszAuthor2" name="CzyWieszAuthor2" style="width: 50%;margin-left: 2px;vertical-align: middle;">
+				<td class="u-lbl">Druga autor(-ka) artykułu<span class="czywiesz-tip" title="Użyj listy zmian, żeby sprawdzić, czy ktoś jeszcze wprowadzał duże zmiany."><sup>(?)</sup></span>: </td>
+				<td class="u-data"><input type="text" id="CzyWieszAuthor2" name="CzyWieszAuthor2">
 				</td>
 			</tr>
 			<tr id="CzyWieszAuthorInfo">
@@ -156,16 +152,11 @@ class DykForm {
 			</tr>
 		`.replace(/\n\t+/g, '').trim());
 
-		var $signature_row = $('<tr></tr>')
-			.html('<td>Twój podpis: </td>'
-				+ '<td><input type="text" id="CzyWieszSignature" name="CzyWieszSignature" value="' 
-				+ SIGNATURE.name + '" style="width: 50%;margin-left: 2px;"' + SIGNATURE.disabled + '></td>');
-
 		//wikiproject row (filled later by wikiprojects.load())
 		const $wikiproject_row = $(/*html*/`
 			<tr id="CzyWieszWikiprojectRow">
-				<td>Powiadom wikiprojekt(y): </td>
-				<td>
+				<td class="u-lbl">Powiadom wikiprojekt(y): </td>
+				<td class="u-data">
 					<span id="CzyWieszWikiprojectContainer"><small>(trwa ładowanie…)</small></span>
 					<a id="CzyWieszWikiprojectAdd">(+)</a>
 				</td>
@@ -174,9 +165,9 @@ class DykForm {
 
 		const $events_row = $(/*html*/`
 			<tr id="CzyWieszEventsRow">
-				<td>Akcja edycyjna: </td>
-				<td class="czywiesz-value">
-					<span class="czywiesz-info"><small>(trwa ładowanie…)</small></span>
+				<td class="u-lbl">Akcja edycyjna: </td>
+				<td class="u-data">
+					<span class="u-info"><small>(trwa ładowanie…)</small></span>
 				</td>
 			</tr>
 		`);
@@ -214,7 +205,7 @@ class DykForm {
 		//build the dialog
 		const $main_table = $('<table class="dyk-form-tbl"></table>')
 			.append($ref_row).append($images_row).append($file_row)
-			.append($author_row).append($signature_row).append($wikiproject_row)
+			.append($author_row).append($wikiproject_row)
 			.append($events_row)
 		;
 		const $dialog = $('<div id="CzyWieszGadget"></div>').append($title_paragraph).append($question_paragraph).append($question_textarea_paragraph)
@@ -409,7 +400,7 @@ class DykForm {
 	async initEvents (extraConfig) {
 		const {events} = extraConfig;
 		if (!events || !events.length) {
-			$('#CzyWieszEventsRow .czywiesz-info').html('<i>brak aktywnych akcji</i>');
+			$('#CzyWieszEventsRow .u-info').html('<i>brak aktywnych akcji</i>');
 			return;
 		}
 
@@ -420,8 +411,8 @@ class DykForm {
 			$('<option>').attr('value',event.code).text(event.name).appendTo($select);
 		}
 
-		$('#CzyWieszEventsRow .czywiesz-info').remove();
-		$('#CzyWieszEventsRow .czywiesz-value').append($select);
+		$('#CzyWieszEventsRow .u-info').remove();
+		$('#CzyWieszEventsRow .u-data').append($select);
 	}
 
 	/** Super round bytes. */
@@ -473,7 +464,7 @@ class DykForm {
 				}
 
 				$('#CzyWieszAuthor').val(winner.user);
-				$('#CzyWieszAuthor').after('&nbsp;<small id="CzyWieszAuthorTip"><span class="czywiesz-tip" title="Autorstwo ustalone wg największej lub najnowszej dużej edycji z ostatnich dni (dodane ' + winner.added + ' znaków, data: ' + winner.day + ').">(!)</span></small>&nbsp;');
+				$('#CzyWieszAuthor').after('<small id="CzyWieszAuthorTip"><span class="czywiesz-tip" title="Autorstwo ustalone wg największej lub najnowszej dużej edycji z ostatnich dni (dodane ' + winner.added + ' znaków, data: ' + winner.day + ').">(!)</span></small>');
 			
 				if (winner.user == D.wgUserName) {
 					$('#CzyWieszAuthorInf').prop('checked', false);
@@ -572,7 +563,6 @@ class DykForm {
 		let AUTHOR = $('#CzyWieszAuthor').val().trim();
 		let AUTHOR_INF = ( $('#CzyWieszAuthorInf').prop('checked') ? true : false );
 		let AUTHOR2 = $('#CzyWieszAuthor2').val().trim();
-		let SIGNATURE = $('#CzyWieszSignature').val().trim();
 
 		//get the wikiprojects
 		var wikiprojectSet = new Set();
@@ -654,11 +644,6 @@ class DykForm {
 				invalid.fields.push('Author');
 				invalid.alert.push('Podaj autora artykułu.');
 			}
-			if (typeof SIGNATURE != 'string' || SIGNATURE === '') {
-				invalid.is = true;
-				invalid.fields.push('Signature');
-				invalid.alert.push('Podpisz się.');
-			}
 			if ( (typeof COMMENT!='string'&&typeof COMMENT!='boolean') || (typeof COMMENT=='string' && (COMMENT===''||COMMENT.match(/^[^A-ZĘÓĄŚŁŻŹĆŃa-zęóąśłżźćń]+$/)) ) || (typeof COMMENT=='string'&&COMMENT==true) ) {
 				invalid.is = true;
 				invalid.fields.push('Comment');
@@ -673,7 +658,6 @@ class DykForm {
 			author:      AUTHOR,
 			authorInf:   AUTHOR_INF,
 			author2:      AUTHOR2,
-			signature:   SIGNATURE,
 			comment:    COMMENT,
 			wikiproject: WIKIPROJECT,
 			specialEvent,
