@@ -177,16 +177,16 @@ class DykForm {
 		 *  uncheck → #CzyWieszGadget.height-30, #CzyWieszGadget.parent.height-20
 		 */
 		var $comment_paragraph_checkbox = $('<input type="checkbox" id="CzyWieszCommentCheckbox" name="CzyWieszCommentCheckbox" style="vertical-align: middle;">')
-		.click(function(){
-			var el = $('#CzyWieszGadget');
-			if ( $(this).prop('checked') ) {
-				el.height(el.height+30);
-				el.parent().height(el.parent().height+20);
-			} else {
-				el.height(el.height-30);
-				el.parent().height(el.parent().height-20);
-			}
-		});
+		// .click(function(){
+		// 	var el = $('#CzyWieszGadget');
+		// 	if ( $(this).prop('checked') ) {
+		// 		el.height(el.height+30);
+		// 		el.parent().height(el.parent().height+20);
+		// 	} else {
+		// 		el.height(el.height-30);
+		// 		el.parent().height(el.parent().height-20);
+		// 	}
+		// });
 		var $comment_paragraph = $('<p></p>').append($comment_paragraph_checkbox).append('<label for="CzyWieszCommentCheckbox"> Potrzebujesz zamieścić dodatkowy komentarz? (Twój podpis zostanie dodany automatycznie)</label>');
 		var $comment_textarea_paragraph = $('<p id="CzyWieszCommentContainer" style="display: none;"></p>')
 			.html('<textarea id="CzyWieszComment" rows="2" value=""></textarea>');
