@@ -95,7 +95,7 @@ class DykForm {
 		`));
 
 		var REFS = {
-			warn:	D.config.no + '&nbsp;&nbsp;<strong style="color: red;">Brak źródeł dyskwalifikuje artykuł ze zgłoszenia!</strong> <small>(<a href="#" role="button">info</a>)</small>',
+			warn:	D.config.no + '&nbsp;&nbsp;<strong style="color: red;">Brak źródeł dyskwalifikuje artykuł ze zgłoszenia!</strong> <small>(<a href="#" class="u-refs-info" role="button">info</a>)</small>',
 		};
 		D.sourced = this.hasRefs(this.core.config);
 
@@ -275,7 +275,8 @@ class DykForm {
 		}
 
 		// if there are no refs (or they're badly named) → append this dialog to a link in $ref_row
-		$('#CzyWieszRefs small a').click(function(){
+		$('#CzyWieszRefs a.u-refs-info').click(function(e){
+			e.preventDefault();
 			OO.ui.alert(
 				$(/*html*/`<div>
 					<div class="floatright">${D.config.CWicon}</div>
