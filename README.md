@@ -36,7 +36,7 @@ Wersja dev z włączonym debug:
 ```js
 // testowa wersja DYK [[Wikipedia:Narzędzia/CzyWiesz]]
 if ([0, 2].includes(mw.config.get('wgNamespaceNumber'))) {
-	mw.loader.using("mediawiki.util, ext.gadget.lib-SimpleDragDialog, ext.gadget.lib-wikiprojects".split(/, ?/)).then(function() {
+	mw.loader.using("mediawiki.util, ext.gadget.lib-wikiprojects, jquery.textSelection, oojs-ui-core, oojs-ui-windows, ext.gadget.lib-SimpleDragDialog".split(/, ?/)).then(function() {
 		window.DYKnomination_is_beta = true;
 		mw.hook('userjs.DYKnomination.loaded').add(function (DYKnomination) {
 			console.log('[DYKnomination]', 'loaded v' + DYKnomination.about.version);
@@ -49,7 +49,7 @@ if ([0, 2].includes(mw.config.get('wgNamespaceNumber'))) {
 }
 // Możliwość normalnego zamykania zgłoszeń (DoneHandling) i test kodu gadżetu
 if ([102].includes(mw.config.get('wgNamespaceNumber'))) {
-	mw.loader.using("mediawiki.util, ext.gadget.lib-SimpleDragDialog, ext.gadget.lib-wikiprojects".split(/, ?/)).then(function() {
+	mw.loader.using("mediawiki.util, ext.gadget.lib-wikiprojects, jquery.textSelection, oojs-ui-core, oojs-ui-windows, ext.gadget.lib-SimpleDragDialog".split(/, ?/)).then(function() {
 		mw.hook('userjs.DYKnomination.loaded').add(function (DYKnomination) {
 			console.log('[DYKnomination]', 'loaded v' + DYKnomination.about.version);
 			DYKnomination.options.enabledClose = true;
