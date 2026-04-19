@@ -88,10 +88,13 @@ class DykForm {
 		D.wgUserName = mw.config.get('wgUserName');
 		D.wgTitle = mw.config.get('wgTitle');
 
+		// data-mw-src is for mobile lazy-load img
+		// (note: need to be specific for figures as description may contain icons)
 		const IMG_ARR = Array.from(document.querySelector('#mw-content-text').querySelectorAll(`
 			.infobox span[typeof="mw:File"] a.mw-file-description img
-			,figure[typeof="mw:File/Thumb"] img
-			,.gallery span[typeof="mw:File"] img
+			,figure[typeof="mw:File/Thumb"] img.mw-file-element
+			,.gallery span[typeof="mw:File"] img.mw-file-element
+			,figure[typeof="mw:File/Thumb"] [data-mw-src]
 		`));
 
 		var REFS = {
@@ -332,6 +335,12 @@ class DykForm {
 
 	/**
 	 * Show gallery for the current article.
+	 * 
+	 * Tests:
+	 * https://pl.wikipedia.org/wiki/ORP_Sok%C3%B3%C5%82_(1966) – gallery
+	 * https://pl.wikipedia.org/wiki/Nagroda_Akademii_Filmowej – link-interwiki icons in desc
+	 * https://pl.wikipedia.org/wiki/AI_slop – simple images
+	 * 
 	 * @private
 	 */
 	showGallery(IMG_ARR) {
@@ -341,23 +350,31 @@ class DykForm {
 			return;
 		}
 
-		let GALLERY = `<div id="CzyWieszGalleryHolder">
-			Wybierz jedną z poniższych grafik i zatwierdź.
-			<div id="CzyWieszGallery">
-		`;
-		for (const img of IMG_ARR) {
-			GALLERY += '<fig>';
-			GALLERY += img.outerHTML.replace(/\swidth=\"\d+\"/,'').replace(/\sheight=\"[^\"]*\"/,'').replace(/\sclass=\"[^\"]*\"/g,'');
-			GALLERY += '</fig>';
+		// body
+		const galleryHolder = document.createElement('div');
+		galleryHolder.id = 'CzyWieszGalleryHolder';
+		const gallery = document.createElement('div');
+		gallery.id = 'CzyWieszGallery';
+		galleryHolder.append(`Wybierz jedną z poniższych grafik i zatwierdź.`, gallery);
+
+		// fig > img
+		for (const el of IMG_ARR) {
+			let src = el.src ? el.src : el.getAttribute('data-mw-src');
+			if (src) {
+				const fig = document.createElement('fig');
+				const img = document.createElement('img');
+				img.src = src;
+				fig.appendChild(img);
+				gallery.appendChild(fig);
+			}
 		}
-		GALLERY	+= '</div> </div>';
 
 		const sddGal = new SimpleDragDialog();
 		sddGal.create({
 			dialogClass: "dyk-dialog dyk-gallery-dialog",
 			title: 'Wybierz grafikę',
+			content: galleryHolder,
 		});
-		sddGal.body.innerHTML = GALLERY;
 		this.appendActions(sddGal,
 			{
 				"Zatwierdź": function() {
@@ -365,7 +382,9 @@ class DykForm {
 					if (choosen.length > 0) {
 						$('#CzyWieszFile1').prop('checked', true); // tick img checkbox
 						$('#CzyWieszFile2').prop('disabled', false); // enable name input
-						let fileName = choosen[0].src.match(/\/\/upload\.wikimedia\.org\/wikipedia\/commons(\/thumb)?\/.\/..\/([^\/]+)\/?/)[2];
+						let src = choosen[0].src;
+						// powinno działać też dla lokalnych obrazków (nie tylko z commons)
+						let fileName = src.replace(/.*\/\/upload\.wikimedia\.org\/wikipedia\/(commons|\w{2,4})(\/thumb)?\/[^/]\/[^/]{2}\//, '').replace(/\/.+/, '');
 						$('#CzyWieszFile2').val( decodeURIComponent( fileName ).replace(/_/g,' ') );
 					} else {
 						$('#CzyWieszFile1').prop('checked', false); // tick img checkbox

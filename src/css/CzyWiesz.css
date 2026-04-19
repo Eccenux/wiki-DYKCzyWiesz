@@ -138,6 +138,7 @@ a.czywiesz-external {
 /* small only */
 @media (max-width: 599px) {
 	/* force full width */
+	.dyk-gallery-dialog,
 	.dyk-main-dialog {
 		max-width: none;
 		left: 0 !important;
