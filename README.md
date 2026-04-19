@@ -15,14 +15,14 @@ Instrukcja: [Wikipedia:Narzędzia/CzyWiesz](https://pl.wikipedia.org/wiki/Wikipe
 
 Gadżet jest budowany w [Node.js](https://nodejs.org/en) (w miarę dowolny Node, ale pewnie przynajmniej v16).
 
-Do pracy zalecyny jest VSCode, ale można budować wszystko z linii poleceń.
+Do pracy zalecany jest VSCode, ale można budować wszystko z linii poleceń.
 ```bash
 npm i
 npm run test
 npm run build
 ```
 
-Uwaga! Pamiętaj o zmianie **wersji gadżetu**: `src\build\version.js`. Wersje powinny być semantyczne (proste bugi to ostatnia liczba, po środku nowe aspekty i funkcje, a pierwsza liczba to znaczące rozbudowy i przebudowy) 
+Uwaga! Pamiętaj o zmianie **wersji gadżetu**: `src\build\version.js`. Wersje powinny być semantyczne (proste poprawki to ostatnia liczba, po środku nowe aspekty i funkcje, a pierwsza liczba to znaczące rozbudowy i przebudowy) 
 
 Do wdrażania potrzebny jest `bot.config.mjs` (o ile chcesz wdrażać jednym kliknięciem).
 - Hasło utworzysz w: https://test.wikipedia.org/wiki/Special:BotPasswords/Wikiploy
@@ -36,7 +36,7 @@ Wersja dev z włączonym debug:
 ```js
 // testowa wersja DYK [[Wikipedia:Narzędzia/CzyWiesz]]
 if ([0, 2].includes(mw.config.get('wgNamespaceNumber'))) {
-	mw.loader.using("mediawiki.util, jquery.ui, ext.gadget.lib-wikiprojects".split(/, ?/)).then(function() {
+	mw.loader.using("mediawiki.util, ext.gadget.lib-SimpleDragDialog, ext.gadget.lib-wikiprojects".split(/, ?/)).then(function() {
 		window.DYKnomination_is_beta = true;
 		mw.hook('userjs.DYKnomination.loaded').add(function (DYKnomination) {
 			console.log('[DYKnomination]', 'loaded v' + DYKnomination.about.version);
@@ -44,16 +44,18 @@ if ([0, 2].includes(mw.config.get('wgNamespaceNumber'))) {
 			DYKnomination.debugmode = true;
 		});
 		importScript('Wikipedysta:Nux/CzyWiesz-dev.js');
+		importStylesheet('Wikipedysta:Nux/CzyWiesz-dev.css');
 	});
 }
 // Możliwość normalnego zamykania zgłoszeń (DoneHandling) i test kodu gadżetu
 if ([102].includes(mw.config.get('wgNamespaceNumber'))) {
-	mw.loader.using("mediawiki.util, jquery.ui, ext.gadget.lib-wikiprojects".split(/, ?/)).then(function() {
+	mw.loader.using("mediawiki.util, ext.gadget.lib-SimpleDragDialog, ext.gadget.lib-wikiprojects".split(/, ?/)).then(function() {
 		mw.hook('userjs.DYKnomination.loaded').add(function (DYKnomination) {
 			console.log('[DYKnomination]', 'loaded v' + DYKnomination.about.version);
 			DYKnomination.options.enabledClose = true;
 		});
 		importScript('MediaWiki:Gadget-CzyWiesz.js');
+		importStylesheet('MediaWiki:Gadget-CzyWiesz.css');
 	});
 }
 ```
