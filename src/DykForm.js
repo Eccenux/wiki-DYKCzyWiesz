@@ -535,10 +535,10 @@ class DykForm {
 			const historyHref = mw.util.getUrl(null, {action:'history'});
 			const container = document.querySelector('#CzyWieszAuthorInfo td');
 			container.innerHTML = /*html*/`
-						<a class="dyk-toggle" role="button" href="#">(pokaż zmiany w ostatnich dniach)</a>
+						<div><a class="dyk-toggle" role="button" href="#">(pokaż zmiany w ostatnich dniach)</a></div>
 						<div style="display:none" class="dyk-toggle-content">
+							<p><a href="${historyHref}" class="czywiesz-external" target="_blank">zobacz historię</a></p>
 							${infoTable}
-							<a href="${historyHref}" class="czywiesz-external" target="_blank">zobacz historię</a>
 						</div>
 			`;
 			// toggle action
