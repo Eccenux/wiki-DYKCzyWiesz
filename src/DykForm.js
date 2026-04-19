@@ -517,8 +517,8 @@ class DykForm {
 			let infoTable = `<table class="wikitable">`;
 			infoTable += `<tr>
 				<th>Data</th>
-				<th>Dodane</th>
-				<th>Usunięte</th>
+				<th><lh>Dodane</lh><sh>B+</sh></th>
+				<th><lh>Usunięte</lh><sh>B-</sh></th>
 				<th>Edycje</th>
 				<th>Autor(ka)</th>
 			</tr>`;

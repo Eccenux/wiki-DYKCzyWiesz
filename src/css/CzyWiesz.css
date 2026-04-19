@@ -117,6 +117,24 @@ a.czywiesz-external {
 	cursor: wait; 
 }
 
+/* short/long header */
+.dyk-main-dialog {
+	sh {
+		display: none;
+	}
+	lh {
+		display: inline-block;
+	}
+	@media (max-width: 599px) {
+		sh {
+			display: inline-block;
+		}
+		lh {
+			display: none;
+		}
+	}
+}
+
 /* small only */
 @media (max-width: 599px) {
 	/* force full width */
@@ -128,7 +146,7 @@ a.czywiesz-external {
 	}
 
 	/* color */
-	.dyk-form-tbl td {
+	.dyk-form-tbl > tr > td {
 		border: 1px solid darkgrey;
 		&:first-of-type {
 			background-color: whitesmoke;
@@ -146,10 +164,11 @@ a.czywiesz-external {
 		td {
 			padding: 4px 6px;
 		}
-		& > tr {
+		& > tr:not(#CzyWieszAuthorInfo) {
 			display: flex;
 			flex-wrap:wrap;
-			td {
+
+			& > td {
 				flex: 1;
 				display: flex;
 			}
@@ -160,6 +179,13 @@ a.czywiesz-external {
 				flex-basis: 40em;
 			}
 		}
+		#CzyWieszAuthorInfo {
+			display: block;
+			& > td {
+				display: block;
+			}
+		}
+
 
 		#CzyWieszEventsRow,
 		#CzyWieszWikiprojectRow {
