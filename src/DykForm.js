@@ -140,7 +140,10 @@ class DykForm {
 		var $author_row = $(/*html*/`
 			<tr id="CzyWieszAuthorRow" class="u-author-row">
 				<td class="u-lbl">Główna autor(-ka) artykułu<span class="czywiesz-tip" title="Gadżet ustala autorstwo wg największej edycji w ciągu ostatnich 10 dni (sprawdź zmiany w ostatnich dniach)."><sup>(?)</sup></span>: </td>
-				<td class="u-data"><input type="text" id="CzyWieszAuthor" name="CzyWieszAuthor"><input type="checkbox" checked id="CzyWieszAuthorInf" name="CzyWieszAuthorInf"><label for="CzyWieszAuthorInf"> wysłać powiadomienia?</label></td>
+				<td class="u-data">
+					<span><input type="text" id="CzyWieszAuthor" name="CzyWieszAuthor"></span>
+					<span><input type="checkbox" checked id="CzyWieszAuthorInf" name="CzyWieszAuthorInf"><label for="CzyWieszAuthorInf"> wysłać powiadomienia?</label></span>
+				</td>
 			</tr>
 			<tr id="CzyWieszAuthor2Row">
 				<td class="u-lbl">Druga autor(-ka) artykułu<span class="czywiesz-tip" title="Użyj listy zmian, żeby sprawdzić, czy ktoś jeszcze wprowadzał duże zmiany."><sup>(?)</sup></span>: </td>

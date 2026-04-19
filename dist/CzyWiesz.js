@@ -1128,7 +1128,10 @@ class DykForm {
 		var $author_row = $(/*html*/`
 			<tr id="CzyWieszAuthorRow" class="u-author-row">
 				<td class="u-lbl">Główna autor(-ka) artykułu<span class="czywiesz-tip" title="Gadżet ustala autorstwo wg największej edycji w ciągu ostatnich 10 dni (sprawdź zmiany w ostatnich dniach)."><sup>(?)</sup></span>: </td>
-				<td class="u-data"><input type="text" id="CzyWieszAuthor" name="CzyWieszAuthor"><input type="checkbox" checked id="CzyWieszAuthorInf" name="CzyWieszAuthorInf"><label for="CzyWieszAuthorInf"> wysłać powiadomienia?</label></td>
+				<td class="u-data">
+					<span><input type="text" id="CzyWieszAuthor" name="CzyWieszAuthor"></span>
+					<span><input type="checkbox" checked id="CzyWieszAuthorInf" name="CzyWieszAuthorInf"><label for="CzyWieszAuthorInf"> wysłać powiadomienia?</label></span>
+				</td>
 			</tr>
 			<tr id="CzyWieszAuthor2Row">
 				<td class="u-lbl">Druga autor(-ka) artykułu<span class="czywiesz-tip" title="Użyj listy zmian, żeby sprawdzić, czy ktoś jeszcze wprowadzał duże zmiany."><sup>(?)</sup></span>: </td>
@@ -2833,8 +2836,8 @@ module.exports = { apiAjax, apiAsync };
 
 },{}],14:[function(require,module,exports){
 let versionInfo = {
-	version:'7.0.0',
-	buildDay:'2026-04-15',
+	version:'7.1.0',
+	buildDay:'2026-04-19',
 }
 
 module.exports = { versionInfo };
@@ -2917,21 +2920,26 @@ var config = {
 							input {
 								vertical-align: middle
 							}
-							.u-lbl {
-								width: 30%;
-								padding-right: 2px;
-							}
-							.u-data {
-								padding-left: 2px;
-								select {
-									width: 25em;
-								}
-								.czywiesz-wikiproject + .czywiesz-wikiproject {
-									margin-top: 2px;
-								}
-							}
 							code {
 								vertical-align: middle;
+							}
+						}
+						/* large only */
+						@media (min-width: 600px) {
+							.dyk-dialog {
+								.u-lbl {
+									width: 30%;
+									padding-right: 2px;
+								}
+								.u-data {
+									padding-left: 2px;
+									select {
+										width: 25em;
+									}
+									.czywiesz-wikiproject + .czywiesz-wikiproject {
+										margin-top: 2px;
+									}
+								}
 							}
 						}
 						#CzyWieszGalleryToggler {

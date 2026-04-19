@@ -75,21 +75,26 @@ var config = {
 							input {
 								vertical-align: middle
 							}
-							.u-lbl {
-								width: 30%;
-								padding-right: 2px;
-							}
-							.u-data {
-								padding-left: 2px;
-								select {
-									width: 25em;
-								}
-								.czywiesz-wikiproject + .czywiesz-wikiproject {
-									margin-top: 2px;
-								}
-							}
 							code {
 								vertical-align: middle;
+							}
+						}
+						/* large only */
+						@media (min-width: 600px) {
+							.dyk-dialog {
+								.u-lbl {
+									width: 30%;
+									padding-right: 2px;
+								}
+								.u-data {
+									padding-left: 2px;
+									select {
+										width: 25em;
+									}
+									.czywiesz-wikiproject + .czywiesz-wikiproject {
+										margin-top: 2px;
+									}
+								}
 							}
 						}
 						#CzyWieszGalleryToggler {
