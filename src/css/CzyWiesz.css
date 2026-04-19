@@ -19,7 +19,6 @@
 }
 
 .dyk-gallery-chosen { border: solid 2px red; }
-#CzyWieszWikiprojectAdd {cursor: pointer; }
 #CzyWieszGadget .czywiesz-tip {
 	cursor: help;
 	color: #d05700;
@@ -64,6 +63,9 @@
 			}
 		}
 	}
+	.dyk-proj-buttons {
+		white-space: pre;
+	}
 }
 #CzyWieszGalleryToggler {
 	margin-left: 1em;
@@ -82,8 +84,11 @@
 #CzyWieszAuthorInf {
 	margin-left: .5em;
 }
-#CzyWieszAuthorTip,
-#CzyWieszWikiprojectAdd {
+#CzyWieszAuthorTip {
+	margin-inline: .5em;
+}
+.dyk-proj-buttons a {
+	cursor: pointer;
 	margin-inline: .5em;
 }
 #CzyWieszQuestion,
@@ -190,4 +195,14 @@ a.czywiesz-external {
 		}
 	}
 
+	#CzyWieszWikiprojectContainer {
+		display: flex;
+		flex-flow: column;
+		gap: .5em;
+	}
+	.dyk-proj-buttons {
+		display: flex;
+		flex-flow: column;
+		gap: .5em;
+	}
 }

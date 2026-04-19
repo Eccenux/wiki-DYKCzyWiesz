@@ -161,7 +161,10 @@ class DykForm {
 				<td class="u-lbl">Powiadom wikiprojekt(y): </td>
 				<td class="u-data">
 					<span id="CzyWieszWikiprojectContainer"><small>(trwa ładowanie…)</small></span>
-					<a id="CzyWieszWikiprojectAdd">(+)</a>
+					<span class="dyk-proj-buttons">
+						<a href="#" role="button" id="CzyWieszWikiprojectAdd">(+<span class="dyk-proj-lbl">dodaj</span>)</a>
+						<a href="#" role="button" id="CzyWieszWikiprojectRemove">(-<span class="dyk-proj-lbl">usuń</span>)</a>
+					</spann>
 				</td>
 			</tr>
 		`.replace(/\n\t+/g, '').trim());
@@ -289,10 +292,20 @@ class DykForm {
 			);
 		});
 
-		// click on (+) near wikiprojects combo box → add new combo box and enlarge the dialog window
-		$('#CzyWieszWikiprojectAdd').click(()=>{
+		// wikiprojects add/remove
+		$('#CzyWieszWikiprojectAdd').click((e)=>{
+			e.preventDefault();
 			$('#CzyWieszWikiprojectContainer').append(this.wikiprojects.$select.clone());
-			$('#CzyWieszLoaderBar').parent().css({height: '+=24'});
+		});
+		$('#CzyWieszWikiprojectRemove').click((e)=>{
+			e.preventDefault();
+			let inps = [...document.querySelectorAll('#CzyWieszWikiprojectContainer select')].reverse();
+			for (const input of inps) {
+				if (input.value === 'none') {
+					input.remove();
+					break;
+				}
+			}
 		});
 
 		$('#CzyWieszCommentCheckbox').change(function(){
