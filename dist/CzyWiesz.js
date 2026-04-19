@@ -1244,10 +1244,6 @@ class DykForm {
 		// start loading data in background
 		this.loadData();
 
-		if ($('#CzyWieszStyleTag').length == 0) {
-			D.config.styletag.appendTo('head');
-		}
-
 		// when user ticks he wants to nominate with picture → enable picture/file field
 		$('#CzyWieszFile1').change(function(){
 			var a=$('#CzyWieszFile2');
@@ -2899,97 +2895,6 @@ var config = {
 	summary_w_newsection:	'/* Czy wiesz – [[TITLE]] */ nowe zgłoszenie za pomocą [[Wikipedia:Narzędzia/CzyWiesz|gadżetu CzyWiesz]]',
 	/** new section title for template in wikiprojects */
 	sectionTitle_w: 'Czy wiesz – [[TITLE]]',
-	/** style for this gadget */
-	styletag:	$('<style id="CzyWieszStyleTag">'
-					+ /* css */`
-						.dyk-gallery-chosen { border: solid 2px red; }
-						#CzyWieszWikiprojectAdd {cursor: pointer; }
-						#CzyWieszGadget .czywiesz-tip {
-							cursor: help;
-							color: #d05700;
-						}
-						.dyk-dialog {
-							max-width: 850px;
-
-							.u-actions {
-								padding-top: 1em;
-								display: flex;
-								gap: .5em;
-								flex-wrap: wrap;
-							}
-							input {
-								vertical-align: middle
-							}
-							code {
-								vertical-align: middle;
-							}
-						}
-						/* large only */
-						@media (min-width: 600px) {
-							.dyk-dialog {
-								.u-lbl {
-									width: 30%;
-									padding-right: 2px;
-								}
-								.u-data {
-									padding-left: 2px;
-									select {
-										width: 25em;
-									}
-									.czywiesz-wikiproject + .czywiesz-wikiproject {
-										margin-top: 2px;
-									}
-								}
-							}
-						}
-						#CzyWieszGalleryToggler {
-							margin-left: 1em;
-							font-size: 85%;
-						}
-						#CzyWieszImages {
-							width: 3.5em;
-						}
-						#CzyWieszFile2 {
-							width: 52%;
-						}
-						#CzyWieszAuthor2,
-						#CzyWieszAuthor {
-							width: 25em;
-						}
-						#CzyWieszAuthorInf {
-							margin-left: .5em;
-						}
-						#CzyWieszAuthorTip,
-						#CzyWieszWikiprojectAdd {
-							margin-inline: .5em;
-						}
-						#CzyWieszQuestion,
-						#CzyWieszComment,
-						#CzyWieszTitle {
-							max-width: 600px;
-							width: 100%;
-							box-sizing: border-box;
-						}
-						.dyk-form-tbl {
-							width: 100%;
-						}
-						a.czywiesz-external { 
-							color: #0645AD;
-							text-decoration: underline;
-							cursor: pointer;
-							padding-right: 13px; 
-							background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAVklEQVR4Xn3PgQkAMQhDUXfqTu7kTtkpd5RA8AInfArtQ2iRXFWT2QedAfttj2FsPIOE1eCOlEuoWWjgzYaB/IkeGOrxXhqB+uA9Bfcm0lAZuh+YIeAD+cAqSz4kCMUAAAAASUVORK5CYII=)
-								center right no-repeat; 
-						}
-						.dyk-button-off {
-							pointer-events: none;
-							opacity: .5;
-						}
-						.dyk-wait-still-sending {
-							cursor: wait; 
-						}
-					`
-				+ '</style>'),
 	/** [[File:Crystal Clear app clean.png]] (20px) [2012-11-20] */
 	yes:		'<img alt="Crystal Clear app clean.png" src="//upload.wikimedia.org/wikipedia/commons/thumb/3/34/Crystal_Clear_app_clean.png/20px-Crystal_Clear_app_clean.png" width="20" height="20">',
 	/** [[File:Crystal Clear action button cancel.png]] (20px) [2012-11-20] */

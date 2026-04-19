@@ -256,10 +256,6 @@ class DykForm {
 		// start loading data in background
 		this.loadData();
 
-		if ($('#CzyWieszStyleTag').length == 0) {
-			D.config.styletag.appendTo('head');
-		}
-
 		// when user ticks he wants to nominate with picture → enable picture/file field
 		$('#CzyWieszFile1').change(function(){
 			var a=$('#CzyWieszFile2');

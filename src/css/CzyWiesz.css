@@ -5,15 +5,189 @@
 	background-color: #F2F5F7;
 	color: black;
 	align-items: center;
+	fig {
+		height: 100px;
+		background-color: antiquewhite;
+		display: flex;
+	}
+	img {
+		width: 100%;
+		height: auto;
+		max-height: 100px;
+		object-fit: contain;
+	}
 }
-#CzyWieszGallery fig {
-	height: 100px;
-	background-color: antiquewhite;
-	display: flex;
+
+.dyk-gallery-chosen { border: solid 2px red; }
+#CzyWieszWikiprojectAdd {cursor: pointer; }
+#CzyWieszGadget .czywiesz-tip {
+	cursor: help;
+	color: #d05700;
 }
-#CzyWieszGallery img {
+.dyk-dialog {
+	max-width: 850px;
+
+	.u-actions {
+		padding-top: 1em;
+		display: flex;
+		gap: .5em;
+		flex-wrap: wrap;
+	}
+	input {
+		vertical-align: middle
+	}
+	code {
+		vertical-align: middle;
+	}
+
+	td,
+	input,
+	button,
+	select {
+		box-sizing: border-box;
+	}
+}
+/* large only */
+@media (min-width: 600px) {
+	.dyk-main-dialog {
+		.u-lbl {
+			width: 30%;
+			padding-right: 2px;
+		}
+		.u-data {
+			padding-left: 2px;
+			select {
+				width: 25em;
+			}
+			.czywiesz-wikiproject + .czywiesz-wikiproject {
+				margin-top: 2px;
+			}
+		}
+	}
+}
+#CzyWieszGalleryToggler {
+	margin-left: 1em;
+	font-size: 85%;
+}
+#CzyWieszImages {
+	width: 3.5em;
+}
+#CzyWieszFile2 {
+	width: 52%;
+}
+#CzyWieszAuthor2,
+#CzyWieszAuthor {
+	width: 25em;
+}
+#CzyWieszAuthorInf {
+	margin-left: .5em;
+}
+#CzyWieszAuthorTip,
+#CzyWieszWikiprojectAdd {
+	margin-inline: .5em;
+}
+#CzyWieszQuestion,
+#CzyWieszComment,
+#CzyWieszTitle {
+	max-width: 600px;
 	width: 100%;
-	height: auto;
-	max-height: 100px;
-	object-fit: contain;
+	box-sizing: border-box;
+}
+.dyk-form-tbl {
+	width: 100%;
+}
+a.czywiesz-external { 
+	color: #0645AD;
+	text-decoration: underline;
+	cursor: pointer;
+	padding-right: 13px; 
+	background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAVklEQVR4Xn3PgQkAMQhDUXfqTu7kTtkpd5RA8AInfArtQ2iRXFWT2QedAfttj2FsPIOE1eCOlEuoWWjgzYaB/IkeGOrxXhqB+uA9Bfcm0lAZuh+YIeAD+cAqSz4kCMUAAAAASUVORK5CYII=)
+		center right no-repeat; 
+}
+.dyk-button-off {
+	pointer-events: none;
+	opacity: .5;
+}
+.dyk-wait-still-sending {
+	cursor: wait; 
+}
+
+/* small only */
+@media (max-width: 599px) {
+	/* force full width */
+	.dyk-main-dialog {
+		max-width: none;
+		left: 0 !important;
+		right: 0 !important;
+		top: 0 !important;
+	}
+
+	/* color */
+	.dyk-form-tbl td {
+		border: 1px solid darkgrey;
+		&:first-of-type {
+			background-color: whitesmoke;
+		}
+	}
+
+	/* re-fit form-table */
+	.dyk-form-tbl {
+		display: block;
+
+		& > tr + tr {
+			padding-bottom: .4em;
+		}
+		td.u-data,
+		td {
+			padding: 4px 6px;
+		}
+		& > tr {
+			display: flex;
+			flex-wrap:wrap;
+			td {
+				flex: 1;
+				display: flex;
+			}
+			.u-lbl {
+				flex-basis: 30em;
+			}
+			.u-data {
+				flex-basis: 40em;
+			}
+		}
+
+		#CzyWieszEventsRow,
+		#CzyWieszWikiprojectRow {
+			.u-data select {
+				width: 100%;
+			}
+		}
+		.u-file-row {
+			#CzyWieszFile1 {
+				margin-right: .5em;
+			}
+			.u-data {
+				code { display: none; }
+				#CzyWieszFile2 { width: 100%; }
+			}
+		}
+		#CzyWieszAuthorInf {
+			margin-inline: .4em;
+		}
+		#CzyWieszAuthor2, #CzyWieszAuthor {
+			width: 100%;
+		}
+		#CzyWieszAuthorRow {
+			.u-data {
+				gap: .5em;
+				flex-wrap:wrap;
+				
+				& > span {
+					display: flex;
+					flex-basis: 100%;
+				}
+			}
+		}
+	}
+
 }

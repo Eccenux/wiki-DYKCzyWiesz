@@ -15,7 +15,7 @@ export function addConfig(configs, site, isRelease = false) {
 		nowiki: true,
 	}));
 	configs.push(new DeployConfig({
-		src: 'dist/CzyWiesz.css',
+		src: 'src/css/CzyWiesz.css',
 		dst: `${deploymentName}.css`,
 		site,
 	}));
