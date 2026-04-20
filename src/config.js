@@ -54,13 +54,13 @@ var config = {
 	summary_w_newsection:	'/* Czy wiesz – [[TITLE]] */ nowe zgłoszenie za pomocą [[Wikipedia:Narzędzia/CzyWiesz|gadżetu CzyWiesz]]',
 	/** new section title for template in wikiprojects */
 	sectionTitle_w: 'Czy wiesz – [[TITLE]]',
-	/** [[File:Crystal Clear app clean.png]] (20px) [2012-11-20] */
-	yes:		'<img alt="OK" src="//upload.wikimedia.org/wikipedia/commons/thumb/3/34/Crystal_Clear_app_clean.png/20px-Crystal_Clear_app_clean.png" width="20" height="20">',
-	/** [[File:Crystal Clear action button cancel.png]] (20px) [2012-11-20] */
-	no:			'<img alt="Błąd" src="//upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Crystal_Clear_action_button_cancel.png/20px-Crystal_Clear_action_button_cancel.png" width="20" height="20">',
-	/** [[File:PL Wiki CzyWiesz ikona.svg]] (80px) [2012-11-20] */
-	okLarge:	'<img alt="OK" src="//upload.wikimedia.org/wikipedia/commons/thumb/3/34/Crystal_Clear_app_clean.png/80px-Crystal_Clear_app_clean.png" width="80" height="80">',
-	noLarge:	'<img alt="Błąd" src="//upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Crystal_Clear_action_button_cancel.png/80px-Crystal_Clear_action_button_cancel.png" width="80" height="80">',
+	/** small OK/yes */
+	yes:		'<img alt="OK" src="https://upload.wikimedia.org/wikipedia/commons/b/b7/Gtk-ok.svg" height="20">',
+	/** small fail/no */
+	no:			'<img alt="Błąd" src="https://upload.wikimedia.org/wikipedia/commons/5/55/Gtk-stop.svg" height="20">',
+	/** large icons */
+	okLarge:	'<img alt="OK" src="https://upload.wikimedia.org/wikipedia/commons/b/b4/Gtk-dialog-info.svg" height="80">',
+	noLarge:	'<img alt="Błąd" src="https://upload.wikimedia.org/wikipedia/commons/2/24/Gtk-dialog-warning.svg" height="80">',
 };
 
 module.exports = { config };

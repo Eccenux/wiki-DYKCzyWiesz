@@ -18,6 +18,16 @@
 	}
 }
 
+.dyk-error-dialog .u-body::before {
+	content: "";
+	display: block;
+	float: right;
+	width: 26px;
+	height: 26px;
+	margin-left: 8px;
+
+	background: url("https://upload.wikimedia.org/wikipedia/commons/5/55/Gtk-stop.svg") no-repeat center / contain;
+}
 .dyk-gallery-chosen { border: solid 2px red; }
 #CzyWieszGadget .czywiesz-tip {
 	cursor: help;
