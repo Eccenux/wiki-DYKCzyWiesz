@@ -282,7 +282,7 @@ class DykForm {
 			e.preventDefault();
 			OO.ui.alert(
 				$(/*html*/`<div>
-					<div class="floatright">${D.config.CWicon}</div>
+					<div class="floatright">${D.config.noLarge}</div>
 					<p style="margin-left: 10px;">Zgodnie z wytycznymi 
 					<a class="czywiesz-external" target="_blank" href="/wiki/Wikiprojekt:Czy_wiesz" title="Wikiprojekt:Czy wiesz">Wikiprojektu Czy wiesz</a>
 					zgłaszane hasło powinno posiadać źródła w formie przypisów (lub biografii z odnośnikami przypisowymi).

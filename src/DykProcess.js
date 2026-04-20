@@ -39,17 +39,17 @@ class DykProcess {
 		// init nomination date
 		this.setupNominationPage();
 
-		let nominated;	// already nominated
+		let nominatedInfo;	// already nominated
 		try {
-			nominated = await this.checkNominationExists();
+			nominatedInfo = await this.checkNominationExists();
 		} catch (error) {
 			this.errors.push('Błąd sprawdzania istniejących zgłoszeń: ' + error + '.');
 			this.errors.show();
 			console.error('Błąd sprawdzania istniejących zgłoszeń: ', error);
 		}
 
-		if (nominated) {
-			this.errors.show();
+		if (nominatedInfo) {
+			this.errors.showHtml(nominatedInfo);
 		} else {
 			await this.core.getEditToken(false);
 			await this.runNominate();
@@ -78,12 +78,11 @@ class DykProcess {
 		this.core.log('Sekcje na stronie nominacji:', sections);
 		let exisiting = sections.filter(s => s.level==2 && s.line == this.wgTitle);
 		if (exisiting.length) {
-			const href = '/wiki/'+encodeURIComponent(this.setupNominationPage()) + '#' + exisiting[0].anchor;
-			this.errors.push(`
+			const href = '/wiki/'+encodeURIComponent(this.setupNominationPage()) + '#' + encodeURIComponent(exisiting[0].anchor);
+			return `
 				Podany artykuł jest zgłoszony do rubryki „Czy wiesz…”.<br />
 				<a href="${href}" class="czywiesz-external" target="_blank">Sprawdź</a>.
-			`);
-			return true;
+			`;
 		}
 
 		// check for existing nomination page
@@ -95,11 +94,10 @@ class DykProcess {
 		let pageInfo = subpageData.query.pages.pop();
 		if (!pageInfo.missing) {
 			const href = '/wiki/'+encodeURIComponent(subpageTitle);
-			this.errors.push(`
+			return `
 				Podany artykuł był już zgłoszony do rubryki „Czy wiesz…” w tym miesiącu.<br />
 				<a href="${href}" class="czywiesz-external" target="_blank">Sprawdź</a>.
-			`);
-			return true;
+			`;
 		}
 
 		// nomination doesn't exist yet
@@ -437,7 +435,7 @@ class DykProcess {
 		OO.ui.alert(
 			$(/* html */`
 				<div id="CzyWieszSuccess">
-					<div class="floatright">${D.config.CWicon}</div>
+					<div class="floatright">${D.config.okLarge}</div>
 					<p style="margin-left: 10px;">Dziękujemy za 
 					<a id="CzyWieszLinkAfter" href="/wiki/${encodeURIComponent(subpageTitle)}" class="czywiesz-external" target="_blank">zgłoszenie</a>.
 					<br /><br />
@@ -454,14 +452,12 @@ class DykProcess {
 				<a href="/wiki/Wikiprojekt:Czy_wiesz" title="Wikiprojekt:Czy wiesz">Wikiprojekt Czy wiesz</a></p></div>
 			`),
 			{
-				title: D.config.tmpldone,
+				title: "Załatwione",
 				size: 'large'
 			}
 		).done(function () {
 			for (let el of document.querySelectorAll('.dyk-dialog')) {
-				if (el.uSdd) {
-					el.uSdd.close();
-				}
+				el.remove();
 			}
 		});
 		$('#CzyWieszSuccess a.CzyWieszEmailDoAutoraToggle').click(function() {

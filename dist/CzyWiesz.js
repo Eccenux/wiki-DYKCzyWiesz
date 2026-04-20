@@ -1270,7 +1270,7 @@ class DykForm {
 			e.preventDefault();
 			OO.ui.alert(
 				$(/*html*/`<div>
-					<div class="floatright">${D.config.CWicon}</div>
+					<div class="floatright">${D.config.noLarge}</div>
 					<p style="margin-left: 10px;">Zgodnie z wytycznymi 
 					<a class="czywiesz-external" target="_blank" href="/wiki/Wikiprojekt:Czy_wiesz" title="Wikiprojekt:Czy wiesz">Wikiprojektu Czy wiesz</a>
 					zgłaszane hasło powinno posiadać źródła w formie przypisów (lub biografii z odnośnikami przypisowymi).
@@ -1814,17 +1814,17 @@ class DykProcess {
 		// init nomination date
 		this.setupNominationPage();
 
-		let nominated;	// already nominated
+		let nominatedInfo;	// already nominated
 		try {
-			nominated = await this.checkNominationExists();
+			nominatedInfo = await this.checkNominationExists();
 		} catch (error) {
 			this.errors.push('Błąd sprawdzania istniejących zgłoszeń: ' + error + '.');
 			this.errors.show();
 			console.error('Błąd sprawdzania istniejących zgłoszeń: ', error);
 		}
 
-		if (nominated) {
-			this.errors.show();
+		if (nominatedInfo) {
+			this.errors.showHtml(nominatedInfo);
 		} else {
 			await this.core.getEditToken(false);
 			await this.runNominate();
@@ -1853,12 +1853,11 @@ class DykProcess {
 		this.core.log('Sekcje na stronie nominacji:', sections);
 		let exisiting = sections.filter(s => s.level==2 && s.line == this.wgTitle);
 		if (exisiting.length) {
-			const href = '/wiki/'+encodeURIComponent(this.setupNominationPage()) + '#' + exisiting[0].anchor;
-			this.errors.push(`
+			const href = '/wiki/'+encodeURIComponent(this.setupNominationPage()) + '#' + encodeURIComponent(exisiting[0].anchor);
+			return `
 				Podany artykuł jest zgłoszony do rubryki „Czy wiesz…”.<br />
 				<a href="${href}" class="czywiesz-external" target="_blank">Sprawdź</a>.
-			`);
-			return true;
+			`;
 		}
 
 		// check for existing nomination page
@@ -1870,11 +1869,10 @@ class DykProcess {
 		let pageInfo = subpageData.query.pages.pop();
 		if (!pageInfo.missing) {
 			const href = '/wiki/'+encodeURIComponent(subpageTitle);
-			this.errors.push(`
+			return `
 				Podany artykuł był już zgłoszony do rubryki „Czy wiesz…” w tym miesiącu.<br />
 				<a href="${href}" class="czywiesz-external" target="_blank">Sprawdź</a>.
-			`);
-			return true;
+			`;
 		}
 
 		// nomination doesn't exist yet
@@ -2212,7 +2210,7 @@ class DykProcess {
 		OO.ui.alert(
 			$(/* html */`
 				<div id="CzyWieszSuccess">
-					<div class="floatright">${D.config.CWicon}</div>
+					<div class="floatright">${D.config.okLarge}</div>
 					<p style="margin-left: 10px;">Dziękujemy za 
 					<a id="CzyWieszLinkAfter" href="/wiki/${encodeURIComponent(subpageTitle)}" class="czywiesz-external" target="_blank">zgłoszenie</a>.
 					<br /><br />
@@ -2229,14 +2227,12 @@ class DykProcess {
 				<a href="/wiki/Wikiprojekt:Czy_wiesz" title="Wikiprojekt:Czy wiesz">Wikiprojekt Czy wiesz</a></p></div>
 			`),
 			{
-				title: D.config.tmpldone,
+				title: "Załatwione",
 				size: 'large'
 			}
 		).done(function () {
 			for (let el of document.querySelectorAll('.dyk-dialog')) {
-				if (el.uSdd) {
-					el.uSdd.close();
-				}
+				el.remove();
 			}
 		});
 		$('#CzyWieszSuccess a.CzyWieszEmailDoAutoraToggle').click(function() {
@@ -2297,12 +2293,14 @@ class ErrorInfo {
 
 		const content = document.createElement('div');
 		content.id = 'CzyWieszErrorDialog';
-		content.appendChild(list);
 		content.innerHTML = /* html */`
-				<p>Coś poszło nie tak. Jeśli powyższa lista nie wyjaśnia problemu, to więcej informacji jest w konsoli przeglądarki.</p>
+				<p>Coś poszło nie tak. Lista wykrytych problemów:</p>
+				<div class="u-problems"></div>
+				<p>Jeśli powyższa lista nie wyjaśnia problemu, to więcej informacji jest w konsoli przeglądarki (F12).</p>
 				<p>Jeśli problem jest nietypowy, to <a href="#" role="button" class="CzyWieszEmailDoAutoraWyslij">wyślij e-mail programiście z danymi błędu</a> (szybka wysyłka logów mailem).<span class="CzyWieszEmailDoAutoraWyslano"></span></p>
 				<p>Możesz też opisać co się stało na <a href="https://pl.wikipedia.org/wiki/WP:BAR:TE" class="czywiesz-external" target="_blank">w kawiarence technicznej</a>.</p>
 		`;
+		content.querySelector('.u-problems').append(list);
 		
 		let sdd = new SimpleDragDialog();
 		sdd.create({
@@ -2314,6 +2312,22 @@ class ErrorInfo {
 		$('a.CzyWieszEmailDoAutoraWyslij', content).click(function(e) {
 			e.preventDefault();
 			me.emailSupport(this);
+		});
+		sdd.show();
+		sdd.center();
+	}
+
+	/** Show HTML error directly (Note! HTML must be sanitized). */
+	showHtml(html) {
+		const content = document.createElement('div');
+		content.id = 'CzyWieszErrorDialog';
+		content.innerHTML = html;
+		
+		let sdd = new SimpleDragDialog();
+		sdd.create({
+			title:'Wystąpił błąd',
+			dialogClass: "dyk-dialog dyk-error-dialog",
+			content,
 		});
 		sdd.show();
 		sdd.center();
@@ -2866,7 +2880,7 @@ module.exports = { apiAjax, apiAsync };
 },{}],14:[function(require,module,exports){
 let versionInfo = {
 	version:'7.1.0',
-	buildDay:'2026-04-19',
+	buildDay:'2026-04-20',
 }
 
 module.exports = { versionInfo };
@@ -2929,15 +2943,12 @@ var config = {
 	/** new section title for template in wikiprojects */
 	sectionTitle_w: 'Czy wiesz – [[TITLE]]',
 	/** [[File:Crystal Clear app clean.png]] (20px) [2012-11-20] */
-	yes:		'<img alt="Crystal Clear app clean.png" src="//upload.wikimedia.org/wikipedia/commons/thumb/3/34/Crystal_Clear_app_clean.png/20px-Crystal_Clear_app_clean.png" width="20" height="20">',
+	yes:		'<img alt="OK" src="//upload.wikimedia.org/wikipedia/commons/thumb/3/34/Crystal_Clear_app_clean.png/20px-Crystal_Clear_app_clean.png" width="20" height="20">',
 	/** [[File:Crystal Clear action button cancel.png]] (20px) [2012-11-20] */
-	no:			'<img alt="Crystal Clear action button cancel.png" src="//upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Crystal_Clear_action_button_cancel.png/20px-Crystal_Clear_action_button_cancel.png" width="20" height="20">',
+	no:			'<img alt="Błąd" src="//upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Crystal_Clear_action_button_cancel.png/20px-Crystal_Clear_action_button_cancel.png" width="20" height="20">',
 	/** [[File:PL Wiki CzyWiesz ikona.svg]] (80px) [2012-11-20] */
-	CWicon:		'<img alt="PL Wiki CzyWiesz ikona.svg" src="//upload.wikimedia.org/wikipedia/commons/thumb/f/f4/PL_Wiki_CzyWiesz_ikona.svg/80px-PL_Wiki_CzyWiesz_ikona.svg.png" width="80" height="80" srcset="//upload.wikimedia.org/wikipedia/commons/thumb/f/f4/PL_Wiki_CzyWiesz_ikona.svg/120px-PL_Wiki_CzyWiesz_ikona.svg.png 1.5x, //upload.wikimedia.org/wikipedia/commons/thumb/f/f4/PL_Wiki_CzyWiesz_ikona.svg/160px-PL_Wiki_CzyWiesz_ikona.svg.png 2x">',
-	/** = {{załatwione}} [2012-11-20] */
-	tmpldone:	'<span class="template-done"><img alt="Crystal Clear app clean.png" src="//upload.wikimedia.org/wikipedia/commons/thumb/3/34/Crystal_Clear_app_clean.png/20px-Crystal_Clear_app_clean.png" width="20" height="20" srcset="//upload.wikimedia.org/wikipedia/commons/thumb/3/34/Crystal_Clear_app_clean.png/30px-Crystal_Clear_app_clean.png 1.5x, //upload.wikimedia.org/wikipedia/commons/thumb/3/34/Crystal_Clear_app_clean.png/40px-Crystal_Clear_app_clean.png 2x"><span style="display:none">T</span> <b>Załatwione</b></span>',
-	/** = {{niezałatwione}} [2012-11-20] */
-	tmplndone:	'<span class="template-not-done"><img alt="Crystal Clear action button cancel.png" src="//upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Crystal_Clear_action_button_cancel.png/20px-Crystal_Clear_action_button_cancel.png" width="20" height="20" srcset="//upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Crystal_Clear_action_button_cancel.png/30px-Crystal_Clear_action_button_cancel.png 1.5x, //upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Crystal_Clear_action_button_cancel.png/40px-Crystal_Clear_action_button_cancel.png 2x"><span style="display:none">N</span> <b>Niezałatwione</b></span>'
+	okLarge:	'<img alt="OK" src="//upload.wikimedia.org/wikipedia/commons/thumb/3/34/Crystal_Clear_app_clean.png/80px-Crystal_Clear_app_clean.png" width="80" height="80">',
+	noLarge:	'<img alt="Błąd" src="//upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Crystal_Clear_action_button_cancel.png/80px-Crystal_Clear_action_button_cancel.png" width="80" height="80">',
 };
 
 module.exports = { config };
