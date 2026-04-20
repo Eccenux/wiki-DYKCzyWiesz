@@ -334,6 +334,34 @@ class DykForm {
 	}
 
 	/**
+	 * Resize gallery holder to force square-like dimensions.
+	 * 
+	 * @param {number} imgCount 
+	 * @param {Element} galleryHolder 
+	 * @returns 
+	 */
+	setupGallerySize(imgCount, galleryHolder) {
+		if (imgCount < 4) {
+			return;
+		}
+		const colSize = 120; // px, rounded up
+		const viewportWidth = document.documentElement.clientWidth;
+
+		// skip for small screen
+		if (viewportWidth < 450) {
+			return;
+		}
+
+		let optimalCols = Math.ceil(Math.sqrt(imgCount));
+		if (viewportWidth < optimalCols * colSize) {
+			optimalCols = Math.floor(viewportWidth / colSize);
+		}
+		if (optimalCols > 2) {
+			galleryHolder.style.minWidth = `clamp(50px, 90vw, ${optimalCols * colSize}px)`;
+		}
+	}
+
+	/**
 	 * Show gallery for the current article.
 	 * 
 	 * Tests:
@@ -368,6 +396,9 @@ class DykForm {
 				gallery.appendChild(fig);
 			}
 		}
+
+		// attempt to make a ~square gallery
+		this.setupGallerySize(IMG_ARR.length, galleryHolder);
 
 		const sddGal = new SimpleDragDialog();
 		sddGal.create({
