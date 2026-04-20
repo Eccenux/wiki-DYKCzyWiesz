@@ -59,8 +59,8 @@ var config = {
 	/** small fail/no */
 	no:			'<img alt="Błąd" src="https://upload.wikimedia.org/wikipedia/commons/5/55/Gtk-stop.svg" height="20">',
 	/** large icons */
-	okLarge:	'<img alt="OK" src="https://upload.wikimedia.org/wikipedia/commons/b/b4/Gtk-dialog-info.svg" height="80">',
-	noLarge:	'<img alt="Błąd" src="https://upload.wikimedia.org/wikipedia/commons/2/24/Gtk-dialog-warning.svg" height="80">',
+	okLarge:	'<img alt="OK" src="https://upload.wikimedia.org/wikipedia/commons/b/b4/Gtk-dialog-info.svg" height="60">',
+	noLarge:	'<img alt="Błąd" src="https://upload.wikimedia.org/wikipedia/commons/2/24/Gtk-dialog-warning.svg" height="60">',
 };
 
 module.exports = { config };

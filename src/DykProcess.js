@@ -436,10 +436,9 @@ class DykProcess {
 			$(/* html */`
 				<div id="CzyWieszSuccess">
 					<div class="floatright">${D.config.okLarge}</div>
-					<p style="margin-left: 10px;">Dziękujemy za 
-					<a id="CzyWieszLinkAfter" href="/wiki/${encodeURIComponent(subpageTitle)}" class="czywiesz-external" target="_blank">zgłoszenie</a>.
-					<br /><br />
-					Dla pewności możesz sprawdzić 
+					<p>Dziękujemy za 
+					<a id="CzyWieszLinkAfter" href="/wiki/${encodeURIComponent(subpageTitle)}" class="czywiesz-external" target="_blank">zgłoszenie</a>.</p>
+					<p>Dla pewności możesz sprawdzić 
 					<a href="/wiki/Specjalna:Wk%C5%82ad/${encodeURIComponent(mw.config.get('wgUserName'))}" class="czywiesz-external" target="_blank">swój wkład</a>,
 					czy wszystko poszło zgodnie z planem.<br />
 					<small><a class="CzyWieszEmailDoAutoraToggle">(Coś nie działa?)</a></small>
@@ -448,8 +447,8 @@ class DykProcess {
 						aby wysłać twórcy gadżetu e-mail z opisem błędu, a gadżet dołączy do niego szczegóły techniczne.
 						<span class="CzyWieszEmailDoAutoraWyslano"></span>
 					</div>
-				<br />
-				<a href="/wiki/Wikiprojekt:Czy_wiesz" title="Wikiprojekt:Czy wiesz">Wikiprojekt Czy wiesz</a></p></div>
+					<p style="text-align: center"><a href="/wiki/Wikiprojekt:Czy_wiesz" title="Wikiprojekt:Czy wiesz">Wikiprojekt Czy wiesz</a></p>
+				</div>
 			`),
 			{
 				title: "Załatwione",
