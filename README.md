@@ -2,6 +2,8 @@
 
 Nominacje do Czy-Wiesza aka DYKnomination (Did You Know).
 
+Ikony pochodzą z [zestawu Nuvola](https://commons.wikimedia.org/wiki/Category:Nuvola_SVG_stock): [David Vignoni](https://en.wikipedia.org/wiki/David_Vignoni).
+
 ## Linki
 
 Wersja dev skryptu:
