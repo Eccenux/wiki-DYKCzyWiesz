@@ -142,14 +142,14 @@ class DykForm {
 		//author row
 		var $author_row = $(/*html*/`
 			<tr id="CzyWieszAuthorRow" class="u-author-row">
-				<td class="u-lbl">Główna autor(-ka) artykułu<span class="czywiesz-tip" title="Gadżet ustala autorstwo wg największej edycji w ciągu ostatnich 10 dni (sprawdź zmiany w ostatnich dniach)."><sup>(?)</sup></span>: </td>
+				<td class="u-lbl">Główny autor(ka) artykułu<span class="czywiesz-tip" title="Gadżet ustala autorstwo wg największej edycji w ciągu ostatnich 10 dni (sprawdź zmiany w ostatnich dniach)."><sup>(?)</sup></span>: </td>
 				<td class="u-data">
 					<span><input type="text" id="CzyWieszAuthor" name="CzyWieszAuthor"></span>
 					<span><input type="checkbox" checked id="CzyWieszAuthorInf" name="CzyWieszAuthorInf"><label for="CzyWieszAuthorInf"> wysłać powiadomienia?</label></span>
 				</td>
 			</tr>
 			<tr id="CzyWieszAuthor2Row">
-				<td class="u-lbl">Druga autor(-ka) artykułu<span class="czywiesz-tip" title="Użyj listy zmian, żeby sprawdzić, czy ktoś jeszcze wprowadzał duże zmiany."><sup>(?)</sup></span>: </td>
+				<td class="u-lbl">Drugi autor(ka) artykułu<span class="czywiesz-tip" title="Użyj listy zmian, żeby sprawdzić, czy ktoś jeszcze wprowadzał duże zmiany."><sup>(?)</sup></span>: </td>
 				<td class="u-data"><input type="text" id="CzyWieszAuthor2" name="CzyWieszAuthor2">
 				</td>
 			</tr>
@@ -203,8 +203,8 @@ class DykForm {
 		//rules paragraph
 		var $rules_paragraph = $('<p id="CzyWieszRules"></p>')
 			.html(`<small>Reguły: Zgłaszaj hasła, które powstały lub zostały rozbudowane nie dawniej niż <xd>10</xd> dni temu.
-				Hasła muszą posiadać źródła w formie przypisów oraz muszą zawierać co najmniej <xkb>1</xkb> kB samej treści.</small>`)
-			.css({border: '1px solid #F0F080', backgroundColor: '#FFFFE0', paddingLeft: '5px'});
+				Hasła muszą posiadać źródła w formie przypisów oraz muszą zawierać co najmniej <xkb>2</xkb> kB samej treści.</small>`)
+			.css({border: '1px solid var(--background-color-option-yellow)', backgroundColor: 'var(--background-color-warning-subtle)', paddingLeft: '5px'});
  
 		var $loading_bar = $('<div id="CzyWieszLoaderBar"></div>')
 			.css({width: '100%', backgroundColor: 'rgb(220, 220, 220)', border: '1px solid rgb(187, 187, 187)', borderRadius: '3px', boxSizing: 'border-box'})
@@ -230,7 +230,7 @@ class DykForm {
 					D.main.checkForm();
 				}
 				else {
-					alert('Artykuł bez źródeł jest zdyskwalifikowany z nominacji. (Jeśli źródła są, to zwróć uwagę, czy tytuł sekcji jest prawidłowy, tzn. „Przypisy” lub „Bibliografia”.)');
+					alert('Artykuł bez źródeł jest zdyskwalifikowany z nominacji. (Jeśli źródła są, to zwróć uwagę, czy tytuł sekcji jest prawidłowy, tzn. „Przypisy” lub „Bibliografia”).');
 				}
 			},
 			"Anuluj" : function() {
@@ -284,7 +284,7 @@ class DykForm {
 				$(/*html*/`<div>
 					<div class="floatright">${D.config.noLarge}</div>
 					<p style="margin-left: 10px;">Zgodnie z wytycznymi 
-					<a class="czywiesz-external" target="_blank" href="/wiki/Wikiprojekt:Czy_wiesz" title="Wikiprojekt:Czy wiesz">Wikiprojektu Czy wiesz</a>
+					<a class="czywiesz-external" target="_blank" href="/wiki/Wikiprojekt:Czy_wiesz" title="Wikiprojekt:Czy wiesz">wikiprojektu Czy wiesz</a>
 					zgłaszane hasło powinno posiadać źródła w formie przypisów (lub biografii z odnośnikami przypisowymi).
 					<a class="czywiesz-external" target="_blank" href="/wiki/Wikiprojekt:Czy_wiesz/pomoc#Zg.C5.82aszanie_propozycji_i_poprawa_hase.C5.82" title="Wikiprojekt:Czy wiesz/pomoc#Zgłaszanie propozycji i poprawa haseł">Więcej informacji w instrukcji</a>
 					<br /><small>Możliwe, że w artykule sekcje ze źródłami są błędnie nazwane – w takim wypadku popraw je.</small></p>
@@ -710,7 +710,7 @@ class DykForm {
 			if ( (typeof COMMENT!='string'&&typeof COMMENT!='boolean') || (typeof COMMENT=='string' && (COMMENT===''||COMMENT.match(/^[^A-ZĘÓĄŚŁŻŹĆŃa-zęóąśłżźćń]+$/)) ) || (typeof COMMENT=='string'&&COMMENT==true) ) {
 				invalid.is = true;
 				invalid.fields.push('Comment');
-				invalid.alert.push('Jeśli musisz podać jakiś komentarz to podaj jakiś sensowny, jeśli nie – wyłącz to pole. Nie wstawiaj w tym polu samego podpisu (lecz w przypadku komentarza – podpisz się).');
+				invalid.alert.push('Jeśli musisz podać jakiś komentarz, to podaj jakiś sensowny, jeśli nie – wyłącz to pole. Nie wstawiaj w tym polu samego podpisu (lecz w przypadku komentarza – podpisz się).');
 			}
 
 		const values = {

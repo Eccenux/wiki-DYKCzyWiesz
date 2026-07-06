@@ -194,9 +194,9 @@ class DoneHandling {
 				let errorInfo = typeof error == 'string' ? htmlspecialchars(error) : '<code>'+htmlspecialchars(error)+'</code>';
 				dd.update(`
 					<p>❌ Przenoszenie nie udało się: ${errorInfo}</p>
-					<p><a href="${contribHref}" class="czywiesz-external" target="_blank">Sprawdź swój wkład</a>, żeby obejrzeć co już zostało zrobione (czy w ogóle coś).
+					<p><a href="${contribHref}" class="czywiesz-external" target="_blank">Sprawdź swój wkład</a>, żeby obejrzeć, co już zostało zrobione (o ile w ogóle coś).
 					<p>Możesz wejść na stronę zgłoszenia lub ją odświeżyć i spróbować ponownie.
-						Jeśli zgłoszenie nadal nie jest zakończone i nie da się go zakończyć, to być <strong>może musisz zakończyć zgłoszenie ręcznie</strong>:
+						Jeśli zgłoszenie nadal nie jest zakończone i nie da się go zakończyć, to <strong>być może musisz zakończyć zgłoszenie ręcznie</strong>:
 					<ol>
 						<li>Usuń zgłoszenie <a href="${mw.util.getUrl(D.getBaseNew(), {action:'edit'})}" class="czywiesz-external" target="_blank">z listy propozycji</a>.
 						<li>Dodaj zgłoszenie <a href="${mw.util.getUrl(D.getBaseDone(), {action:'edit'})}" class="czywiesz-external" target="_blank">do listy ocenionych</a>.
@@ -204,7 +204,7 @@ class DoneHandling {
 							<ul>
 								<li>W szablonie <code>CW/weryfikacja</code> ustaw parametr <code>status=zakończone</code>.
 								<li>W szablonie <code>licznik czasu</code> zmniejsz liczbę dni (możesz ustawić <code>dni=1</code>).
-								<li>Dopisz komentarz wpisując <code>{{Załatwione}}</code>.
+								<li>Dopisz komentarz, wpisując <code>{{Załatwione}}</code>.
 							</ul>
 						</li>
 					</ol>
@@ -256,7 +256,7 @@ class DoneHandling {
 				let errorInfo = typeof error == 'string' ? htmlspecialchars(error) : '<code>'+htmlspecialchars(error)+'</code>';
 				dd.update(`
 					<p>❌ Wycofanie nie udało się: ${errorInfo}</p>
-					<p><a href="${contribHref}" class="czywiesz-external" target="_blank">Sprawdź swój wkład</a>, żeby obejrzeć co już zostało zrobione (czy w ogóle coś).
+					<p><a href="${contribHref}" class="czywiesz-external" target="_blank">Sprawdź swój wkład</a>, żeby obejrzeć, co już zostało zrobione (o ile w ogóle coś).
 				`, true);
 				return;
 			}
