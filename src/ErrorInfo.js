@@ -45,7 +45,7 @@ class ErrorInfo {
 				<div class="u-problems"></div>
 				<p>Jeśli powyższa lista nie wyjaśnia problemu, to więcej informacji jest w konsoli przeglądarki (F12).</p>
 				<p>Jeśli problem jest nietypowy, to <a href="#" role="button" class="CzyWieszEmailDoAutoraWyslij">wyślij e-mail programiście z danymi błędu</a> (szybka wysyłka logów mailem).<span class="CzyWieszEmailDoAutoraWyslano"></span></p>
-				<p>Możesz też opisać co się stało na <a href="https://pl.wikipedia.org/wiki/WP:BAR:TE" class="czywiesz-external" target="_blank">w kawiarence technicznej</a>.</p>
+				<p>Możesz też opisać, co się stało, <a href="https://pl.wikipedia.org/wiki/WP:BAR:TE" class="czywiesz-external" target="_blank">w Kawiarence technicznej</a>.</p>
 		`;
 		content.querySelector('.u-problems').append(list);
 		

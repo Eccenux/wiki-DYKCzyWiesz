@@ -98,7 +98,7 @@ function createDyk(DYKnomination) {
 
 		var opis = prompt('Opisz, co się stało. Bez tego twórca nie będzie wiedział, co naprawiać.','');
 		if (!opis) {
-			alert('Nic nie wyślę twórcy, dopóki nie opiszesz błędu swoimi słowami. Bez Twojego opisu twórca nie będzie wiedział co naprawiać.');
+			alert('Nic nie wyślę twórcy, dopóki nie opiszesz błędu swoimi słowami. Bez Twojego opisu twórca nie będzie wiedział, co naprawiać.');
 			return;
 		}
 		D.log('DYKnomination.errors: ', D.errors); //add potential errors, before stringifying all logs
