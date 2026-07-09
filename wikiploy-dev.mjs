@@ -1,4 +1,4 @@
-import { Wikiploy } from 'wikiploy';
+import { setupSummary, Wikiploy } from 'wikiploy';
 
 import * as botpass from './bot.config.mjs';
 const ployBot = new Wikiploy(botpass);
@@ -10,11 +10,11 @@ import { versionInfo } from './src/build/version.js';
 // run asynchronously to be able to wait for results
 (async () => {
 	// custom summary from a prompt
-	// await setupSummary(ployBot);
+	await setupSummary(ployBot, versionInfo.version, 'zmiany z Github');
 	// temp for v6 quick tests
-	ployBot.summary = () => {
-		return `v${versionInfo.version} changes from Github`;
-	};
+	// ployBot.summary = () => {
+	// 	return `v${versionInfo.version} changes from Github`;
+	// };
 
 	// push out file(s) to wiki
 	const configs = [];

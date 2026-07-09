@@ -6,6 +6,8 @@
 	"configurations": [
 		{
 			"type": "node",
+			// wymagane dla setupSummary
+			"console": "integratedTerminal",
 			"request": "launch",
 			"name": "Run current JS",
 			"skipFiles": [
