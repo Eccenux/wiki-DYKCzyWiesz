@@ -142,14 +142,14 @@ class DykForm {
 		//author row
 		var $author_row = $(/*html*/`
 			<tr id="CzyWieszAuthorRow" class="u-author-row">
-				<td class="u-lbl">Główny autor(ka) artykułu<span class="czywiesz-tip" title="Gadżet ustala autorstwo wg największej edycji w ciągu ostatnich 10 dni (sprawdź zmiany w ostatnich dniach)."><sup>(?)</sup></span>: </td>
+				<td class="u-lbl">Główny autor(-ka) artykułu<span class="czywiesz-tip" title="Gadżet ustala autorstwo wg największej edycji w ciągu ostatnich 10 dni (sprawdź zmiany w ostatnich dniach)."><sup>(?)</sup></span>: </td>
 				<td class="u-data">
 					<span><input type="text" id="CzyWieszAuthor" name="CzyWieszAuthor"></span>
 					<span><input type="checkbox" checked id="CzyWieszAuthorInf" name="CzyWieszAuthorInf"><label for="CzyWieszAuthorInf"> wysłać powiadomienia?</label></span>
 				</td>
 			</tr>
 			<tr id="CzyWieszAuthor2Row">
-				<td class="u-lbl">Drugi autor(ka) artykułu<span class="czywiesz-tip" title="Użyj listy zmian, żeby sprawdzić, czy ktoś jeszcze wprowadzał duże zmiany."><sup>(?)</sup></span>: </td>
+				<td class="u-lbl">Drugi autor(-ka) artykułu<span class="czywiesz-tip" title="Użyj listy zmian, żeby sprawdzić, czy ktoś jeszcze wprowadzał duże zmiany."><sup>(?)</sup></span>: </td>
 				<td class="u-data"><input type="text" id="CzyWieszAuthor2" name="CzyWieszAuthor2">
 				</td>
 			</tr>
@@ -161,7 +161,7 @@ class DykForm {
 		//wikiproject row (filled later by wikiprojects.load())
 		const $wikiproject_row = $(/*html*/`
 			<tr id="CzyWieszWikiprojectRow">
-				<td class="u-lbl">Powiadom wikiprojekt(y): </td>
+				<td class="u-lbl">Powiadom wikiprojekt(-y): </td>
 				<td class="u-data">
 					<span id="CzyWieszWikiprojectContainer"><small>(trwa ładowanie…)</small></span>
 					<span class="dyk-proj-buttons">
@@ -230,7 +230,7 @@ class DykForm {
 					D.main.checkForm();
 				}
 				else {
-					alert('Artykuł bez źródeł jest zdyskwalifikowany z nominacji. (Jeśli źródła są, to zwróć uwagę, czy tytuł sekcji jest prawidłowy, tzn. „Przypisy” lub „Bibliografia”).');
+					alert('Artykuł bez źródeł jest zdyskwalifikowany z nominacji.\n\nJeśli źródła są, to zwróć uwagę, czy tytuł sekcji jest prawidłowy, tzn. „Przypisy” lub „Bibliografia”.');
 				}
 			},
 			"Anuluj" : function() {

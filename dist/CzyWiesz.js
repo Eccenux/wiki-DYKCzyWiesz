@@ -99,7 +99,7 @@ function createDyk(DYKnomination) {
 
 		var opis = prompt('Opisz, co się stało. Bez tego twórca nie będzie wiedział, co naprawiać.','');
 		if (!opis) {
-			alert('Nic nie wyślę twórcy, dopóki nie opiszesz błędu swoimi słowami. Bez Twojego opisu twórca nie będzie wiedział co naprawiać.');
+			alert('Nic nie wyślę twórcy, dopóki nie opiszesz błędu swoimi słowami. Bez Twojego opisu twórca nie będzie wiedział, co naprawiać.');
 			return;
 		}
 		D.log('DYKnomination.errors: ', D.errors); //add potential errors, before stringifying all logs
@@ -504,9 +504,9 @@ class DoneHandling {
 				let errorInfo = typeof error == 'string' ? htmlspecialchars(error) : '<code>'+htmlspecialchars(error)+'</code>';
 				dd.update(`
 					<p>❌ Przenoszenie nie udało się: ${errorInfo}</p>
-					<p><a href="${contribHref}" class="czywiesz-external" target="_blank">Sprawdź swój wkład</a>, żeby obejrzeć co już zostało zrobione (czy w ogóle coś).
+					<p><a href="${contribHref}" class="czywiesz-external" target="_blank">Sprawdź swój wkład</a>, żeby obejrzeć, co już zostało zrobione (o ile w ogóle coś).
 					<p>Możesz wejść na stronę zgłoszenia lub ją odświeżyć i spróbować ponownie.
-						Jeśli zgłoszenie nadal nie jest zakończone i nie da się go zakończyć, to być <strong>może musisz zakończyć zgłoszenie ręcznie</strong>:
+						Jeśli zgłoszenie nadal nie jest zakończone i nie da się go zakończyć, to <strong>być może musisz zakończyć zgłoszenie ręcznie</strong>:
 					<ol>
 						<li>Usuń zgłoszenie <a href="${mw.util.getUrl(D.getBaseNew(), {action:'edit'})}" class="czywiesz-external" target="_blank">z listy propozycji</a>.
 						<li>Dodaj zgłoszenie <a href="${mw.util.getUrl(D.getBaseDone(), {action:'edit'})}" class="czywiesz-external" target="_blank">do listy ocenionych</a>.
@@ -514,7 +514,7 @@ class DoneHandling {
 							<ul>
 								<li>W szablonie <code>CW/weryfikacja</code> ustaw parametr <code>status=zakończone</code>.
 								<li>W szablonie <code>licznik czasu</code> zmniejsz liczbę dni (możesz ustawić <code>dni=1</code>).
-								<li>Dopisz komentarz wpisując <code>{{Załatwione}}</code>.
+								<li>Dopisz komentarz, wpisując <code>{{Załatwione}}</code>.
 							</ul>
 						</li>
 					</ol>
@@ -566,7 +566,7 @@ class DoneHandling {
 				let errorInfo = typeof error == 'string' ? htmlspecialchars(error) : '<code>'+htmlspecialchars(error)+'</code>';
 				dd.update(`
 					<p>❌ Wycofanie nie udało się: ${errorInfo}</p>
-					<p><a href="${contribHref}" class="czywiesz-external" target="_blank">Sprawdź swój wkład</a>, żeby obejrzeć co już zostało zrobione (czy w ogóle coś).
+					<p><a href="${contribHref}" class="czywiesz-external" target="_blank">Sprawdź swój wkład</a>, żeby obejrzeć, co już zostało zrobione (o ile w ogóle coś).
 				`, true);
 				return;
 			}
@@ -1130,14 +1130,14 @@ class DykForm {
 		//author row
 		var $author_row = $(/*html*/`
 			<tr id="CzyWieszAuthorRow" class="u-author-row">
-				<td class="u-lbl">Główna autor(-ka) artykułu<span class="czywiesz-tip" title="Gadżet ustala autorstwo wg największej edycji w ciągu ostatnich 10 dni (sprawdź zmiany w ostatnich dniach)."><sup>(?)</sup></span>: </td>
+				<td class="u-lbl">Główny autor(-ka) artykułu<span class="czywiesz-tip" title="Gadżet ustala autorstwo wg największej edycji w ciągu ostatnich 10 dni (sprawdź zmiany w ostatnich dniach)."><sup>(?)</sup></span>: </td>
 				<td class="u-data">
 					<span><input type="text" id="CzyWieszAuthor" name="CzyWieszAuthor"></span>
 					<span><input type="checkbox" checked id="CzyWieszAuthorInf" name="CzyWieszAuthorInf"><label for="CzyWieszAuthorInf"> wysłać powiadomienia?</label></span>
 				</td>
 			</tr>
 			<tr id="CzyWieszAuthor2Row">
-				<td class="u-lbl">Druga autor(-ka) artykułu<span class="czywiesz-tip" title="Użyj listy zmian, żeby sprawdzić, czy ktoś jeszcze wprowadzał duże zmiany."><sup>(?)</sup></span>: </td>
+				<td class="u-lbl">Drugi autor(-ka) artykułu<span class="czywiesz-tip" title="Użyj listy zmian, żeby sprawdzić, czy ktoś jeszcze wprowadzał duże zmiany."><sup>(?)</sup></span>: </td>
 				<td class="u-data"><input type="text" id="CzyWieszAuthor2" name="CzyWieszAuthor2">
 				</td>
 			</tr>
@@ -1149,7 +1149,7 @@ class DykForm {
 		//wikiproject row (filled later by wikiprojects.load())
 		const $wikiproject_row = $(/*html*/`
 			<tr id="CzyWieszWikiprojectRow">
-				<td class="u-lbl">Powiadom wikiprojekt(y): </td>
+				<td class="u-lbl">Powiadom wikiprojekt(-y): </td>
 				<td class="u-data">
 					<span id="CzyWieszWikiprojectContainer"><small>(trwa ładowanie…)</small></span>
 					<span class="dyk-proj-buttons">
@@ -1191,8 +1191,8 @@ class DykForm {
 		//rules paragraph
 		var $rules_paragraph = $('<p id="CzyWieszRules"></p>')
 			.html(`<small>Reguły: Zgłaszaj hasła, które powstały lub zostały rozbudowane nie dawniej niż <xd>10</xd> dni temu.
-				Hasła muszą posiadać źródła w formie przypisów oraz muszą zawierać co najmniej <xkb>1</xkb> kB samej treści.</small>`)
-			.css({border: '1px solid #F0F080', backgroundColor: '#FFFFE0', paddingLeft: '5px'});
+				Hasła muszą posiadać źródła w formie przypisów oraz muszą zawierać co najmniej <xkb>2</xkb> kB samej treści.</small>`)
+			.css({border: '1px solid var(--background-color-option-yellow)', backgroundColor: 'var(--background-color-warning-subtle)', paddingLeft: '5px'});
  
 		var $loading_bar = $('<div id="CzyWieszLoaderBar"></div>')
 			.css({width: '100%', backgroundColor: 'rgb(220, 220, 220)', border: '1px solid rgb(187, 187, 187)', borderRadius: '3px', boxSizing: 'border-box'})
@@ -1218,7 +1218,7 @@ class DykForm {
 					D.main.checkForm();
 				}
 				else {
-					alert('Artykuł bez źródeł jest zdyskwalifikowany z nominacji. (Jeśli źródła są, to zwróć uwagę, czy tytuł sekcji jest prawidłowy, tzn. „Przypisy” lub „Bibliografia”.)');
+					alert('Artykuł bez źródeł jest zdyskwalifikowany z nominacji.\n\nJeśli źródła są, to zwróć uwagę, czy tytuł sekcji jest prawidłowy, tzn. „Przypisy” lub „Bibliografia”.');
 				}
 			},
 			"Anuluj" : function() {
@@ -1272,7 +1272,7 @@ class DykForm {
 				$(/*html*/`<div>
 					<div class="floatright">${D.config.noLarge}</div>
 					<p style="margin-left: 10px;">Zgodnie z wytycznymi 
-					<a class="czywiesz-external" target="_blank" href="/wiki/Wikiprojekt:Czy_wiesz" title="Wikiprojekt:Czy wiesz">Wikiprojektu Czy wiesz</a>
+					<a class="czywiesz-external" target="_blank" href="/wiki/Wikiprojekt:Czy_wiesz" title="Wikiprojekt:Czy wiesz">wikiprojektu Czy wiesz</a>
 					zgłaszane hasło powinno posiadać źródła w formie przypisów (lub biografii z odnośnikami przypisowymi).
 					<a class="czywiesz-external" target="_blank" href="/wiki/Wikiprojekt:Czy_wiesz/pomoc#Zg.C5.82aszanie_propozycji_i_poprawa_hase.C5.82" title="Wikiprojekt:Czy wiesz/pomoc#Zgłaszanie propozycji i poprawa haseł">Więcej informacji w instrukcji</a>
 					<br /><small>Możliwe, że w artykule sekcje ze źródłami są błędnie nazwane – w takim wypadku popraw je.</small></p>
@@ -1698,7 +1698,7 @@ class DykForm {
 			if ( (typeof COMMENT!='string'&&typeof COMMENT!='boolean') || (typeof COMMENT=='string' && (COMMENT===''||COMMENT.match(/^[^A-ZĘÓĄŚŁŻŹĆŃa-zęóąśłżźćń]+$/)) ) || (typeof COMMENT=='string'&&COMMENT==true) ) {
 				invalid.is = true;
 				invalid.fields.push('Comment');
-				invalid.alert.push('Jeśli musisz podać jakiś komentarz to podaj jakiś sensowny, jeśli nie – wyłącz to pole. Nie wstawiaj w tym polu samego podpisu (lecz w przypadku komentarza – podpisz się).');
+				invalid.alert.push('Jeśli musisz podać jakiś komentarz, to podaj jakiś sensowny, jeśli nie – wyłącz to pole. Nie wstawiaj w tym polu samego podpisu (lecz w przypadku komentarza – podpisz się).');
 			}
 
 		const values = {
@@ -2328,7 +2328,7 @@ class ErrorInfo {
 				<div class="u-problems"></div>
 				<p>Jeśli powyższa lista nie wyjaśnia problemu, to więcej informacji jest w konsoli przeglądarki (F12).</p>
 				<p>Jeśli problem jest nietypowy, to <a href="#" role="button" class="CzyWieszEmailDoAutoraWyslij">wyślij e-mail programiście z danymi błędu</a> (szybka wysyłka logów mailem).<span class="CzyWieszEmailDoAutoraWyslano"></span></p>
-				<p>Możesz też opisać co się stało na <a href="https://pl.wikipedia.org/wiki/WP:BAR:TE" class="czywiesz-external" target="_blank">w kawiarence technicznej</a>.</p>
+				<p>Możesz też opisać, co się stało, <a href="https://pl.wikipedia.org/wiki/WP:BAR:TE" class="czywiesz-external" target="_blank">w Kawiarence technicznej</a>.</p>
 		`;
 		content.querySelector('.u-problems').append(list);
 		
@@ -2909,8 +2909,8 @@ module.exports = { apiAjax, apiAsync };
 
 },{}],14:[function(require,module,exports){
 let versionInfo = {
-	version:'7.1.0',
-	buildDay:'2026-04-20',
+	version:'7.1.1',
+	buildDay:'2026-07-09',
 }
 
 module.exports = { versionInfo };
