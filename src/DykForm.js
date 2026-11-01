@@ -415,7 +415,7 @@ class DykForm {
 						$('#CzyWieszFile2').prop('disabled', false); // enable name input
 						let src = choosen[0].src;
 						// powinno działać też dla lokalnych obrazków (nie tylko z commons)
-						let fileName = src.replace(/.*\/\/upload\.wikimedia\.org\/wikipedia\/(commons|\w{2,4})(\/thumb)?\/[^/]\/[^/]{2}\//, '').replace(/\/.+/, '');
+						let fileName = src.replace(/.*\/\/(?:upload|thumb)\.wikimedia\.org\/wikipedia\/(commons|\w{2,4})(\/thumb)?\/[^/]\/[^/]{2}\//, '').replace(/\/.+/, '');
 						$('#CzyWieszFile2').val( decodeURIComponent( fileName ).replace(/_/g,' ') );
 					} else {
 						$('#CzyWieszFile1').prop('checked', false); // tick img checkbox
