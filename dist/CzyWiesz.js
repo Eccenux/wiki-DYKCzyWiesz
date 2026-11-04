@@ -1342,8 +1342,13 @@ class DykForm {
 				.toggle(!goodQuestions);
 		});
 	}
-	
+
+	/** Has good questions or empty. */
 	hasGoodQuestions(value) {
+		value = value.trim();
+		if (!value.length) {
+			return true;
+		}
 		let goodQuestions = value
 			.replace(/(^|\n)[.…]+/g, '$1')	// remove leading dots
 			.replace(/(^|\n)czy wiesz[\s,\.]*/ig, '$1')	// remove leading DYK

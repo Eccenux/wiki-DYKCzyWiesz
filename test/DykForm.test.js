@@ -42,5 +42,11 @@ describe('DykForm', () => {
 			assert.isFalse(hasGoodQuestions(['Czy wiesz, że coś tam biega?','Czy wiesz, który coś tam biega?'].join('\n')));
 			assert.isTrue(hasGoodQuestions(['Czy wiesz, że coś tam biega?','Czy wiesz, jak coś tam biega?'].join('\n')));
 		});
+
+		it('should approve empty value', () => {
+			assert.isTrue(hasGoodQuestions(''));
+			assert.isTrue(hasGoodQuestions('  '));
+			assert.isTrue(hasGoodQuestions(' \n '));
+		});
 	});
 });
