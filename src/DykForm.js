@@ -330,7 +330,38 @@ class DykForm {
 
 		//$('#CzyWieszQuestion').keyup();
 		$('#CzyWieszQuestion').focus();
-		
+
+		// pre-walidacja pytań
+		this.addQuestionSuggester();
+	}
+
+	/** pre-walidacja pytań */
+	addQuestionSuggester() {
+		const $question = $('#CzyWieszQuestion');
+		const $warning = $('<p class="czywiesz-question-warning"></p>')
+			.css({
+				color: 'var(--color-warning)',
+				display: 'none'
+			})
+			.insertAfter($question);
+
+		const me = this;
+		$question.on('blur', function() {
+			let goodQuestions = me.hasGoodQuestions(this.value)
+
+			$warning
+				.text('Prosimy dodać pytania zaczynające się od: „…ile”, „…jak”, „…co”, „…po co”, „…kiedy”, „…dlaczego”, „…gdzie”, „…skąd” itp.')
+				.toggle(!goodQuestions);
+		});
+	}
+	
+	hasGoodQuestions(value) {
+		let goodQuestions = value
+			.replace(/(^|\n)[.…]+/g, '$1')	// remove leading dots
+			.replace(/(^|\n)czy wiesz[\s,\.]*/ig, '$1')	// remove leading DYK
+			.replace(/(^|\n) *(że|któr).+/ig, '$1')	// remove questions we don't like
+		;
+		return /.{5,}\?/.test(goodQuestions);
 	}
 
 	/**

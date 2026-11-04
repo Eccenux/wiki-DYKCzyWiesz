@@ -1318,7 +1318,38 @@ class DykForm {
 
 		//$('#CzyWieszQuestion').keyup();
 		$('#CzyWieszQuestion').focus();
-		
+
+		// pre-walidacja pytań
+		this.addQuestionSuggester();
+	}
+
+	/** pre-walidacja pytań */
+	addQuestionSuggester() {
+		const $question = $('#CzyWieszQuestion');
+		const $warning = $('<p class="czywiesz-question-warning"></p>')
+			.css({
+				color: 'var(--color-warning)',
+				display: 'none'
+			})
+			.insertAfter($question);
+
+		const me = this;
+		$question.on('blur', function() {
+			let goodQuestions = me.hasGoodQuestions(this.value)
+
+			$warning
+				.text('Prosimy dodać pytania zaczynające się od: „…ile”, „…jak”, „…co”, „…po co”, „…kiedy”, „…dlaczego”, „…gdzie”, „…skąd” itp.')
+				.toggle(!goodQuestions);
+		});
+	}
+	
+	hasGoodQuestions(value) {
+		let goodQuestions = value
+			.replace(/(^|\n)[.…]+/g, '$1')	// remove leading dots
+			.replace(/(^|\n)czy wiesz[\s,\.]*/ig, '$1')	// remove leading DYK
+			.replace(/(^|\n) *(że|któr).+/ig, '$1')	// remove questions we don't like
+		;
+		return /.{5,}\?/.test(goodQuestions);
 	}
 
 	/**
@@ -1403,7 +1434,7 @@ class DykForm {
 						$('#CzyWieszFile2').prop('disabled', false); // enable name input
 						let src = choosen[0].src;
 						// powinno działać też dla lokalnych obrazków (nie tylko z commons)
-						let fileName = src.replace(/.*\/\/upload\.wikimedia\.org\/wikipedia\/(commons|\w{2,4})(\/thumb)?\/[^/]\/[^/]{2}\//, '').replace(/\/.+/, '');
+						let fileName = src.replace(/.*\/\/(?:upload|thumb)\.wikimedia\.org\/wikipedia\/(commons|\w{2,4})(\/thumb)?\/[^/]\/[^/]{2}\//, '').replace(/\/.+/, '');
 						$('#CzyWieszFile2').val( decodeURIComponent( fileName ).replace(/_/g,' ') );
 					} else {
 						$('#CzyWieszFile1').prop('checked', false); // tick img checkbox
@@ -2909,8 +2940,8 @@ module.exports = { apiAjax, apiAsync };
 
 },{}],14:[function(require,module,exports){
 let versionInfo = {
-	version:'7.1.1',
-	buildDay:'2026-07-09',
+	version:'7.2.0',
+	buildDay:'2026-11-04',
 }
 
 module.exports = { versionInfo };

@@ -16,10 +16,10 @@
 		"eslint": "8.x",
 		"gulp": "5.x",
 		"less": "4.x",
-		"mocha": "10.x",
+		"mocha": "12.x",
 		"uglify-js": "^3.17.4",
 		"vinyl-buffer": "1.x",
 		"vinyl-source-stream": "2.x",
-		"wikiploy": "2.x"
+		"wikiploy": "^2.5.0"
 	}
 }
